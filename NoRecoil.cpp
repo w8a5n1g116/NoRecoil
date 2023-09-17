@@ -3,6 +3,9 @@
 
 #include "framework.h"
 #include "NoRecoil.h"
+#include <Unknwn.h>
+#include <gdiplus.h>
+#pragma comment(lib,"Gdiplus.lib")
 
 #define MAX_LOADSTRING 100
 
@@ -11,6 +14,7 @@ HINSTANCE hInst;                                // 当前实例
 WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
 WCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
 HWND hWnd;
+HWND hMessageWnd;
 
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -27,6 +31,7 @@ HHOOK mouseHook;
 //句柄
 HWND hStaticText;
 HWND hButton;
+HWND hButton2;
 HWND hInput0;
 HWND hInput1;
 HWND hInput2;
@@ -35,6 +40,11 @@ HWND hInput4;
 HWND hInput5;
 HWND hInput6;
 HWND hInput7;
+HWND hInput8;
+HWND hInput9;
+HWND hInput10;
+HWND hInput11;
+HWND hInput12;
 HANDLE m_hThread;
 UINT m_ThreadId;
 LONG volatile m_IsShouldThreadFinish{ FALSE };
@@ -43,11 +53,14 @@ unsigned __stdcall ThreadProc(void* mouseState);
 
 
 #define IDB_ONE     3301
+#define IDB_TWO     3302
 
 //鼠标状态
 struct Mouse_State {
     int isRightButtonPress = 0;
     int isLeftButtonPress = 0;
+    int continuousTap = FALSE;
+    int isStartContinuousTap = FALSE;
     int count = 0;
 };
 Mouse_State mouseState;
@@ -62,21 +75,29 @@ struct KeyBoard_State {
     int isNum2Press = 0;
     int capsLock = 0;
     int scrollLock = 0;
+    int canFocus = FALSE;
 };
 KeyBoard_State keyboardState;
 
 struct Config {
     int interval = 10;
+    int single_tap_interval = 100;
     int current_offset = 0;
+    int current_offset_2 = 0;
     int offset_0 = 1;
-    int offset_1 = 1;
-    int offset_2 = 1;
-    int offset_3 = 1;
-    int offset_4 = 1;
-    int offset_6 = 1;
-    int offset_8 = 1;
-    int profile = 1;
-    int* offsetArray[8] = { 0 };
+    int offset_1_1 = 1;
+    int offset_1_2 = 1;
+    int offset_1_3 = 1;
+    int offset_1_4 = 1;
+    int offset_1_6 = 1;
+    int offset_2_1 = 1;
+    int offset_2_2 = 1;
+    int offset_2_3 = 1;
+    int offset_2_4 = 1;
+    int offset_2_6 = 1;
+    int profile = 0;
+    int* offsetArray_1[5] = { 0 };
+    int* offsetArray_2[5] = { 0 };
 };
 Config config;
 
@@ -95,10 +116,13 @@ LRESULT CALLBACK LowLevelKeyboardProc(
 );
 void Process(WPARAM wParam, MSLLHOOKSTRUCT* msllhook);
 HANDLE StartProcessThread();
+void DrawMessageWindows(HWND hkeyboardWnd, std::string msg);
 
 HANDLE m_timerHandle = NULL;
+HANDLE m_timerHandle2 = NULL;
 void KeyboardInput(UINT key, BOOL isKeyDown);
 void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired);
+void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired);
 
 std::wstring GetUserProfilePath() {
     std::wstring path = L"";
@@ -142,6 +166,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         return FALSE;
     }
+
+    //窗口置顶
+    //SetWindowPos(hMessageWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+    //ShowWindow(hMessageWnd, SW_SHOWNA);
+    //DrawMessageWindows(hMessageWnd,"");
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_NORECOIL));
 
@@ -188,6 +217,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     return RegisterClassExW(&wcex);
 }
 
+
 //
 //   函数: InitInstance(HINSTANCE, int)
 //
@@ -203,7 +233,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     hInst = hInstance; // 将实例句柄存储在全局变量中
 
     hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+        CW_USEDEFAULT, 0, 600, 300, nullptr, nullptr, hInstance, nullptr);
+
+    //hMessageWnd = CreateWindowW(L"Message", L"", WS_OVERLAPPEDWINDOW,//WS_POPUP,
+    //    10, 10, 100, 100, nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
     {
@@ -212,6 +245,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
+
+    //SetWindowLong(hMessageWnd, GWL_EXSTYLE, GetWindowLong(hMessageWnd, GWL_EXSTYLE) | WS_EX_LAYERED | WS_EX_TRANSPARENT);
 
     //业务开始
 
@@ -236,16 +271,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE:
     {
-        hStaticText = CreateWindow(L"Static", L"", StaticTextStyle, 10, 10, 400, 50, hWnd, NULL, hInst, NULL);
-        hButton = CreateWindow(L"Button", L"X", StaticTextStyle, 10, 100, 100, 100, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput0 = CreateWindow(L"EDIT", std::to_wstring(config.interval).c_str(), StaticTextStyle, 120, 100, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput1 = CreateWindow(L"EDIT", std::to_wstring(config.offset_0).c_str(), StaticTextStyle, 170, 100, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput2 = CreateWindow(L"EDIT", std::to_wstring(config.offset_1).c_str(), StaticTextStyle, 220, 100, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput3 = CreateWindow(L"EDIT", std::to_wstring(config.offset_2).c_str(), StaticTextStyle, 270, 100, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput4 = CreateWindow(L"EDIT", std::to_wstring(config.offset_3).c_str(), StaticTextStyle, 320, 100, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput5 = CreateWindow(L"EDIT", std::to_wstring(config.offset_4).c_str(), StaticTextStyle, 370, 100, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput6 = CreateWindow(L"EDIT", std::to_wstring(config.offset_6).c_str(), StaticTextStyle, 420, 100, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput7 = CreateWindow(L"EDIT", std::to_wstring(config.offset_8).c_str(), StaticTextStyle, 470, 100, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hStaticText = CreateWindow(L"Static", L"", StaticTextStyle, 220, 10, 200, 50, hWnd, NULL, hInst, NULL);
+        hButton = CreateWindow(L"Button", L"X", StaticTextStyle, 10, 10, 100, 40, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hButton2 = CreateWindow(L"Button", L"T", StaticTextStyle, 10, 60, 100, 40, hWnd, (HMENU)IDB_TWO, hInst, NULL);
+        hInput0 = CreateWindow(L"EDIT", std::to_wstring(config.interval).c_str(), StaticTextStyle, 120, 10, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput1 = CreateWindow(L"EDIT", std::to_wstring(config.offset_1_1).c_str(), StaticTextStyle, 10, 120, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput2 = CreateWindow(L"EDIT", std::to_wstring(config.offset_1_2).c_str(), StaticTextStyle, 50, 120, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput3 = CreateWindow(L"EDIT", std::to_wstring(config.offset_1_3).c_str(), StaticTextStyle, 90, 120, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput4 = CreateWindow(L"EDIT", std::to_wstring(config.offset_1_4).c_str(), StaticTextStyle, 130, 120, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput5 = CreateWindow(L"EDIT", std::to_wstring(config.offset_1_6).c_str(), StaticTextStyle, 170, 120, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput6 = CreateWindow(L"EDIT", std::to_wstring(config.offset_2_1).c_str(), StaticTextStyle, 10, 170, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput7 = CreateWindow(L"EDIT", std::to_wstring(config.offset_2_2).c_str(), StaticTextStyle, 50, 170, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput8 = CreateWindow(L"EDIT", std::to_wstring(config.offset_2_3).c_str(), StaticTextStyle, 90, 170, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput9 = CreateWindow(L"EDIT", std::to_wstring(config.offset_2_4).c_str(), StaticTextStyle, 130, 170, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput10 = CreateWindow(L"EDIT", std::to_wstring(config.offset_2_6).c_str(), StaticTextStyle, 170, 170, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput11 = CreateWindow(L"EDIT", std::to_wstring(config.offset_0).c_str(), StaticTextStyle, 160, 10, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput12 = CreateWindow(L"EDIT", std::to_wstring(config.single_tap_interval).c_str(), StaticTextStyle, 120, 70, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
     }
     case WM_COMMAND:
     {
@@ -272,33 +313,60 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 wchar_t buff[1024];
                 Edit_GetText(hInput0, buff, 1024);
                 WritePrivateProfileString(L"General", L"interval", buff, iniFilePath.c_str());
+                config.interval = _tstoi(buff);
                 Edit_GetText(hInput1, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset", buff, iniFilePath.c_str());
-                config.offset_0 = _tstoi(buff);
+                WritePrivateProfileString(L"General", L"offset_1_1", buff, iniFilePath.c_str());
+                config.offset_1_1 = _tstoi(buff);
                 Edit_GetText(hInput2, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_1", buff, iniFilePath.c_str());
-                config.offset_1 = _tstoi(buff);
+                WritePrivateProfileString(L"General", L"offset_1_2", buff, iniFilePath.c_str());
+                config.offset_1_2 = _tstoi(buff);
                 Edit_GetText(hInput3, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_2", buff, iniFilePath.c_str());
-                config.offset_2 = _tstoi(buff);
+                WritePrivateProfileString(L"General", L"offset_1_3", buff, iniFilePath.c_str());
+                config.offset_1_3 = _tstoi(buff);
                 Edit_GetText(hInput4, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_3", buff, iniFilePath.c_str());
-                config.offset_3 = _tstoi(buff);
+                WritePrivateProfileString(L"General", L"offset_1_4", buff, iniFilePath.c_str());
+                config.offset_1_4 = _tstoi(buff);
                 Edit_GetText(hInput5, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_4", buff, iniFilePath.c_str());
-                config.offset_4 = _tstoi(buff);
+                WritePrivateProfileString(L"General", L"offset_1_6", buff, iniFilePath.c_str());
+                config.offset_1_6 = _tstoi(buff);
                 Edit_GetText(hInput6, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_6", buff, iniFilePath.c_str());
-                config.offset_6 = _tstoi(buff);
+                WritePrivateProfileString(L"General", L"offset_2_1", buff, iniFilePath.c_str());
+                config.offset_2_1 = _tstoi(buff);
                 Edit_GetText(hInput7, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_8", buff, iniFilePath.c_str());
-                config.offset_8 = _tstoi(buff);
+                WritePrivateProfileString(L"General", L"offset_2_2", buff, iniFilePath.c_str());
+                config.offset_2_2 = _tstoi(buff);
+                Edit_GetText(hInput8, buff, 1024);
+                WritePrivateProfileString(L"General", L"offset_2_3", buff, iniFilePath.c_str());
+                config.offset_2_3 = _tstoi(buff);
+                Edit_GetText(hInput9, buff, 1024);
+                WritePrivateProfileString(L"General", L"offset_2_4", buff, iniFilePath.c_str());
+                config.offset_2_4 = _tstoi(buff);
+                Edit_GetText(hInput10, buff, 1024);
+                WritePrivateProfileString(L"General", L"offset_2_6", buff, iniFilePath.c_str());
+                config.offset_2_6 = _tstoi(buff);
+                Edit_GetText(hInput11, buff, 1024);
+                WritePrivateProfileString(L"General", L"offset_0", buff, iniFilePath.c_str());
+                config.offset_0 = _tstoi(buff);
 
 
             }
             }
             break;
+        case IDB_TWO: 
+            switch (HIWORD(wParam)) {
+            case BN_CLICKED:
+            {
+                if (mouseState.continuousTap == FALSE)
+                    mouseState.continuousTap = TRUE;
+                else
+                    mouseState.continuousTap = FALSE;
 
+                wchar_t buff[1024];
+                Edit_GetText(hInput12, buff, 1024);
+                WritePrivateProfileString(L"General", L"single_tap_interval", buff, iniFilePath.c_str());
+                config.single_tap_interval = _tstoi(buff);
+            }
+            }
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
         }
@@ -350,32 +418,44 @@ void Init()
     key = GetKeyState(VK_SCROLL);
     keyboardState.scrollLock = key & 0x0001;
 
-    config.offsetArray[0] = &config.offset_0;
-    config.offsetArray[1] = &config.offset_1;
-    config.offsetArray[2] = &config.offset_2;
-    config.offsetArray[3] = &config.offset_3;
-    config.offsetArray[4] = &config.offset_4;
-    config.offsetArray[5] = &config.offset_6;
-    config.offsetArray[6] = &config.offset_8;
-    config.offsetArray[7] = &config.offset_0;
+    config.offsetArray_1[0] = &config.offset_1_1;
+    config.offsetArray_1[1] = &config.offset_1_2;
+    config.offsetArray_1[2] = &config.offset_1_3;
+    config.offsetArray_1[3] = &config.offset_1_4;
+    config.offsetArray_1[4] = &config.offset_1_6;
+    config.offsetArray_2[0] = &config.offset_2_1;
+    config.offsetArray_2[1] = &config.offset_2_2;
+    config.offsetArray_2[2] = &config.offset_2_3;
+    config.offsetArray_2[3] = &config.offset_2_4;
+    config.offsetArray_2[4] = &config.offset_2_6;
 
 
-    config.interval = GetPrivateProfileInt(L"General", L"interval", 5, iniFilePath.c_str());
-    config.offset_0 = GetPrivateProfileInt(L"General", L"offset_0", 2, iniFilePath.c_str());
-    config.offset_1 = GetPrivateProfileInt(L"General", L"offset_1", 2, iniFilePath.c_str());
-    config.offset_2 = GetPrivateProfileInt(L"General", L"offset_2", 10, iniFilePath.c_str());
-    config.offset_3 = GetPrivateProfileInt(L"General", L"offset_3", 10, iniFilePath.c_str());
-    config.offset_4 = GetPrivateProfileInt(L"General", L"offset_4", 10, iniFilePath.c_str());
-    config.offset_6 = GetPrivateProfileInt(L"General", L"offset_6", 10, iniFilePath.c_str());
-    config.offset_8 = GetPrivateProfileInt(L"General", L"offset_8", 10, iniFilePath.c_str());
+    config.interval = GetPrivateProfileInt(L"General", L"interval", 5, iniFilePath.c_str());  
+    config.offset_1_1 = GetPrivateProfileInt(L"General", L"offset_1_1", 10, iniFilePath.c_str());
+    config.offset_1_2 = GetPrivateProfileInt(L"General", L"offset_1_2", 10, iniFilePath.c_str());
+    config.offset_1_3 = GetPrivateProfileInt(L"General", L"offset_1_3", 10, iniFilePath.c_str());
+    config.offset_1_4 = GetPrivateProfileInt(L"General", L"offset_1_4", 10, iniFilePath.c_str());
+    config.offset_1_6 = GetPrivateProfileInt(L"General", L"offset_1_6", 10, iniFilePath.c_str());
+    config.offset_2_1 = GetPrivateProfileInt(L"General", L"offset_2_1", 10, iniFilePath.c_str());
+    config.offset_2_2 = GetPrivateProfileInt(L"General", L"offset_2_2", 10, iniFilePath.c_str());
+    config.offset_2_3 = GetPrivateProfileInt(L"General", L"offset_2_3", 10, iniFilePath.c_str());
+    config.offset_2_4 = GetPrivateProfileInt(L"General", L"offset_2_4", 10, iniFilePath.c_str());
+    config.offset_2_6 = GetPrivateProfileInt(L"General", L"offset_2_6", 10, iniFilePath.c_str());
+    config.offset_0 = GetPrivateProfileInt(L"General", L"offset_0", 10, iniFilePath.c_str());
+    config.single_tap_interval = GetPrivateProfileInt(L"General", L"single_tap_interval", 100, iniFilePath.c_str());
     Edit_SetText(hInput0, std::to_wstring(config.interval).c_str());
-    Edit_SetText(hInput1, std::to_wstring(config.offset_0).c_str());
-    Edit_SetText(hInput2, std::to_wstring(config.offset_1).c_str());
-    Edit_SetText(hInput3, std::to_wstring(config.offset_2).c_str());
-    Edit_SetText(hInput4, std::to_wstring(config.offset_3).c_str());
-    Edit_SetText(hInput5, std::to_wstring(config.offset_4).c_str());
-    Edit_SetText(hInput6, std::to_wstring(config.offset_6).c_str());
-    Edit_SetText(hInput7, std::to_wstring(config.offset_8).c_str());
+    Edit_SetText(hInput1, std::to_wstring(config.offset_1_1).c_str());
+    Edit_SetText(hInput2, std::to_wstring(config.offset_1_2).c_str());
+    Edit_SetText(hInput3, std::to_wstring(config.offset_1_3).c_str());
+    Edit_SetText(hInput4, std::to_wstring(config.offset_1_4).c_str());
+    Edit_SetText(hInput5, std::to_wstring(config.offset_1_6).c_str());
+    Edit_SetText(hInput6, std::to_wstring(config.offset_2_1).c_str());
+    Edit_SetText(hInput7, std::to_wstring(config.offset_2_2).c_str());
+    Edit_SetText(hInput8, std::to_wstring(config.offset_2_3).c_str());
+    Edit_SetText(hInput9, std::to_wstring(config.offset_2_4).c_str());
+    Edit_SetText(hInput10, std::to_wstring(config.offset_2_6).c_str());
+    Edit_SetText(hInput11, std::to_wstring(config.offset_0).c_str());
+    Edit_SetText(hInput12, std::to_wstring(config.single_tap_interval).c_str());
     //设置鼠标钩子
     mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), 0);
     //设置键盘钩子
@@ -395,7 +475,7 @@ LRESULT CALLBACK LowLevelMouseProc(
     MSLLHOOKSTRUCT* msllhook = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
     Process(wParam, msllhook);
     wchar_t lmessage[1024];
-    swprintf_s(lmessage, 1024, L"RS : %x", keyboardState.isRightShiftPress);
+    swprintf_s(lmessage, 1024, L"RS : %d \n", keyboardState.isRightShiftPress);
     SetWindowText(hStaticText, lmessage);
 
     return 0;
@@ -427,6 +507,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == 0x32) {
             keyboardState.isNum2Press = 1;
         }
+        
     }
 
     if (wParam == WM_SYSKEYDOWN) {
@@ -446,9 +527,14 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         }
         else if (kbhook->vkCode == 0x31) {
             keyboardState.isNum1Press = 0;
+            keyboardState.canFocus = FALSE;
         }
         else if (kbhook->vkCode == 0x32) {
             keyboardState.isNum2Press = 0;
+            keyboardState.canFocus = TRUE;
+        }
+        else if (kbhook->vkCode == 0x58) {
+            keyboardState.canFocus = FALSE;
         }
         else if (kbhook->vkCode == VK_LMENU) {
             keyboardState.isLeftAltPress = 0;
@@ -465,26 +551,20 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             keyboardState.scrollLock = key & 0x0001;
         }
 
-        if (kbhook->vkCode == VK_NUMPAD0) {
+        if (kbhook->vkCode == VK_NUMPAD1) {
             config.profile = 0;
         }
-        else if (kbhook->vkCode == VK_NUMPAD1) {
+        else if (kbhook->vkCode == VK_NUMPAD2) {
             config.profile = 1;
         }
-        else if (kbhook->vkCode == VK_NUMPAD2) {
+        else if (kbhook->vkCode == VK_NUMPAD3) {
             config.profile = 2;
         }
-        else if (kbhook->vkCode == VK_NUMPAD3) {
+        else if (kbhook->vkCode == VK_NUMPAD4) {
             config.profile = 3;
         }
-        else if (kbhook->vkCode == VK_NUMPAD4) {
-            config.profile = 4;
-        }
         else if (kbhook->vkCode == VK_NUMPAD6) {
-            config.profile = 5;
-        }
-        else if (kbhook->vkCode == VK_NUMPAD8) {
-            config.profile = 6;
+            config.profile = 4;
         }
 
     }
@@ -523,14 +603,35 @@ void Process(WPARAM wParam, MSLLHOOKSTRUCT* msllhook)
     }
 
     if (wParam == WM_RBUTTONDOWN) {
-
-        CreateTimerQueueTimer(&m_timerHandle, NULL, TimerProc, (void*)VK_RSHIFT, 300, 0, WT_EXECUTEINTIMERTHREAD);
+        if (keyboardState.canFocus) {
+            CreateTimerQueueTimer(&m_timerHandle, NULL, TimerProc, (void*)VK_RSHIFT, 300, 0, WT_EXECUTEINTIMERTHREAD);
+        }
+        
     }
 
     if (wParam == WM_RBUTTONUP) {
-        DeleteTimerQueueTimer(NULL, m_timerHandle, NULL);
-        KeyboardInput(VK_RSHIFT, FALSE);
+        if (keyboardState.canFocus) {
+            DeleteTimerQueueTimer(NULL, m_timerHandle, NULL);
+            KeyboardInput(VK_RSHIFT, FALSE);
+        }
     }
+
+    if (mouseState.continuousTap) {
+        if (mouseState.isRightButtonPress && wParam == WM_LBUTTONDOWN) {
+            if (mouseState.isStartContinuousTap == FALSE) {
+                CreateTimerQueueTimer(&m_timerHandle2, NULL, TimerProc2, NULL, 0, config.single_tap_interval, WT_EXECUTEINTIMERTHREAD);
+                mouseState.isStartContinuousTap = TRUE;
+            }           
+        }
+
+        if ((wParam == WM_LBUTTONUP && msllhook->flags != LLMHF_INJECTED) || wParam == WM_RBUTTONUP) {
+            if (mouseState.isStartContinuousTap) {
+                DeleteTimerQueueTimer(NULL, m_timerHandle2, NULL);
+                mouseState.isStartContinuousTap = FALSE;
+            }
+            
+        }
+    }   
 
     short key = GetKeyState(VK_SCROLL);
     keyboardState.scrollLock = key & 0x0001;
@@ -549,20 +650,24 @@ unsigned __stdcall ThreadProc(void* o) {
         if (startFalg == TRUE) {
             if (mouseState.isRightButtonPress && mouseState.isLeftButtonPress) {
 
-                int index = keyboardState.capsLock ? config.profile - 1 > 0 ? config.profile - 1 : 0 : config.profile;
-                mouseState.count = index;
-                config.current_offset = *config.offsetArray[index];
+                //if (mouseState.continuousTap) {
 
-                if (keyboardState.scrollLock)
-                {
-                    config.current_offset = keyboardState.capsLock ? config.offset_0 : config.offset_1;
-                }
+               // }
+                //else {
+                    config.current_offset = keyboardState.capsLock ? *config.offsetArray_2[config.profile] : *config.offsetArray_1[config.profile];
 
-                int y = config.current_offset;
-                mouse_event(MOUSEEVENTF_MOVE, 0, y, 0, 0);
+                    if (keyboardState.scrollLock)
+                    {
+                        config.current_offset = keyboardState.capsLock ? config.offset_2_1 : config.offset_1_1;
+                    }
+
+                    int y = config.current_offset;
+                    mouse_event(MOUSEEVENTF_MOVE, 0, y, 0, 0);
+                //}              
             }
             else if (keyboardState.isLeftContrlPress && mouseState.isLeftButtonPress) {
-                int y = keyboardState.capsLock ? config.offset_0 : config.offset_1;
+                config.current_offset_2 = config.offset_0;//keyboardState.capsLock ? config.offset_2_1 : config.offset_1_1;
+                int y = config.current_offset_2;
                 mouse_event(MOUSEEVENTF_MOVE, 0, y, 0, 0);
             }
         }
@@ -587,3 +692,53 @@ void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired) {
     KeyboardInput(VK_RSHIFT, TRUE);
 }
 
+void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired) {
+    mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+    Sleep(config.interval);
+    mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+    mouseState.count++;
+}
+
+void DrawMessageWindows(HWND hkeyboardWnd,std::string msg) {
+    RECT wndRect;
+    ::GetWindowRect(hkeyboardWnd, &wndRect);
+    SIZE wndSize = { wndRect.right - wndRect.left,wndRect.bottom - wndRect.top };
+    HDC hdc = ::GetDC(hkeyboardWnd);
+    HDC memDC = ::CreateCompatibleDC(hdc);
+    HBITMAP memBitmap = ::CreateCompatibleBitmap(hdc, wndSize.cx, wndSize.cy);
+    ::SelectObject(memDC, memBitmap);
+
+
+    Gdiplus::Graphics graphics(memDC);
+
+    Gdiplus::SolidBrush  brush(Gdiplus::Color(150, 0, 0, 0));
+    Gdiplus::FontFamily  fontFamily(L"Times New Roman");
+    Gdiplus::Font font(&fontFamily, 24, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
+
+
+    RECT rc;
+    GetClientRect(hkeyboardWnd, &rc);
+    INT left = rc.left;
+    INT top = rc.top;
+    INT right = rc.right;
+    INT bottom = rc.bottom;
+
+    Gdiplus::PointF RegionPoint = Gdiplus::PointF(right, bottom);
+
+    graphics.DrawString(L"123", -1, &font, RegionPoint, &brush);
+
+    // get screen dc 
+    HDC screenDC = GetDC(NULL);
+    POINT ptSrc = { 0,0 };
+
+    BLENDFUNCTION blendFunction;
+    blendFunction.AlphaFormat = AC_SRC_ALPHA;
+    blendFunction.BlendFlags = 0;
+    blendFunction.BlendOp = AC_SRC_OVER;
+    blendFunction.SourceConstantAlpha = 255;
+    UpdateLayeredWindow(hkeyboardWnd, screenDC, /*&ptSrc*/NULL, &wndSize, memDC, &ptSrc, 0, &blendFunction, ULW_ALPHA);
+
+    ::DeleteDC(memDC);
+    ::DeleteObject(memBitmap);
+
+}
