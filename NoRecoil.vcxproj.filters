@@ -27,9 +27,51 @@
     <ClInclude Include="NoRecoil.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CFunction1.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CWeapon.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CAttachment.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CMuzzle.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CGrip.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CStock.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CMagazine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NoRecoil.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CFunction1.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CWeapon.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CAttachment.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CMuzzle.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CGrip.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CStock.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CMagazine.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

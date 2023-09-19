@@ -128,12 +128,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CAttachment.h" />
+    <ClInclude Include="CFunction1.h" />
+    <ClInclude Include="CGrip.h" />
+    <ClInclude Include="CMagazine.h" />
+    <ClInclude Include="CMuzzle.h" />
+    <ClInclude Include="CStock.h" />
+    <ClInclude Include="CWeapon.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="NoRecoil.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CAttachment.cpp" />
+    <ClCompile Include="CFunction1.cpp" />
+    <ClCompile Include="CGrip.cpp" />
+    <ClCompile Include="CMagazine.cpp" />
+    <ClCompile Include="CMuzzle.cpp" />
+    <ClCompile Include="CStock.cpp" />
+    <ClCompile Include="CWeapon.cpp" />
     <ClCompile Include="NoRecoil.cpp" />
   </ItemGroup>
   <ItemGroup>

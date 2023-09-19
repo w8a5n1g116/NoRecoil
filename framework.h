@@ -17,3 +17,6 @@
 #include <windowsx.h>
 #include <math.h>
 #include <string>
+#include <vector>
+
+using namespace std;
