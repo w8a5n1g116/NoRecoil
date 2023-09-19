@@ -18,8 +18,10 @@ HWND hMessageWnd;
 
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
+ATOM                MyRegisterClass2(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK    WndProc2(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 //StaticText Style
@@ -160,6 +162,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_NORECOIL, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
+    MyRegisterClass2(hInstance);
 
     // 执行应用程序初始化:
     if (!InitInstance(hInstance, nCmdShow))
@@ -167,10 +170,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    //窗口置顶
-    //SetWindowPos(hMessageWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-    //ShowWindow(hMessageWnd, SW_SHOWNA);
-    //DrawMessageWindows(hMessageWnd,"");
+    
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_NORECOIL));
 
@@ -217,6 +217,31 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     return RegisterClassExW(&wcex);
 }
 
+//
+//  函数: MyRegisterClass2()
+//
+//  目标: 注册窗口类。
+//
+ATOM MyRegisterClass2(HINSTANCE hInstance) {
+    WNDCLASSEXW wcex;
+
+    wcex.cbSize = sizeof(WNDCLASSEX);
+
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc2;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_NORECOIL));
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)CreateSolidBrush(0x000000);//(HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = NULL;//MAKEINTRESOURCEW(IDC_CONTROLLEGENDWIN32);
+    wcex.lpszClassName = L"Message";
+    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+
+    return RegisterClassExW(&wcex);
+}
+
 
 //
 //   函数: InitInstance(HINSTANCE, int)
@@ -235,8 +260,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, 0, 600, 300, nullptr, nullptr, hInstance, nullptr);
 
-    //hMessageWnd = CreateWindowW(L"Message", L"", WS_OVERLAPPEDWINDOW,//WS_POPUP,
-    //    10, 10, 100, 100, nullptr, nullptr, hInstance, nullptr);
+    hMessageWnd = CreateWindowW(L"Message", L"", WS_OVERLAPPEDWINDOW,//WS_POPUP,WS_BORDER | WS_SIZEBOX
+        10, 10, 200, 200, nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
     {
@@ -246,7 +271,15 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
-    //SetWindowLong(hMessageWnd, GWL_EXSTYLE, GetWindowLong(hMessageWnd, GWL_EXSTYLE) | WS_EX_LAYERED | WS_EX_TRANSPARENT);
+
+    //窗口置顶
+    SetWindowPos(hMessageWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+    ShowWindow(hMessageWnd, SW_SHOWNA);
+    //DrawMessageWindows(hMessageWnd, "");
+    
+
+    SetWindowLong(hMessageWnd, GWL_EXSTYLE, GetWindowLong(hMessageWnd, GWL_EXSTYLE) | WS_EX_LAYERED | WS_EX_TRANSPARENT);
+    UpdateWindow(hMessageWnd);
 
     //业务开始
 
@@ -382,6 +415,70 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     break;
     case WM_DESTROY:
         m_IsShouldThreadFinish = TRUE;
+        PostQuitMessage(0);
+        break;
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    return 0;
+}
+
+//
+//  函数: WndProc(HWND, UINT, WPARAM, LPARAM)
+//
+//  目标: 处理主窗口的消息。
+//
+//  WM_COMMAND  - 处理应用程序菜单
+//  WM_PAINT    - 绘制主窗口
+//  WM_DESTROY  - 发送退出消息并返回
+//
+//
+LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+    case WM_CREATE:
+    {
+        
+    }
+    case WM_COMMAND:
+    {
+        int wmId = LOWORD(wParam);
+        int a = 0;
+        // 分析菜单选择:
+        switch (wmId)
+        {           
+        default:
+            return DefWindowProc(hWnd, message, wParam, lParam);
+        }
+    }
+    break;
+    case WM_PAINT:
+    {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hWnd, &ps);
+        // TODO: 在此处添加使用 hdc 的任何绘图代码...
+        //DrawMessageWindows(hWnd, "");
+        FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+        //DrawText(hdc, L"123456", 7, &ps.rcPaint, 0);
+        RECT wndRect;
+        ::GetWindowRect(hWnd, &wndRect);
+        SIZE wndSize = { wndRect.right - wndRect.left,wndRect.bottom - wndRect.top };
+        //HDC memDC = ::CreateCompatibleDC(hdc);
+        //HDC screenDC = GetDC(NULL);
+        //POINT ptSrc = { 0,0 };
+
+        //BLENDFUNCTION blendFunction;
+        //blendFunction.AlphaFormat = AC_SRC_ALPHA;
+        //blendFunction.BlendFlags = 0;
+        //blendFunction.BlendOp = AC_SRC_OVER;
+        //blendFunction.SourceConstantAlpha = 255;
+        //UpdateLayeredWindow(hWnd, screenDC, /*&ptSrc*/NULL, &wndSize, memDC, &ptSrc, 0, &blendFunction, ULW_ALPHA);
+        //::DeleteDC(memDC);
+        EndPaint(hWnd, &ps);
+    }
+    break;
+    case WM_DESTROY:
         PostQuitMessage(0);
         break;
     default:
@@ -711,7 +808,7 @@ void DrawMessageWindows(HWND hkeyboardWnd,std::string msg) {
 
     Gdiplus::Graphics graphics(memDC);
 
-    Gdiplus::SolidBrush  brush(Gdiplus::Color(150, 0, 0, 0));
+    Gdiplus::SolidBrush  brush(Gdiplus::Color(0,0, 0, 0));
     Gdiplus::FontFamily  fontFamily(L"Times New Roman");
     Gdiplus::Font font(&fontFamily, 24, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
 
@@ -723,20 +820,22 @@ void DrawMessageWindows(HWND hkeyboardWnd,std::string msg) {
     INT right = rc.right;
     INT bottom = rc.bottom;
 
-    Gdiplus::PointF RegionPoint = Gdiplus::PointF(right, bottom);
+    Gdiplus::PointF RegionPoint = Gdiplus::PointF(left, top);
 
-    graphics.DrawString(L"123", -1, &font, RegionPoint, &brush);
+    graphics.DrawString(L"123", 3, &font, RegionPoint, &brush);
+    Gdiplus::Rect gdiRect{ rc.left ,rc.top ,rc.right - rc.left ,rc.bottom - rc.top };
+    graphics.FillRectangle(&brush, gdiRect);
 
     // get screen dc 
     HDC screenDC = GetDC(NULL);
     POINT ptSrc = { 0,0 };
 
-    BLENDFUNCTION blendFunction;
-    blendFunction.AlphaFormat = AC_SRC_ALPHA;
-    blendFunction.BlendFlags = 0;
-    blendFunction.BlendOp = AC_SRC_OVER;
-    blendFunction.SourceConstantAlpha = 255;
-    UpdateLayeredWindow(hkeyboardWnd, screenDC, /*&ptSrc*/NULL, &wndSize, memDC, &ptSrc, 0, &blendFunction, ULW_ALPHA);
+    //BLENDFUNCTION blendFunction;
+    //blendFunction.AlphaFormat = AC_SRC_ALPHA;
+    //blendFunction.BlendFlags = 0;
+    //blendFunction.BlendOp = AC_SRC_OVER;
+    //blendFunction.SourceConstantAlpha = 255;
+    //UpdateLayeredWindow(hkeyboardWnd, screenDC, /*&ptSrc*/NULL, &wndSize, memDC, &ptSrc, 0, &blendFunction, ULW_ALPHA);
 
     ::DeleteDC(memDC);
     ::DeleteObject(memBitmap);
