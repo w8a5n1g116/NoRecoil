@@ -48,6 +48,12 @@
     <ClInclude Include="CMagazine.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CWeaponLib.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CFunction2.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NoRecoil.cpp">
@@ -72,6 +78,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CMagazine.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CFunction2.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

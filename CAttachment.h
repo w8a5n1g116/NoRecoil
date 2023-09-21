@@ -2,6 +2,8 @@
 class CAttachment
 {
 public:
-	int x_effect;
+	float x_effect;
+	CAttachment();
+	CAttachment(float x_effect);
 };
 
