@@ -1,4 +1,5 @@
 #include "CFunction2.h"
+#include <chrono>
 
 void CFunction2::LoadSetting()
 {
@@ -58,13 +59,26 @@ void CFunction2::Move(int capsLock,int scrollLock)
 
     int y = current_offset;
     mouse_event(MOUSEEVENTF_MOVE, 0, y, 0, 0);
-    Sleep(interval);
+    Delay(interval);
 }
 
 void CFunction2::FocusMove()
 {
-    current_offset_2 = offset_0;//keyboardState.capsLock ? config.offset_2_1 : config.offset_1_1;
-    int y = current_offset_2;
-    mouse_event(MOUSEEVENTF_MOVE, 0, y, 0, 0);
-    Sleep(interval);
+    current_offset_2 = offset_0;
+    mouse_event(MOUSEEVENTF_MOVE, 0, current_offset_2, 0, 0);
+    Delay(interval);
+}
+
+void CFunction2::Delay(int timeout_ms)
+{
+    auto start = std::chrono::system_clock::now();
+    while (true)
+    {
+        auto duration =
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+        if (duration > timeout_ms)
+        {
+            break;
+        }
+    }
 }

@@ -493,9 +493,9 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 void Init()
 {
-    function.Weapon1.AssembleGrip(&function.lib.Thumb);
-    function.Weapon1.AssembleMuzzle(&function.lib.AR_COMP);
-    function.Weapon1.AssembleStock(&function.lib.Heavy);
+    //function.Weapon1.AssembleGrip(&function.lib.Thumb);
+    //function.Weapon1.AssembleMuzzle(&function.lib.AR_COMP);
+    //function.Weapon1.AssembleStock(&function.lib.Heavy);
 
     short key = GetKeyState(VK_CAPITAL);
     keyboardState.capsLock = key & 0x0001;
@@ -714,8 +714,8 @@ unsigned __stdcall ThreadProc(void* o) {
     while (m_IsShouldThreadFinish == FALSE) {
         if (startFalg == TRUE) {
             if (mouseState.isRightButtonPress && mouseState.isLeftButtonPress) {
-                //function2.Move(keyboardState.capsLock,keyboardState.scrollLock);
-                function.Move();
+                function2.Move(keyboardState.capsLock,keyboardState.scrollLock);
+                //function.Move();
             }
             else if (keyboardState.isLeftContrlPress && mouseState.isLeftButtonPress) {
                 function2.FocusMove();

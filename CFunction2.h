@@ -49,5 +49,6 @@ class CFunction2
     void ChangeSetting(int interval, int offset_1_1, int offset_1_2, int offset_1_3, int offset_1_4, int offset_1_6, int offset_2_1, int offset_2_2, int offset_2_3, int offset_2_4, int offset_2_6, int offset_0);
 	void Move(int capsLock, int scrollLock);
     void FocusMove();
+    void Delay(int timeout_ms);
 };
 

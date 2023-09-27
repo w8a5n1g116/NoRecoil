@@ -8,9 +8,11 @@ CFunction1::CFunction1()
 void CFunction1::Move()
 {
 	int count = 10;
+	int x = 0;
+	float sensitive = 1;
 	for (int i = 0; i < count; i++)
 	{
-		mouse_event(MOUSEEVENTF_MOVE, 0, CurrentWeapon->ComputeXOffset(CurrentWeapon->offset[CurrentWeapon->currentShot] / count), 0, 0);
+		mouse_event(MOUSEEVENTF_MOVE, x, CurrentWeapon->ComputeXOffset(CurrentWeapon->offset[CurrentWeapon->currentShot] / count * sensitive), 0, 0);
 		//Sleep(CurrentWeapon->interval);
 		Delay(CurrentWeapon->interval / count);
 	}
