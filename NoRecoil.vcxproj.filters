@@ -54,6 +54,15 @@
     <ClInclude Include="CFunction2.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ScreenShot.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MatchPicture.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStart.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NoRecoil.cpp">
@@ -81,6 +90,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CFunction2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStart.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -4,14 +4,10 @@
 class CFunction1
 {
 public:
-	CWeaponLib lib;
-	CWeapon Weapon1 = lib.ACE32;
-	CWeapon Weapon2;
-	CWeapon* CurrentWeapon = &Weapon1;
 	CFunction1();
-	void Move();
+	static void Move(CWeapon* CurrentWeapon);
 
-	void Reload();
-	void Delay(int timeout_ms);
+	static void Reload(CWeapon* CurrentWeapon);
+	static void Delay(int timeout_ms);
 };
 

@@ -5,7 +5,7 @@ CFunction1::CFunction1()
 {
 }
 
-void CFunction1::Move()
+void CFunction1::Move(CWeapon* CurrentWeapon)
 {
 	int count = 10;
 	int x = 0;
@@ -24,7 +24,7 @@ void CFunction1::Move()
 	}
 }
 
-void CFunction1::Reload()
+void CFunction1::Reload(CWeapon* CurrentWeapon)
 {
 	CurrentWeapon->currentShot = 0;
 }

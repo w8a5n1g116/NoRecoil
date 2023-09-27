@@ -73,3 +73,15 @@ void CWeapon::AssembleScope(int scope)
 {
 	this->scope = scope;
 }
+
+void CWeapon::LoadSetting()
+{
+	noAttachmentRecoil = GetPrivateProfileIntA(weaponName.c_str(), "no", 10, iniFilePath.c_str());
+	fullAttachmentRecoil = GetPrivateProfileIntA(weaponName.c_str(), "full", 10, iniFilePath.c_str());
+}
+
+void CWeapon::ChangeSetting()
+{
+	WritePrivateProfileStringA(weaponName.c_str(), "no", std::to_string(noAttachmentRecoil).c_str(), iniFilePath.c_str());
+	WritePrivateProfileStringA(weaponName.c_str(), "full", std::to_string(fullAttachmentRecoil).c_str(), iniFilePath.c_str());
+}

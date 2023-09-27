@@ -6,8 +6,7 @@
 #include <Unknwn.h>
 #include <gdiplus.h>
 #pragma comment(lib,"Gdiplus.lib")
-#include "CFunction1.h"
-#include "CFunction2.h"
+#include "GameStart.h"
 
 #define MAX_LOADSTRING 100
 
@@ -38,17 +37,7 @@ HWND hButton;
 HWND hButton2;
 HWND hInput0;
 HWND hInput1;
-HWND hInput2;
-HWND hInput3;
-HWND hInput4;
-HWND hInput5;
-HWND hInput6;
-HWND hInput7;
-HWND hInput8;
-HWND hInput9;
-HWND hInput10;
-HWND hInput11;
-HWND hInput12;
+HWND hList1;
 HANDLE m_hThread;
 UINT m_ThreadId;
 LONG volatile m_IsShouldThreadFinish{ FALSE };
@@ -58,6 +47,7 @@ unsigned __stdcall ThreadProc(void* mouseState);
 
 #define IDB_ONE     3301
 #define IDB_TWO     3302
+#define IDB_LIST1     3303
 
 //鼠标状态
 struct Mouse_State {
@@ -77,6 +67,8 @@ struct KeyBoard_State {
     int isLeftAltPress = 0;
     int isNum1Press = 0;
     int isNum2Press = 0;
+    int isNum3Press = 0;
+    int isNum4Press = 0;
     int capsLock = 0;
     int scrollLock = 0;
     int canFocus = FALSE;
@@ -96,7 +88,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(
     _In_ WPARAM wParam,
     _In_ LPARAM lParam
 );
-void Process(WPARAM wParam, MSLLHOOKSTRUCT* msllhook);
+
 HANDLE StartProcessThread();
 void DrawMessageWindows(HWND hkeyboardWnd, std::string msg);
 
@@ -106,30 +98,8 @@ void KeyboardInput(UINT key, BOOL isKeyDown);
 void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired);
 void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired);
 
-std::wstring GetUserProfilePath() {
-    std::wstring path = L"";
-    const wchar_t* homeProfile = L"USERPROFILE";
-    wchar_t homePath[1024] = { 0 };
-
-    unsigned int pathSize = GetEnvironmentVariable(homeProfile, homePath, 1024);
-
-    if (pathSize == 0 || pathSize > 1024)
-    {
-        // 获取失败 或者 路径太长 
-        int ret = GetLastError();
-    }
-    else
-    {
-        path = std::wstring(homePath);
-    }
-    return path;
-}
-
-std::wstring iniFilePath = GetUserProfilePath() + L"\\config.ini";
-
 /////////////////////////////////
-CFunction1 function;
-CFunction2 function2;
+GameStart gameStart;
 
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -290,20 +260,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         hStaticText = CreateWindow(L"Static", L"", StaticTextStyle, 220, 10, 200, 50, hWnd, NULL, hInst, NULL);
         hButton = CreateWindow(L"Button", L"X", StaticTextStyle, 10, 10, 100, 40, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hButton2 = CreateWindow(L"Button", L"T", StaticTextStyle, 10, 60, 100, 40, hWnd, (HMENU)IDB_TWO, hInst, NULL);
-        hInput0 = CreateWindow(L"EDIT", std::to_wstring(function2.interval).c_str(), StaticTextStyle, 120, 10, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput1 = CreateWindow(L"EDIT", std::to_wstring(function2.offset_1_1).c_str(), StaticTextStyle, 10, 120, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput2 = CreateWindow(L"EDIT", std::to_wstring(function2.offset_1_2).c_str(), StaticTextStyle, 50, 120, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput3 = CreateWindow(L"EDIT", std::to_wstring(function2.offset_1_3).c_str(), StaticTextStyle, 90, 120, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput4 = CreateWindow(L"EDIT", std::to_wstring(function2.offset_1_4).c_str(), StaticTextStyle, 130, 120, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput5 = CreateWindow(L"EDIT", std::to_wstring(function2.offset_1_6).c_str(), StaticTextStyle, 170, 120, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput6 = CreateWindow(L"EDIT", std::to_wstring(function2.offset_2_1).c_str(), StaticTextStyle, 10, 170, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput7 = CreateWindow(L"EDIT", std::to_wstring(function2.offset_2_2).c_str(), StaticTextStyle, 50, 170, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput8 = CreateWindow(L"EDIT", std::to_wstring(function2.offset_2_3).c_str(), StaticTextStyle, 90, 170, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput9 = CreateWindow(L"EDIT", std::to_wstring(function2.offset_2_4).c_str(), StaticTextStyle, 130, 170, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput10 = CreateWindow(L"EDIT", std::to_wstring(function2.offset_2_6).c_str(), StaticTextStyle, 170, 170, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput11 = CreateWindow(L"EDIT", std::to_wstring(function2.offset_0).c_str(), StaticTextStyle, 160, 10, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput12 = CreateWindow(L"EDIT", std::to_wstring(function2.single_tap_interval).c_str(), StaticTextStyle, 120, 70, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hList1 = CreateWindow(L"LISTBOX", L"T", StaticTextStyle | WS_VSCROLL, 10, 60, 100, 100, hWnd, (HMENU)IDB_LIST1, hInst, NULL);
+        hInput0 = CreateWindowA("EDIT", "1", StaticTextStyle, 150, 80, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput1 = CreateWindowA("EDIT", "1", StaticTextStyle, 150, 115, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+
+        hButton2 = CreateWindow(L"Button", L"Ok", StaticTextStyle, 200, 150, 30, 30, hWnd, (HMENU)IDB_TWO, hInst, NULL);
+
+        for (auto& t : gameStart.lib.weaponMap) {
+            SendMessageA(hList1, LB_ADDSTRING, 0, (LPARAM)t.first.c_str());
+        }
     }
     case WM_COMMAND:
     {
@@ -327,44 +292,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 else
                     startFalg = FALSE;
 
-                wchar_t buff[1024];
-                Edit_GetText(hInput0, buff, 1024);
-                WritePrivateProfileString(L"General", L"interval", buff, iniFilePath.c_str());
-                function2.interval = _tstoi(buff);
-                Edit_GetText(hInput1, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_1_1", buff, iniFilePath.c_str());
-                function2.offset_1_1 = _tstoi(buff);
-                Edit_GetText(hInput2, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_1_2", buff, iniFilePath.c_str());
-                function2.offset_1_2 = _tstoi(buff);
-                Edit_GetText(hInput3, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_1_3", buff, iniFilePath.c_str());
-                function2.offset_1_3 = _tstoi(buff);
-                Edit_GetText(hInput4, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_1_4", buff, iniFilePath.c_str());
-                function2.offset_1_4 = _tstoi(buff);
-                Edit_GetText(hInput5, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_1_6", buff, iniFilePath.c_str());
-                function2.offset_1_6 = _tstoi(buff);
-                Edit_GetText(hInput6, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_2_1", buff, iniFilePath.c_str());
-                function2.offset_2_1 = _tstoi(buff);
-                Edit_GetText(hInput7, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_2_2", buff, iniFilePath.c_str());
-                function2.offset_2_2 = _tstoi(buff);
-                Edit_GetText(hInput8, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_2_3", buff, iniFilePath.c_str());
-                function2.offset_2_3 = _tstoi(buff);
-                Edit_GetText(hInput9, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_2_4", buff, iniFilePath.c_str());
-                function2.offset_2_4 = _tstoi(buff);
-                Edit_GetText(hInput10, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_2_6", buff, iniFilePath.c_str());
-                function2.offset_2_6 = _tstoi(buff);
-                Edit_GetText(hInput11, buff, 1024);
-                WritePrivateProfileString(L"General", L"offset_0", buff, iniFilePath.c_str());
-                function2.offset_0 = _tstoi(buff);
-
 
             }
             }
@@ -373,15 +300,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             switch (HIWORD(wParam)) {
             case BN_CLICKED:
             {
-                if (mouseState.continuousTap == FALSE)
-                    mouseState.continuousTap = TRUE;
-                else
-                    mouseState.continuousTap = FALSE;
+
+                int nSel = SendMessage(hList1, LB_GETCURSEL, 0, 0);
+                char tem[128] = { 0 };
+                SendMessageA(hList1, LB_GETTEXT, nSel, (LPARAM)tem);
+                std::string weaponName = std::string(tem);
 
                 wchar_t buff[1024];
-                Edit_GetText(hInput12, buff, 1024);
-                WritePrivateProfileString(L"General", L"single_tap_interval", buff, iniFilePath.c_str());
-                function2.single_tap_interval = _tstoi(buff);
+                Edit_GetText(hInput0, buff, 1024);
+                gameStart.lib.FindWeapon(weaponName)->noAttachmentRecoil = _tstoi(buff);
+                Edit_GetText(hInput1, buff, 1024);
+                gameStart.lib.FindWeapon(weaponName)->fullAttachmentRecoil = _tstoi(buff);
+
+                gameStart.lib.FindWeapon(weaponName)->ChangeSetting();
+            }
+            }
+
+        case IDB_LIST1:
+            switch (HIWORD(wParam)) {
+            case LBN_DBLCLK:
+            {           
+                int nSel = SendMessage(hList1, LB_GETCURSEL, 0, 0);
+                char tem[128] = { 0 };
+                SendMessageA(hList1, LB_GETTEXT, nSel, (LPARAM)tem);
+                std::string weaponName = std::string(tem);
+
+                Edit_SetText(hInput0, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->noAttachmentRecoil).c_str());
+                Edit_SetText(hInput1, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->fullAttachmentRecoil).c_str());
             }
             }
         default:
@@ -493,9 +438,6 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 void Init()
 {
-    //function.Weapon1.AssembleGrip(&function.lib.Thumb);
-    //function.Weapon1.AssembleMuzzle(&function.lib.AR_COMP);
-    //function.Weapon1.AssembleStock(&function.lib.Heavy);
 
     short key = GetKeyState(VK_CAPITAL);
     keyboardState.capsLock = key & 0x0001;
@@ -503,21 +445,9 @@ void Init()
     key = GetKeyState(VK_SCROLL);
     keyboardState.scrollLock = key & 0x0001;
 
-    function2.LoadSetting();
+    gameStart.LoadSetting();
 
-    Edit_SetText(hInput0, std::to_wstring(function2.interval).c_str());
-    Edit_SetText(hInput1, std::to_wstring(function2.offset_1_1).c_str());
-    Edit_SetText(hInput2, std::to_wstring(function2.offset_1_2).c_str());
-    Edit_SetText(hInput3, std::to_wstring(function2.offset_1_3).c_str());
-    Edit_SetText(hInput4, std::to_wstring(function2.offset_1_4).c_str());
-    Edit_SetText(hInput5, std::to_wstring(function2.offset_1_6).c_str());
-    Edit_SetText(hInput6, std::to_wstring(function2.offset_2_1).c_str());
-    Edit_SetText(hInput7, std::to_wstring(function2.offset_2_2).c_str());
-    Edit_SetText(hInput8, std::to_wstring(function2.offset_2_3).c_str());
-    Edit_SetText(hInput9, std::to_wstring(function2.offset_2_4).c_str());
-    Edit_SetText(hInput10, std::to_wstring(function2.offset_2_6).c_str());
-    Edit_SetText(hInput11, std::to_wstring(function2.offset_0).c_str());
-    Edit_SetText(hInput12, std::to_wstring(function2.single_tap_interval).c_str());
+
     //设置鼠标钩子
     mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), 0);
     //设置键盘钩子
@@ -535,10 +465,50 @@ LRESULT CALLBACK LowLevelMouseProc(
         return CallNextHookEx(NULL, nCode, wParam, lParam);
     }
     MSLLHOOKSTRUCT* msllhook = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-    Process(wParam, msllhook);
-    wchar_t lmessage[1024];
-    swprintf_s(lmessage, 1024, L"RS : %d \n", function.CurrentWeapon->currentShot);
-    SetWindowText(hStaticText, lmessage);
+
+    switch (wParam)
+    {
+    case WM_LBUTTONDOWN:
+        mouseState.isLeftButtonPress = 1;
+        break;
+    case WM_LBUTTONUP:
+        mouseState.isLeftButtonPress = 0;
+        break;
+    case WM_RBUTTONDOWN:
+        mouseState.isRightButtonPress = 1;
+        break;
+    case WM_RBUTTONUP:
+        mouseState.isRightButtonPress = 0;
+        break;
+    }
+
+    if (keyboardState.isLeftAltPress && wParam == WM_RBUTTONUP && !mouseState.isLeftButtonPress) {
+        KeyboardInput(VK_SCROLL, TRUE);
+        KeyboardInput(VK_SCROLL, FALSE);
+    }
+
+    if (wParam == WM_RBUTTONDOWN) {
+        if (keyboardState.canFocus) {
+            CreateTimerQueueTimer(&m_timerHandle, NULL, TimerProc, (void*)VK_RSHIFT, 300, 0, WT_EXECUTEINTIMERTHREAD);
+        }
+
+    }
+
+    if (wParam == WM_RBUTTONUP) {
+        if (keyboardState.canFocus) {
+            DeleteTimerQueueTimer(NULL, m_timerHandle, NULL);
+            KeyboardInput(VK_RSHIFT, FALSE);
+        }
+    }
+
+
+    short key = GetKeyState(VK_SCROLL);
+    keyboardState.scrollLock = key & 0x0001;
+
+
+    char lmessage[1024];
+    sprintf_s(lmessage, 1024, "weaponName : %s \nscope : %d", gameStart.CurrentWeapon->weaponName.c_str(), gameStart.CurrentWeapon->scope);
+    SetWindowTextA(hStaticText, lmessage);
 
     return 0;
 }
@@ -569,15 +539,33 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == 0x32) { //2
             keyboardState.isNum2Press = 1;
         }
-        else if (kbhook->vkCode == 0x52) { //R
-            function.Reload();
+        else if (kbhook->vkCode == 0x33) { //2
+            keyboardState.isNum3Press = 1;
         }
+        else if (kbhook->vkCode == 0x34) { //2
+            keyboardState.isNum4Press = 1;
+        }
+        //else if (kbhook->vkCode == 0x52) { //R
+        //    function.Reload();
+        //}
         
     }
 
     if (wParam == WM_SYSKEYDOWN) {
         if (kbhook->vkCode == VK_LMENU) {
             keyboardState.isLeftAltPress = 1;
+        }
+        else if (kbhook->vkCode == 0x31) {
+            keyboardState.isNum1Press = 1;
+        }
+        else if (kbhook->vkCode == 0x32) {
+            keyboardState.isNum2Press = 1;
+        }
+        else if (kbhook->vkCode == 0x33) {
+            keyboardState.isNum3Press = 1;
+        }
+        else if (kbhook->vkCode == 0x34) {
+            keyboardState.isNum4Press = 1;
         }
     }
 
@@ -590,6 +578,9 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == VK_LSHIFT) {
             keyboardState.isLeftShiftPress = 0;
         }
+        else if (kbhook->vkCode == VK_LMENU) {
+            keyboardState.isLeftAltPress = 0;
+        }
         else if (kbhook->vkCode == 0x31) {
             keyboardState.isNum1Press = 0;
             keyboardState.canFocus = FALSE;
@@ -598,11 +589,14 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             keyboardState.isNum2Press = 0;
             keyboardState.canFocus = TRUE;
         }
+        else if (kbhook->vkCode == 0x33) {
+            keyboardState.isNum3Press = 0;
+        }
+        else if (kbhook->vkCode == 0x34) {
+            keyboardState.isNum4Press = 0;
+        }
         else if (kbhook->vkCode == 0x58) {
             keyboardState.canFocus = FALSE;
-        }
-        else if (kbhook->vkCode == VK_LMENU) {
-            keyboardState.isLeftAltPress = 0;
         }
         else if (kbhook->vkCode == VK_RSHIFT) {
             keyboardState.isRightShiftPress = 0;
@@ -617,89 +611,71 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         }
 
         if (kbhook->vkCode == VK_NUMPAD1) {
-            function2.profile = 0;
+            gameStart.SwitchWeapon("UMP45");
         }
         else if (kbhook->vkCode == VK_NUMPAD2) {
-            function2.profile = 1;
+            gameStart.SwitchWeapon("Tommy Gun");
         }
         else if (kbhook->vkCode == VK_NUMPAD3) {
-            function2.profile = 2;
+            gameStart.SwitchWeapon("Vector");
         }
         else if (kbhook->vkCode == VK_NUMPAD4) {
-            function2.profile = 3;
+            gameStart.SwitchWeapon("SCAR-L");
+        }
+        else if (kbhook->vkCode == VK_NUMPAD5) {
+            gameStart.SwitchWeapon("M416");
         }
         else if (kbhook->vkCode == VK_NUMPAD6) {
-            function2.profile = 4;
+            gameStart.SwitchWeapon("M16A4");
+        }
+        else if (kbhook->vkCode == VK_NUMPAD7) {
+            gameStart.SwitchWeapon("ACE32");
+        }
+        else if (kbhook->vkCode == VK_NUMPAD8) {
+            gameStart.SwitchWeapon("Beryl M762");
+        }
+        else if (kbhook->vkCode == VK_NUMPAD9) {
+            gameStart.SwitchWeapon("Mk47 Mutant");
+        }
+        else if (kbhook->vkCode == VK_NUMPAD0) {
+            gameStart.SwitchWeapon("VSS");
         }
 
     }
 
-    /*if (wParam == WM_SYSKEYUP) {
+    if (wParam == WM_SYSKEYUP) {
          if (kbhook->vkCode == VK_LMENU) {
             keyboardState.isLeftAltPress = 0;
-        }
-    }*/
+         }
+         else if (kbhook->vkCode == 0x31) {
+             keyboardState.isNum1Press = 0;
+         }
+         else if (kbhook->vkCode == 0x32) {
+             keyboardState.isNum2Press = 0;
+         }
+         else if (kbhook->vkCode == 0x33) {
+             keyboardState.isNum3Press = 0;
+         }
+         else if (kbhook->vkCode == 0x34) {
+             keyboardState.isNum4Press = 0;
+         }
+    }
+
+    //////////////////////////
+    if (keyboardState.isLeftAltPress && keyboardState.isNum1Press) {
+        gameStart.CurrentWeapon->AssembleScope(0);
+    }
+    if (keyboardState.isLeftAltPress && keyboardState.isNum2Press) {
+        gameStart.CurrentWeapon->AssembleScope(2);
+    }
+    if (keyboardState.isLeftAltPress && keyboardState.isNum3Press) {
+        gameStart.CurrentWeapon->AssembleScope(3);
+    }
+    if (keyboardState.isLeftAltPress && keyboardState.isNum4Press) {
+        gameStart.CurrentWeapon->AssembleScope(4);
+    }
 
     return 0;
-}
-
-void Process(WPARAM wParam, MSLLHOOKSTRUCT* msllhook)
-{
-    //msllhook->flags != 1 &&
-    switch (wParam)
-    {
-    case WM_LBUTTONDOWN:
-        mouseState.isLeftButtonPress = 1;
-        break;
-    case WM_LBUTTONUP:
-        mouseState.isLeftButtonPress = 0;
-        break;
-    case WM_RBUTTONDOWN:
-        mouseState.isRightButtonPress = 1;
-        break;
-    case WM_RBUTTONUP:
-        mouseState.isRightButtonPress = 0;
-        break;
-    }
-
-    if (keyboardState.isLeftAltPress && wParam == WM_RBUTTONUP && !mouseState.isLeftButtonPress) {
-        KeyboardInput(VK_SCROLL, TRUE);
-        KeyboardInput(VK_SCROLL, FALSE);
-    }
-
-    if (wParam == WM_RBUTTONDOWN) {
-        if (keyboardState.canFocus) {
-            CreateTimerQueueTimer(&m_timerHandle, NULL, TimerProc, (void*)VK_RSHIFT, 300, 0, WT_EXECUTEINTIMERTHREAD);
-        }
-        
-    }
-
-    if (wParam == WM_RBUTTONUP) {
-        if (keyboardState.canFocus) {
-            DeleteTimerQueueTimer(NULL, m_timerHandle, NULL);
-            KeyboardInput(VK_RSHIFT, FALSE);
-        }
-    }
-
-    if (mouseState.continuousTap) {
-        if (mouseState.isRightButtonPress && wParam == WM_LBUTTONDOWN) {
-            if (mouseState.isStartContinuousTap == FALSE) {
-                CreateTimerQueueTimer(&m_timerHandle2, NULL, TimerProc2, NULL, 0, function2.single_tap_interval, WT_EXECUTEINTIMERTHREAD);
-                mouseState.isStartContinuousTap = TRUE;
-            }           
-        }
-
-        if ((wParam == WM_LBUTTONUP && msllhook->flags != LLMHF_INJECTED) || wParam == WM_RBUTTONUP) {
-            if (mouseState.isStartContinuousTap) {
-                DeleteTimerQueueTimer(NULL, m_timerHandle2, NULL);
-                mouseState.isStartContinuousTap = FALSE;
-            }
-            
-        }
-    }   
-
-    short key = GetKeyState(VK_SCROLL);
-    keyboardState.scrollLock = key & 0x0001;
 }
 
 
@@ -713,13 +689,7 @@ unsigned __stdcall ThreadProc(void* o) {
     //Mouse_State* state = (Mouse_State*)mouseState;
     while (m_IsShouldThreadFinish == FALSE) {
         if (startFalg == TRUE) {
-            if (mouseState.isRightButtonPress && mouseState.isLeftButtonPress) {
-                function2.Move(keyboardState.capsLock,keyboardState.scrollLock);
-                //function.Move();
-            }
-            else if (keyboardState.isLeftContrlPress && mouseState.isLeftButtonPress) {
-                function2.FocusMove();
-            }
+            gameStart.Move(keyboardState.capsLock, keyboardState.scrollLock, mouseState.isRightButtonPress && mouseState.isLeftButtonPress, keyboardState.isLeftContrlPress && mouseState.isLeftButtonPress);
         }
     }
     _endthreadex(0);
@@ -743,7 +713,7 @@ void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired) {
 
 void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired) {
     mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-    Sleep(function2.interval);
+    Sleep(gameStart.CurrentWeapon->interval);
     mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
     mouseState.count++;
 }

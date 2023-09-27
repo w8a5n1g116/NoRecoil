@@ -138,8 +138,11 @@
     <ClInclude Include="CWeapon.h" />
     <ClInclude Include="CWeaponLib.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="GameStart.h" />
+    <ClInclude Include="MatchPicture.hpp" />
     <ClInclude Include="NoRecoil.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="ScreenShot.hpp" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -151,6 +154,7 @@
     <ClCompile Include="CMuzzle.cpp" />
     <ClCompile Include="CStock.cpp" />
     <ClCompile Include="CWeapon.cpp" />
+    <ClCompile Include="GameStart.cpp" />
     <ClCompile Include="NoRecoil.cpp" />
   </ItemGroup>
   <ItemGroup>
