@@ -41,6 +41,7 @@ public:
 		52,58,54,50,58,
 		}, 40);*/
 
+	CWeapon Default		= CWeapon("Default", CWeapon::FUNCTION2, 4, 4);
 	CWeapon Mk47_Mutant		= CWeapon("Mk47 Mutant",CWeapon::FUNCTION2, 10, 9);
 	CWeapon AKM				= CWeapon("AKM", CWeapon::FUNCTION2, 10, 9);
 	CWeapon Groza			= CWeapon("Groza", CWeapon::FUNCTION2, 10, 9);
@@ -56,19 +57,19 @@ public:
 	CWeapon FAMAS			= CWeapon("FAMAS", CWeapon::FUNCTION2, 10, 9);
 	CWeapon DP_28			= CWeapon("DP_28", CWeapon::FUNCTION2, 10, 9);
 	CWeapon M249			= CWeapon("M249", CWeapon::FUNCTION2, 10, 9);
-	CWeapon Mk14			= CWeapon("Mk14", CWeapon::FUNCTION2, 10, 9);
-	CWeapon SLR				= CWeapon("SLR", CWeapon::FUNCTION2, 10, 9);
-	CWeapon SKS				= CWeapon("SKS", CWeapon::FUNCTION2, 10, 9);
-	CWeapon Mk12			= CWeapon("Mk12", CWeapon::FUNCTION2, 10, 9);
-	CWeapon Mini14			= CWeapon("Mini14", CWeapon::FUNCTION2, 10, 9);
-	CWeapon QBU				= CWeapon("QBU", CWeapon::FUNCTION2, 10, 9);
+	CWeapon Mk14			= CWeapon("Mk14", CWeapon::FUNCTION1, 10, 9);
+	CWeapon SLR				= CWeapon("SLR", CWeapon::FUNCTION1, 10, 9);
+	CWeapon SKS				= CWeapon("SKS", CWeapon::FUNCTION1, 10, 9);
+	CWeapon Mk12			= CWeapon("Mk12", CWeapon::FUNCTION1, 10, 9);
+	CWeapon Mini14			= CWeapon("Mini14", CWeapon::FUNCTION1, 10, 9);
+	CWeapon QBU				= CWeapon("QBU", CWeapon::FUNCTION1, 10, 9);
 	CWeapon VSS				= CWeapon("VSS", CWeapon::FUNCTION2, 10, 9);
-	CWeapon Lynx_AMR		= CWeapon("Lynx AMR", CWeapon::FUNCTION2, 10, 9);
-	CWeapon AWM				= CWeapon("AWM", CWeapon::FUNCTION2, 10, 9);
-	CWeapon Kar98k			= CWeapon("Kar98k", CWeapon::FUNCTION2, 10, 9);
-	CWeapon Mosin_Nagant	= CWeapon("Mosin Nagant", CWeapon::FUNCTION2, 10, 9);
-	CWeapon M24				= CWeapon("M24", CWeapon::FUNCTION2, 10, 9);
-	CWeapon Win94			= CWeapon("Win94", CWeapon::FUNCTION2, 10, 9);
+	CWeapon Lynx_AMR		= CWeapon("Lynx AMR", CWeapon::FUNCTION1, 10, 9);
+	CWeapon AWM				= CWeapon("AWM", CWeapon::FUNCTION1, 10, 9);
+	CWeapon Kar98k			= CWeapon("Kar98k", CWeapon::FUNCTION1, 10, 9);
+	CWeapon Mosin_Nagant	= CWeapon("Mosin Nagant", CWeapon::FUNCTION1, 10, 9);
+	CWeapon M24				= CWeapon("M24", CWeapon::FUNCTION1, 10, 9);
+	CWeapon Win94			= CWeapon("Win94", CWeapon::FUNCTION1, 10, 9);
 	CWeapon UMP45			= CWeapon("UMP45", CWeapon::FUNCTION2, 10, 9);
 	CWeapon Tommy_Gun		= CWeapon("Tommy Gun", CWeapon::FUNCTION2, 10, 9);
 	CWeapon PP_19_Bizon		= CWeapon("PP 19 Bizon", CWeapon::FUNCTION2, 10, 9);
@@ -77,16 +78,16 @@ public:
 	CWeapon MP9				= CWeapon("MP9", CWeapon::FUNCTION2, 10, 9);
 	CWeapon Vector			= CWeapon("Vector", CWeapon::FUNCTION2, 10, 9);
 	CWeapon Micro_UZI		= CWeapon("Micro UZI", CWeapon::FUNCTION2, 10, 9);
-	CWeapon DBS				= CWeapon("DBS", CWeapon::FUNCTION2, 10, 9);
-	CWeapon S1897			= CWeapon("S1897", CWeapon::FUNCTION2, 10, 9);
-	CWeapon S686			= CWeapon("S686", CWeapon::FUNCTION2, 10, 9);
-	CWeapon S12K			= CWeapon("S12K", CWeapon::FUNCTION2, 10, 9);
-	CWeapon Sawed_Off		= CWeapon("Sawed Off", CWeapon::FUNCTION2, 10, 9);
-	CWeapon O1R452			= CWeapon("O1R452", CWeapon::FUNCTION2, 10, 9);
-	CWeapon R1895			= CWeapon("R1895", CWeapon::FUNCTION2, 10, 9);
+	CWeapon DBS				= CWeapon("DBS", CWeapon::FUNCTION1, 10, 9);
+	CWeapon S1897			= CWeapon("S1897", CWeapon::FUNCTION1, 10, 9);
+	CWeapon S686			= CWeapon("S686", CWeapon::FUNCTION1, 10, 9);
+	CWeapon S12K			= CWeapon("S12K", CWeapon::FUNCTION1, 10, 9);
+	CWeapon Sawed_Off		= CWeapon("Sawed Off", CWeapon::FUNCTION1, 10, 9);
+	CWeapon O1R452			= CWeapon("O1R452", CWeapon::FUNCTION1, 10, 9);
+	CWeapon R1895			= CWeapon("R1895", CWeapon::FUNCTION1, 10, 9);
 	CWeapon Deagle			= CWeapon("Deagle", CWeapon::FUNCTION2, 10, 9);
-	CWeapon P1911			= CWeapon("P1911", CWeapon::FUNCTION2, 10, 9);
-	CWeapon P92				= CWeapon("P92", CWeapon::FUNCTION2, 10, 9);
+	CWeapon P1911			= CWeapon("P1911", CWeapon::FUNCTION1, 10, 9);
+	CWeapon P92				= CWeapon("P92", CWeapon::FUNCTION1, 10, 9);
 	CWeapon P18C			= CWeapon("P18C", CWeapon::FUNCTION2, 10, 9);
 	CWeapon Skorpion		= CWeapon("Skorpion", CWeapon::FUNCTION2, 10, 9);
 	CWeapon MG3_660_RPM		= CWeapon("MG3 660 RPM", CWeapon::FUNCTION2, 10, 9);
@@ -125,6 +126,7 @@ public:
 	CStock Heavy = CStock(CStock::Heavy, 0.05f);
 
 	CWeaponLib() {
+		weaponMap.insert(std::make_pair("Default", Default));
 		weaponMap.insert(std::make_pair("Mk47 Mutant", Mk47_Mutant));
 		weaponMap.insert(std::make_pair("AKM", AKM));
 		weaponMap.insert(std::make_pair("Groza", Groza));

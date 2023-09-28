@@ -33,8 +33,12 @@ void CFunction2::Move(CWeapon* CurrentWeapon, int capsLock,int scrollLock)
 
     int y = scrollLock ? CurrentWeapon->currentRecoil_2 : CurrentWeapon->currentRecoil  * scopeRate;
     
-    mouse_event(MOUSEEVENTF_MOVE, 0,y , 0, 0);
-    Delay(CurrentWeapon->interval);
+    //int count = 10;
+    //for (int i = 0; i < count; i++)
+    //{
+        mouse_event(MOUSEEVENTF_MOVE, 0, y, 0, 0);
+        Delay(CurrentWeapon->interval);
+    //}
 }
 
 void CFunction2::FocusMove(CWeapon* CurrentWeapon)

@@ -7,6 +7,7 @@
 #include <gdiplus.h>
 #pragma comment(lib,"Gdiplus.lib")
 #include "GameStart.h"
+#include "ScreenShot.hpp"
 
 #define MAX_LOADSTRING 100
 
@@ -50,29 +51,9 @@ unsigned __stdcall ThreadProc(void* mouseState);
 #define IDB_LIST1     3303
 
 //鼠标状态
-struct Mouse_State {
-    int isRightButtonPress = 0;
-    int isLeftButtonPress = 0;
-    int continuousTap = FALSE;
-    int isStartContinuousTap = FALSE;
-    int count = 0;
-};
 Mouse_State mouseState;
 
 //键盘状态
-struct KeyBoard_State {
-    int isLeftContrlPress = 0;
-    int isLeftShiftPress = 0;
-    int isRightShiftPress = 0;
-    int isLeftAltPress = 0;
-    int isNum1Press = 0;
-    int isNum2Press = 0;
-    int isNum3Press = 0;
-    int isNum4Press = 0;
-    int capsLock = 0;
-    int scrollLock = 0;
-    int canFocus = FALSE;
-};
 KeyBoard_State keyboardState;
 
 
@@ -327,6 +308,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
                 Edit_SetText(hInput0, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->noAttachmentRecoil).c_str());
                 Edit_SetText(hInput1, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->fullAttachmentRecoil).c_str());
+
             }
             }
         default:
@@ -507,7 +489,7 @@ LRESULT CALLBACK LowLevelMouseProc(
 
 
     char lmessage[1024];
-    sprintf_s(lmessage, 1024, "weaponName : %s \nscope : %d", gameStart.CurrentWeapon->weaponName.c_str(), gameStart.CurrentWeapon->scope);
+    sprintf_s(lmessage, 1024, "name : %s  ,scope : %d \n LB : %d  ,PT : %d", gameStart.CurrentWeapon->weaponName.c_str(), gameStart.CurrentWeapon->scope,mouseState.isLeftButtonPress, gameStart.currentPosition);
     SetWindowTextA(hStaticText, lmessage);
 
     return 0;
@@ -584,10 +566,12 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == 0x31) {
             keyboardState.isNum1Press = 0;
             keyboardState.canFocus = FALSE;
+            gameStart.SwitchWeapon(1);
         }
         else if (kbhook->vkCode == 0x32) {
             keyboardState.isNum2Press = 0;
             keyboardState.canFocus = TRUE;
+            gameStart.SwitchWeapon(2);
         }
         else if (kbhook->vkCode == 0x33) {
             keyboardState.isNum3Press = 0;
@@ -611,34 +595,34 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         }
 
         if (kbhook->vkCode == VK_NUMPAD1) {
-            gameStart.SwitchWeapon("UMP45");
+            gameStart.PickWeapon("UMP45");
         }
         else if (kbhook->vkCode == VK_NUMPAD2) {
-            gameStart.SwitchWeapon("Tommy Gun");
+            gameStart.PickWeapon("Tommy Gun");
         }
         else if (kbhook->vkCode == VK_NUMPAD3) {
-            gameStart.SwitchWeapon("Vector");
+            gameStart.PickWeapon("Vector");
         }
         else if (kbhook->vkCode == VK_NUMPAD4) {
-            gameStart.SwitchWeapon("SCAR-L");
+            gameStart.PickWeapon("SCAR-L");
         }
         else if (kbhook->vkCode == VK_NUMPAD5) {
-            gameStart.SwitchWeapon("M416");
+            gameStart.PickWeapon("M416");
         }
         else if (kbhook->vkCode == VK_NUMPAD6) {
-            gameStart.SwitchWeapon("M16A4");
+            gameStart.PickWeapon("SKS");
         }
         else if (kbhook->vkCode == VK_NUMPAD7) {
-            gameStart.SwitchWeapon("ACE32");
+            gameStart.PickWeapon("ACE32");
         }
         else if (kbhook->vkCode == VK_NUMPAD8) {
-            gameStart.SwitchWeapon("Beryl M762");
+            gameStart.PickWeapon("Beryl M762");
         }
         else if (kbhook->vkCode == VK_NUMPAD9) {
-            gameStart.SwitchWeapon("Mk47 Mutant");
+            gameStart.PickWeapon("Mk47 Mutant");
         }
         else if (kbhook->vkCode == VK_NUMPAD0) {
-            gameStart.SwitchWeapon("VSS");
+            gameStart.PickWeapon("VSS");
         }
 
     }
@@ -689,7 +673,7 @@ unsigned __stdcall ThreadProc(void* o) {
     //Mouse_State* state = (Mouse_State*)mouseState;
     while (m_IsShouldThreadFinish == FALSE) {
         if (startFalg == TRUE) {
-            gameStart.Move(keyboardState.capsLock, keyboardState.scrollLock, mouseState.isRightButtonPress && mouseState.isLeftButtonPress, keyboardState.isLeftContrlPress && mouseState.isLeftButtonPress);
+            gameStart.Move();
         }
     }
     _endthreadex(0);

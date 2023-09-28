@@ -1,6 +1,7 @@
 #pragma once
 #include "framework.h"
 #include "CWeaponLib.h"
+
 class CFunction1
 {
 public:
