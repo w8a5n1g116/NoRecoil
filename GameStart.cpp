@@ -6,16 +6,22 @@
 
 extern Mouse_State mouseState;
 extern KeyBoard_State keyboardState;
+extern HWND hWnd;
 
 void GameStart::Move()
 {
 	if (mouseState.isRightButtonPress && mouseState.isLeftButtonPress) {
+		
 		if (CurrentWeapon->function == CWeapon::FUNCTION2) {
-			CFunction2::Move(CurrentWeapon, keyboardState.capsLock, keyboardState.scrollLock);
+			//CreateTimerQueueTimer(&m_timerHandle, NULL, this->TimerProc, (void*)this, 1000, 0, WT_EXECUTEINTIMERTHREAD);
+			//if (go) {
+				CFunction2::Move(CurrentWeapon, keyboardState.isLeftShiftPress, keyboardState.isCapsLockPress, keyboardState.scrollLock);
+			//}
+			
 		}
 		else if (CurrentWeapon->function == CWeapon::FUNCTION1) {
 			if (enableTrigger) {
-				CFunction2::Move(CurrentWeapon, keyboardState.capsLock, keyboardState.scrollLock);
+				CFunction2::Move2(CurrentWeapon);
 				enableTrigger = false;
 			}
 		}
@@ -26,24 +32,84 @@ void GameStart::Move()
 
 	if (mouseState.isLeftButtonPress == 0) {
 		enableTrigger = true;
+		//go = true;
 	}
 }
 
 void GameStart::PickWeapon(std::string weaponName)
 {
+	int index = lib.FindWeaponPosition(weaponName);
+	currentIndexPosition = index;
 	weaponList[currentPosition -1] = lib.FindWeapon(weaponName);
 	CurrentWeapon = weaponList[currentPosition - 1];
+	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
+}
+
+void GameStart::PickPreviousWeapon()
+{
+	if (currentIndexPosition > 0) {
+		currentIndexPosition--;
+	}else if (currentIndexPosition == 0) {
+		currentIndexPosition = maxIndex - 1;
+	}
+	PickWeapon(lib.weaponNameList[currentIndexPosition]);	
+}
+
+void GameStart::PickNextWeapon()
+{
+	if (currentIndexPosition < maxIndex - 1) {
+		currentIndexPosition++;
+	}else if (currentIndexPosition == maxIndex - 1) {
+		currentIndexPosition = 0;
+	}
+	PickWeapon(lib.weaponNameList[currentIndexPosition]);
+}
+
+void GameStart::IncrementRecoil()
+{
+	CurrentWeapon->SetParameter(CurrentWeapon->recoilStand + 1);
+}
+
+void GameStart::DecrementRecoil()
+{
+	CurrentWeapon->SetParameter(CurrentWeapon->recoilStand - 1);
 }
 
 void GameStart::SwitchWeapon(int position)
 {
+	if (currentPosition == 1) {
+		currentIndexPosition1 = currentIndexPosition;
+	}
+	else if (currentPosition == 2) {
+		currentIndexPosition2 = currentIndexPosition;
+	}
+
+	if (position == 1) {
+		currentIndexPosition = currentIndexPosition1;
+	}
+	else if (position == 2) {
+		currentIndexPosition = currentIndexPosition2;
+	}
 	currentPosition = position;
 	CurrentWeapon = weaponList[currentPosition - 1];
+	
+	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
 }
 
 void GameStart::LoadSetting()
 {
-	for (auto& t : lib.weaponMap) {
-		t.second.LoadSetting();
+	for (auto& t : lib.weaponList) {
+		t.LoadSetting();
 	}
+}
+
+void GameStart::SaveSetting()
+{
+	for (auto& t : lib.weaponList) {
+		t.ChangeSetting();
+	}
+}
+
+void CALLBACK GameStart::TimerProc(void* gameStart, BOOLEAN TimerOrWaitFired) {
+	((GameStart*)gameStart)->go = false;
 }

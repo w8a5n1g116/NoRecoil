@@ -34,10 +34,16 @@ HHOOK keyboardHook;
 HHOOK mouseHook;
 //句柄
 HWND hStaticText;
+HWND hStaticText2;
+HWND hStaticText3;
+HWND hMessageText;
+HWND hMessageText2;
+HWND hMessageText3;
 HWND hButton;
 HWND hButton2;
 HWND hInput0;
 HWND hInput1;
+HWND hInput2;
 HWND hList1;
 HANDLE m_hThread;
 UINT m_ThreadId;
@@ -46,16 +52,13 @@ LONG volatile startFalg{ TRUE };
 unsigned __stdcall ThreadProc(void* mouseState);
 
 
-#define IDB_ONE     3301
-#define IDB_TWO     3302
-#define IDB_LIST1     3303
+
 
 //鼠标状态
 Mouse_State mouseState;
 
 //键盘状态
 KeyBoard_State keyboardState;
-
 
 //
 void Init();
@@ -72,6 +75,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(
 
 HANDLE StartProcessThread();
 void DrawMessageWindows(HWND hkeyboardWnd, std::string msg);
+void SetMessage();
 
 HANDLE m_timerHandle = NULL;
 HANDLE m_timerHandle2 = NULL;
@@ -195,8 +199,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, 0, 600, 300, nullptr, nullptr, hInstance, nullptr);
 
-    hMessageWnd = CreateWindowW(L"Message", L"", WS_OVERLAPPEDWINDOW,//WS_POPUP,WS_BORDER | WS_SIZEBOX
-        10, 10, 200, 200, nullptr, nullptr, hInstance, nullptr);
+    int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
+
+    hMessageWnd = CreateWindowEx(WS_EX_LAYERED,L"Message", L"", WS_BORDER,//WS_POPUP,WS_BORDER | WS_SIZEBOX
+        screenWidth - 300, 10, 200, 100, nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
     {
@@ -208,13 +214,14 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 
     //窗口置顶
-    //SetWindowPos(hMessageWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-    //ShowWindow(hMessageWnd, SW_SHOWNA);
-    //DrawMessageWindows(hMessageWnd, "");
+    SetWindowPos(hMessageWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+    SetLayeredWindowAttributes(hMessageWnd, 0, 60, LWA_ALPHA);
+    ShowWindow(hMessageWnd, SW_SHOW);
+    //UpdateWindow(hMessageWnd);
     
 
     //SetWindowLong(hMessageWnd, GWL_EXSTYLE, GetWindowLong(hMessageWnd, GWL_EXSTYLE) | WS_EX_LAYERED | WS_EX_TRANSPARENT);
-    //UpdateWindow(hMessageWnd);
+    UpdateWindow(hMessageWnd);
 
     //业务开始
 
@@ -239,17 +246,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE:
     {
-        hStaticText = CreateWindow(L"Static", L"", StaticTextStyle, 220, 10, 200, 50, hWnd, NULL, hInst, NULL);
+        hStaticText = CreateWindow(L"Static", L"", StaticTextStyle, 220, 10, 200, 30, hWnd, NULL, hInst, NULL);
+        hStaticText2 = CreateWindow(L"Static", L"", StaticTextStyle, 220, 40, 200, 15, hWnd, NULL, hInst, NULL);
+        hStaticText3 = CreateWindow(L"Static", L"", StaticTextStyle, 220, 55, 200, 15, hWnd, NULL, hInst, NULL);
         hButton = CreateWindow(L"Button", L"X", StaticTextStyle, 10, 10, 100, 40, hWnd, (HMENU)IDB_ONE, hInst, NULL);
         hList1 = CreateWindow(L"LISTBOX", L"T", StaticTextStyle | WS_VSCROLL, 10, 60, 100, 100, hWnd, (HMENU)IDB_LIST1, hInst, NULL);
         hInput0 = CreateWindowA("EDIT", "1", StaticTextStyle, 150, 80, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
         hInput1 = CreateWindowA("EDIT", "1", StaticTextStyle, 150, 115, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        hInput2 = CreateWindowA("EDIT", "1", StaticTextStyle, 150, 150, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
 
         hButton2 = CreateWindow(L"Button", L"Ok", StaticTextStyle, 200, 150, 30, 30, hWnd, (HMENU)IDB_TWO, hInst, NULL);
 
-        for (auto& t : gameStart.lib.weaponMap) {
-            SendMessageA(hList1, LB_ADDSTRING, 0, (LPARAM)t.first.c_str());
+        for (auto& t : gameStart.lib.weaponNameList) {
+            SendMessageA(hList1, LB_ADDSTRING, 0, (LPARAM)t.c_str());
         }
+        
     }
     case WM_COMMAND:
     {
@@ -289,9 +300,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
                 wchar_t buff[1024];
                 Edit_GetText(hInput0, buff, 1024);
-                gameStart.lib.FindWeapon(weaponName)->noAttachmentRecoil = _tstoi(buff);
-                Edit_GetText(hInput1, buff, 1024);
-                gameStart.lib.FindWeapon(weaponName)->fullAttachmentRecoil = _tstoi(buff);
+                gameStart.lib.FindWeapon(weaponName)->SetParameter(_tstoi(buff));
+                Edit_SetText(hInput1, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->interval).c_str());
+                Edit_SetText(hInput2, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->moveY).c_str());
+                /*Edit_GetText(hInput1, buff, 1024);
+                gameStart.lib.FindWeapon(weaponName)->fullAttachmentRecoil = _tstoi(buff);*/
+
 
                 gameStart.lib.FindWeapon(weaponName)->ChangeSetting();
             }
@@ -306,8 +320,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 SendMessageA(hList1, LB_GETTEXT, nSel, (LPARAM)tem);
                 std::string weaponName = std::string(tem);
 
-                Edit_SetText(hInput0, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->noAttachmentRecoil).c_str());
-                Edit_SetText(hInput1, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->fullAttachmentRecoil).c_str());
+                Edit_SetText(hInput0, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->recoil).c_str());
+                Edit_SetText(hInput1, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->interval).c_str());
+                Edit_SetText(hInput2, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->moveY).c_str());
 
             }
             }
@@ -326,7 +341,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     break;
     case WM_DESTROY:
         m_IsShouldThreadFinish = TRUE;
+        gameStart.SaveSetting();
         PostQuitMessage(0);
+        break;
+    case WM_CUSTOM_MESSAGE_PICK_WEAPON:
+        ListBox_SetCurSel(hList1, wParam);
+        
+        SetMessage();
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
@@ -344,13 +365,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 //  WM_DESTROY  - 发送退出消息并返回
 //
 //
-LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WndProc2(HWND hMWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
     case WM_CREATE:
     {
-        
+        hMessageText = CreateWindow(L"Static", L"", StaticTextStyle, 0, 0, 185, 50, hMWnd, NULL, hInst, NULL);
+        hMessageText2 = CreateWindow(L"Static", L"", StaticTextStyle, 0, 30, 95, 45, hMWnd, NULL, hInst, NULL);
+        hMessageText3 = CreateWindow(L"Static", L"", StaticTextStyle, 95, 30, 90, 45, hMWnd, NULL, hInst, NULL);
+
+        LOGFONT font;
+        font.lfHeight = 32;
+        font.lfWidth = 0;
+        font.lfEscapement = 0;
+        font.lfOrientation = 0;
+        font.lfWeight = FW_BOLD;
+        font.lfItalic = true;
+        font.lfUnderline = false;
+        font.lfStrikeOut = false;
+        font.lfEscapement = 0;
+        font.lfOrientation = 0;
+        font.lfOutPrecision = OUT_DEFAULT_PRECIS;
+        font.lfClipPrecision = CLIP_STROKE_PRECIS | CLIP_MASK | CLIP_TT_ALWAYS | CLIP_LH_ANGLES;
+        font.lfQuality = ANTIALIASED_QUALITY;
+        font.lfPitchAndFamily = VARIABLE_PITCH | FF_DONTCARE;
+
+        HFONT hFont = ::CreateFontIndirect(&font);
+        SendMessage(hMessageText, WM_SETFONT, (WPARAM)hFont, TRUE);
+
     }
     case WM_COMMAND:
     {
@@ -360,40 +403,26 @@ LRESULT CALLBACK WndProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         switch (wmId)
         {           
         default:
-            return DefWindowProc(hWnd, message, wParam, lParam);
+            return DefWindowProc(hMWnd, message, wParam, lParam);
         }
     }
     break;
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hWnd, &ps);
+        HDC hdc = BeginPaint(hMWnd, &ps);
         // TODO: 在此处添加使用 hdc 的任何绘图代码...
-        //DrawMessageWindows(hWnd, "");
-        FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
-        //DrawText(hdc, L"123456", 7, &ps.rcPaint, 0);
-        RECT wndRect;
-        ::GetWindowRect(hWnd, &wndRect);
-        SIZE wndSize = { wndRect.right - wndRect.left,wndRect.bottom - wndRect.top };
-        //HDC memDC = ::CreateCompatibleDC(hdc);
-        //HDC screenDC = GetDC(NULL);
-        //POINT ptSrc = { 0,0 };
-
-        //BLENDFUNCTION blendFunction;
-        //blendFunction.AlphaFormat = AC_SRC_ALPHA;
-        //blendFunction.BlendFlags = 0;
-        //blendFunction.BlendOp = AC_SRC_OVER;
-        //blendFunction.SourceConstantAlpha = 255;
-        //UpdateLayeredWindow(hWnd, screenDC, /*&ptSrc*/NULL, &wndSize, memDC, &ptSrc, 0, &blendFunction, ULW_ALPHA);
-        //::DeleteDC(memDC);
-        EndPaint(hWnd, &ps);
+        EndPaint(hMWnd, &ps);
     }
     break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+    case WM_CUSTOM_MESSAGE:
+        
+        break;
     default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
+        return DefWindowProc(hMWnd, message, wParam, lParam);
     }
     return 0;
 }
@@ -428,6 +457,14 @@ void Init()
     keyboardState.scrollLock = key & 0x0001;
 
     gameStart.LoadSetting();
+
+    ListBox_SetCurSel(hList1, 0);
+    CWeapon* weapon = gameStart.lib.FindWeapon("Default");
+    Edit_SetText(hInput0, std::to_wstring(weapon->recoil).c_str());
+    Edit_SetText(hInput1, std::to_wstring(weapon->interval).c_str());
+    Edit_SetText(hInput2, std::to_wstring(weapon->moveY).c_str());
+
+    SetMessage();
 
 
     //设置鼠标钩子
@@ -483,14 +520,38 @@ LRESULT CALLBACK LowLevelMouseProc(
         }
     }
 
+    if (wParam == WM_MOUSEWHEEL) {
+        if (keyboardState.isLeftAltPress) {
+            short delta = (short)HIWORD(msllhook->mouseData);
+            if (delta > 0) {    //滚轮上
+                gameStart.PickPreviousWeapon();
+                SetMessage();
+            }
+            else if (delta < 0) {   //滚轮下
+                gameStart.PickNextWeapon();
+                SetMessage();
+            }
+        }
+
+        if (keyboardState.isLeftContrlPress) {
+            short delta = (short)HIWORD(msllhook->mouseData);
+            if (delta > 0) {    //滚轮上
+                gameStart.DecrementRecoil();
+                SetMessage();
+            }
+            else if (delta < 0) {   //滚轮下
+                gameStart.IncrementRecoil();
+                SetMessage();
+            }
+        }
+    }
+
 
     short key = GetKeyState(VK_SCROLL);
     keyboardState.scrollLock = key & 0x0001;
 
 
-    char lmessage[1024];
-    sprintf_s(lmessage, 1024, "name : %s  ,scope : %d \n LB : %d  ,PT : %d", gameStart.CurrentWeapon->weaponName.c_str(), gameStart.CurrentWeapon->scope,mouseState.isLeftButtonPress, gameStart.currentPosition);
-    SetWindowTextA(hStaticText, lmessage);
+    
 
     return 0;
 }
@@ -510,7 +571,15 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             keyboardState.isLeftContrlPress = 1;
         }
         else if (kbhook->vkCode == VK_LSHIFT) {
-            keyboardState.isLeftShiftPress = 1;
+            if (keyboardState.isLeftShiftPress == 0) {
+                keyboardState.isLeftShiftPress = 1;
+                if (keyboardState.isCapsLockPress == 0) {
+                    gameStart.CurrentWeapon->Crouch(keyboardState.isLeftShiftPress);
+                    SetMessage();
+                }
+                
+            }
+            
         }
         else if (kbhook->vkCode == VK_RSHIFT) {
             keyboardState.isRightShiftPress = 1;
@@ -527,29 +596,23 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == 0x34) { //2
             keyboardState.isNum4Press = 1;
         }
+        else if (kbhook->vkCode == VK_CAPITAL) {
+            if (keyboardState.isCapsLockPress == 0) {
+                keyboardState.isCapsLockPress = 1;
+                if (keyboardState.isLeftShiftPress == 0) {
+                    gameStart.CurrentWeapon->Prone(keyboardState.isCapsLockPress);
+                    SetMessage();
+                }             
+            }   
+        }
+
         //else if (kbhook->vkCode == 0x52) { //R
         //    function.Reload();
         //}
         
     }
 
-    if (wParam == WM_SYSKEYDOWN) {
-        if (kbhook->vkCode == VK_LMENU) {
-            keyboardState.isLeftAltPress = 1;
-        }
-        else if (kbhook->vkCode == 0x31) {
-            keyboardState.isNum1Press = 1;
-        }
-        else if (kbhook->vkCode == 0x32) {
-            keyboardState.isNum2Press = 1;
-        }
-        else if (kbhook->vkCode == 0x33) {
-            keyboardState.isNum3Press = 1;
-        }
-        else if (kbhook->vkCode == 0x34) {
-            keyboardState.isNum4Press = 1;
-        }
-    }
+    
 
     if (wParam == WM_KEYUP) {
 
@@ -559,6 +622,8 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         }
         else if (kbhook->vkCode == VK_LSHIFT) {
             keyboardState.isLeftShiftPress = 0;
+            gameStart.CurrentWeapon->Crouch(keyboardState.isLeftShiftPress);
+            SetMessage();
         }
         else if (kbhook->vkCode == VK_LMENU) {
             keyboardState.isLeftAltPress = 0;
@@ -567,11 +632,13 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             keyboardState.isNum1Press = 0;
             keyboardState.canFocus = FALSE;
             gameStart.SwitchWeapon(1);
+            SetMessage();
         }
         else if (kbhook->vkCode == 0x32) {
             keyboardState.isNum2Press = 0;
             keyboardState.canFocus = TRUE;
             gameStart.SwitchWeapon(2);
+            SetMessage();
         }
         else if (kbhook->vkCode == 0x33) {
             keyboardState.isNum3Press = 0;
@@ -588,13 +655,16 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == VK_CAPITAL) {
             short key = GetKeyState(VK_CAPITAL);
             keyboardState.capsLock = key & 0x0001;
+            keyboardState.isCapsLockPress = 0;
+            gameStart.CurrentWeapon->Prone(keyboardState.isCapsLockPress);
+            SetMessage();
         }
         else if (kbhook->vkCode == VK_SCROLL) {
             short key = GetKeyState(VK_SCROLL);
             keyboardState.scrollLock = key & 0x0001;
         }
 
-        if (kbhook->vkCode == VK_NUMPAD1) {
+        /*if (kbhook->vkCode == VK_NUMPAD1) {
             gameStart.PickWeapon("UMP45");
         }
         else if (kbhook->vkCode == VK_NUMPAD2) {
@@ -621,10 +691,36 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == VK_NUMPAD9) {
             gameStart.PickWeapon("Mk47 Mutant");
         }
-        else if (kbhook->vkCode == VK_NUMPAD0) {
-            gameStart.PickWeapon("VSS");
+        else*/ if (kbhook->vkCode == VK_NUMPAD0) {
+            //gameStart.PickWeapon("VSS");
+            gameStart.CurrentWeapon->ResetWeapon();
+            gameStart.PickWeapon("Default");            
         }
 
+    }
+
+    if (wParam == WM_SYSKEYDOWN) {
+        if (kbhook->vkCode == VK_LMENU) {
+            keyboardState.isLeftAltPress = 1;
+        }
+        else if (kbhook->vkCode == 0x31) {
+            keyboardState.isNum1Press = 1;
+        }
+        else if (kbhook->vkCode == 0x32) {
+            keyboardState.isNum2Press = 1;
+        }
+        else if (kbhook->vkCode == 0x33) {
+            keyboardState.isNum3Press = 1;
+        }
+        else if (kbhook->vkCode == 0x34) {
+            keyboardState.isNum4Press = 1;
+        }
+        else if (kbhook->vkCode == VK_XBUTTON1) {
+            //keyboardState.isNum4Press = 1;
+        }
+        else if (kbhook->vkCode == VK_XBUTTON2) {
+            //keyboardState.isNum4Press = 1;
+        }
     }
 
     if (wParam == WM_SYSKEYUP) {
@@ -647,16 +743,20 @@ LRESULT CALLBACK LowLevelKeyboardProc(
 
     //////////////////////////
     if (keyboardState.isLeftAltPress && keyboardState.isNum1Press) {
-        gameStart.CurrentWeapon->AssembleScope(0);
+        gameStart.CurrentWeapon->AssembleScope(1);
+        SetMessage();
     }
     if (keyboardState.isLeftAltPress && keyboardState.isNum2Press) {
         gameStart.CurrentWeapon->AssembleScope(2);
+        SetMessage();
     }
     if (keyboardState.isLeftAltPress && keyboardState.isNum3Press) {
         gameStart.CurrentWeapon->AssembleScope(3);
+        SetMessage();
     }
     if (keyboardState.isLeftAltPress && keyboardState.isNum4Press) {
         gameStart.CurrentWeapon->AssembleScope(4);
+        SetMessage();
     }
 
     return 0;
@@ -746,4 +846,17 @@ void DrawMessageWindows(HWND hkeyboardWnd,std::string msg) {
     ::DeleteDC(memDC);
     ::DeleteObject(memBitmap);
 
+}
+
+void SetMessage() {
+    char lmessage[1024];
+    sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->weaponName.c_str());
+    SetWindowTextA(hStaticText, lmessage);
+    SetWindowTextA(hMessageText, lmessage);
+    sprintf_s(lmessage, 1024, "%d",  gameStart.CurrentWeapon->scope);
+    SetWindowTextA(hStaticText2, lmessage);
+    SetWindowTextA(hMessageText2, lmessage);
+    sprintf_s(lmessage, 1024, "%d:%d", gameStart.CurrentWeapon->recoil, gameStart.CurrentWeapon->interval);
+    SetWindowTextA(hStaticText3, lmessage);
+    SetWindowTextA(hMessageText3, lmessage);
 }

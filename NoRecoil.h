@@ -11,6 +11,7 @@ struct KeyBoard_State {
     int isNum3Press = 0;
     int isNum4Press = 0;
     int capsLock = 0;
+    int isCapsLockPress = 0;
     int scrollLock = 0;
     int canFocus = FALSE;
 };
@@ -22,3 +23,9 @@ struct Mouse_State {
     int isStartContinuousTap = FALSE;
     int count = 0;
 };
+
+#define IDB_ONE     3301
+#define IDB_TWO     3302
+#define IDB_LIST1     3303
+#define WM_CUSTOM_MESSAGE_PICK_WEAPON       (WM_APP + 0x0001)
+#define WM_CUSTOM_MESSAGE                   (WM_APP + 0x0002)

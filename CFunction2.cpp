@@ -3,19 +3,20 @@
 #include "CWeapon.h"
 
 
-void CFunction2::Move(CWeapon* CurrentWeapon, int capsLock,int scrollLock)
+void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftShiftPress,int isCapsLockPress,int scrollLock)
 {
 
-    CurrentWeapon->currentRecoil = capsLock ?  CurrentWeapon->fullAttachmentRecoil : CurrentWeapon->noAttachmentRecoil;
+    //CurrentWeapon->currentRecoil = capsLock ?  CurrentWeapon->fullAttachmentRecoil : CurrentWeapon->noAttachmentRecoil;
+    CurrentWeapon->currentRecoil =  CurrentWeapon->moveY;
     CurrentWeapon->currentRecoil_2 = CurrentWeapon->currentRecoil;
 
     int scopeRate = 0;
     switch (CurrentWeapon->scope)
     {
-    case 0: 
+    case 1: 
         scopeRate = CurrentWeapon->scope1X_Scale;
         break;
-    case 1:
+    case 10:
         scopeRate = CurrentWeapon->scope1_5X_Scale;
         break;
     case 2:
@@ -31,14 +32,32 @@ void CFunction2::Move(CWeapon* CurrentWeapon, int capsLock,int scrollLock)
         break;
     }
 
-    int y = scrollLock ? CurrentWeapon->currentRecoil_2 : CurrentWeapon->currentRecoil  * scopeRate;
     
+
+    int y = scrollLock ? CurrentWeapon->currentRecoil_2 : CurrentWeapon->currentRecoil  * scopeRate;
+    //y += 10;
     //int count = 10;
+    //int base = y / count;
+    //int remainder = y % count;
     //for (int i = 0; i < count; i++)
     //{
         mouse_event(MOUSEEVENTF_MOVE, 0, y, 0, 0);
         Delay(CurrentWeapon->interval);
+        //CurrentWeapon->moveDistance += y;
     //}
+}
+
+void CFunction2::Move2(CWeapon* CurrentWeapon)
+{
+    int y =  CurrentWeapon->recoil;
+    //y += 10;
+    //int count = 10;
+    //int base = y / count;
+    //int remainder = y % count;
+    //for (int i = 0; i < count; i++)
+    //{
+    mouse_event(MOUSEEVENTF_MOVE, 0, y, 0, 0);
+    Delay(CurrentWeapon->interval);
 }
 
 void CFunction2::FocusMove(CWeapon* CurrentWeapon)

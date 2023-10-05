@@ -8,8 +8,20 @@ class CWeapon
 {
 public:
 	static enum WEAPON_FUNCTION{FUNCTION1,FUNCTION2};
+	int data[35] = {
+		0,0,0,0,0,
+		0,0,0,0,0,
+		87,80,72,68,64,
+		61,57,54,50,48,
+		46,44,42,41,39,
+		37,36,35,33,32,
+		31,30,29,28,27
+	};
 	string weaponName = "";
-	int interval = 20;
+	int interval = 1;
+	int intervalStand = 0;
+	int intervalCrouch = 0;
+	int intervalProne = 0;
 	vector<int> offset = {};
 	CMuzzle* muzzle = nullptr;
 	CGrip* grip = nullptr;
@@ -19,16 +31,26 @@ public:
 	int currentShot = 0;
 	int shotCount = 0;
 
-	int scope1X_Scale = 1;
-	int scope1_5X_Scale = 1.5;
-	int scope2X_Scale = 2;
-	int scope3X_Scale = 3;
-	int scope4X_Scale = 4;
-	int noAttachmentRecoil = 0;
-	int fullAttachmentRecoil = 0;
+	float scope1X_Scale = 1.0;
+	float scope1_5X_Scale = 1.5;
+	float scope2X_Scale = 2.0;
+	float scope3X_Scale = 3.0;
+	float scope4X_Scale = 4.0;
+	int moveY = 0;
+	int moveYStand = 0;
+	int moveYCrouch = 0;
+	int moveYProne = 0;
+	int recoil = 0;
+	int recoilStand = 0;
+	int recoilCrouch = 0;
+	int recoilProne = 0;
 	int currentRecoil = 0;
 	int currentRecoil_2 = 0;
 	int aimRecoil = 4;
+	float crouchEffect = 0.8;
+	float proneEffect = 0.6;
+
+	int moveDistance = 0;
 	WEAPON_FUNCTION function = FUNCTION2;
 
 	std::string iniFilePath = GetUserProfilePath() + "\\config.ini";
@@ -39,7 +61,7 @@ public:
 
 	CWeapon(string weaponName, int interval, vector<int> offset, int shotCount);
 
-	CWeapon(string weaponName, WEAPON_FUNCTION function, int noAttachmentRecoil, int fullAttachmentRecoil) :weaponName(weaponName), function(function), noAttachmentRecoil(noAttachmentRecoil), fullAttachmentRecoil(fullAttachmentRecoil) {};
+	CWeapon(string weaponName, WEAPON_FUNCTION function) :weaponName(weaponName), function(function) {};
 
 	int ComputeXOffset(int orginOffset);
 
@@ -55,6 +77,13 @@ public:
 
 	void LoadSetting();
 	void ChangeSetting();
+	void Crouch(int isCrouch);
+	void Prone(int isProne);
+	std::vector<int> findMatch(int v);
+	void SetParameter(int r);
+	void ResetWeapon();
+
+	int CalculateRecoil(int sens);
 
 	std::string GetUserProfilePath() {
 		std::string path = "";
