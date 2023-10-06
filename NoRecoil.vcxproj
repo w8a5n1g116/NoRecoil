@@ -139,7 +139,7 @@
     <ClInclude Include="CWeaponLib.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GameStart.h" />
-    <ClInclude Include="MatchPicture.hpp" />
+    <ClInclude Include="MatchWeapon.hpp" />
     <ClInclude Include="NoRecoil.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ScreenShot.hpp" />

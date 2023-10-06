@@ -1,9 +1,13 @@
+#pragma once
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
-#include <iostream>
+#include <tesseract/baseapi.h>
+#include <leptonica/allheaders.h>
+#include "framework.h"
+#include "ScreenShot.hpp"
 using namespace cv;
-class MatchPicture {
+class MatchWeapon {
 	
 	Mat Mk47_Mutant;
 	Mat AKM;
@@ -55,7 +59,16 @@ class MatchPicture {
 	Mat Skorpion;
 	Mat MG3_660_RPM;
 	Mat MG3_990_RPM;
+
+	tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
+	Screenshot screenShot;
 public:
+
+	MatchWeapon() {
+		api->Init(NULL, "eng");
+	}
+
+
 	int Match(Mat img, Mat templ) {
 		Mat result;
 		Mat img_display;
@@ -72,6 +85,43 @@ public:
 		//matchLoc = maxLoc;
 
 		return maxVal;
+	}
+
+	std::string MatchFirstWeapon() {
+		Mat img = screenShot.getScreenshot(1815, 120,285,50);
+		Mat grey;
+		cvtColor(img, grey, COLOR_RGBA2GRAY);
+		return OCR(&grey);
+	}
+
+	std::string MatchSecondWeapon() {
+		Mat img = screenShot.getScreenshot(1815, 395, 285, 50);
+		Mat grey;
+		cvtColor(img, grey, COLOR_RGBA2GRAY);
+		return OCR(&grey);
+	}
+
+	/*PIX* cvtMat2PIX(Mat imgGray)
+	{
+		int cols = imgGray.cols;
+		int rows = imgGray.rows;
+
+		PIX* pixS = pixCreate(cols, rows, 8);
+
+		for (int i = 0; i < rows; i++)
+			for (int j = 0; j < cols; j++)
+				pixSetPixel(pixS, j, i, (l_uint32)imgGray.at<uchar>(i, j));
+		return pixS;
+	}*/
+
+	std::string OCR(Mat* im) {
+		std::string ret;
+
+		api->SetImage(im->data, im->cols, im->rows, 1, im->step);
+		ret = api->GetUTF8Text();
+		//pixDestroy(&image);
+
+		return ret;
 	}
 private:
 };

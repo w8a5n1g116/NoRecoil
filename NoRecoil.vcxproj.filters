@@ -57,7 +57,7 @@
     <ClInclude Include="ScreenShot.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MatchPicture.hpp">
+    <ClInclude Include="MatchWeapon.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="GameStart.h">

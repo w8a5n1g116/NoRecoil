@@ -283,8 +283,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     startFalg = TRUE;
                 else
                     startFalg = FALSE;
-
-
             }
             }
             break;
@@ -501,10 +499,20 @@ LRESULT CALLBACK LowLevelMouseProc(
         break;
     }
 
-    if (keyboardState.isLeftAltPress && wParam == WM_RBUTTONUP && !mouseState.isLeftButtonPress) {
+    if (keyboardState.isLeftContrlPress && wParam == WM_MBUTTONDOWN && !mouseState.isLeftButtonPress) {
         KeyboardInput(VK_SCROLL, TRUE);
         KeyboardInput(VK_SCROLL, FALSE);
     }
+
+    if (keyboardState.isLeftAltPress && mouseState.isRightButtonPress) {
+        gameStart.CurrentWeapon->HoldBreath(true);
+        SetMessage();
+    }
+    else {
+        gameStart.CurrentWeapon->HoldBreath(false);
+        SetMessage();
+    }
+    
 
     if (wParam == WM_RBUTTONDOWN) {
         if (keyboardState.canFocus) {
@@ -544,6 +552,8 @@ LRESULT CALLBACK LowLevelMouseProc(
                 SetMessage();
             }
         }
+
+        
     }
 
 
@@ -663,6 +673,11 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             short key = GetKeyState(VK_SCROLL);
             keyboardState.scrollLock = key & 0x0001;
         }
+        else if (kbhook->vkCode == 0xC0) {  // `~键
+            gameStart.MatchWeapon();
+        }
+
+        
 
         /*if (kbhook->vkCode == VK_NUMPAD1) {
             gameStart.PickWeapon("UMP45");

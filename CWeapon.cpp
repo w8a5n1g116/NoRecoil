@@ -196,6 +196,25 @@ void CWeapon::ResetWeapon()
 	scope = 0;
 }
 
+void CWeapon::HoldBreath(bool b)
+{
+	if (b) {
+		if (!isHoldBreath) {
+			isHoldBreath = true;
+			scopeTemp = scope;
+			scope = 5;
+		}	
+	}
+	else {
+		if (isHoldBreath) {
+			scope = scopeTemp;
+			isHoldBreath = false;
+		}
+		
+	}
+	
+}
+
 int CWeapon::CalculateRecoil(int sens)
 {
 	float t = exp(-0.05 * sens);

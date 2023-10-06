@@ -18,6 +18,7 @@ public:
 		31,30,29,28,27
 	};
 	string weaponName = "";
+	string weaponName2 = "";
 	int interval = 1;
 	int intervalStand = 0;
 	int intervalCrouch = 0;
@@ -27,25 +28,27 @@ public:
 	CGrip* grip = nullptr;
 	CMagazine* magazine = nullptr;
 	CStock* stock = nullptr;
-	int scope =0;
+	int scope =1;
+	int scopeTemp = 1;
+	bool isHoldBreath = false;
 	int currentShot = 0;
 	int shotCount = 0;
 
 	float scope1X_Scale = 1.0;
-	float scope1_5X_Scale = 1.5;
+	float scope1_5X_Scale = 1.43;
 	float scope2X_Scale = 2.0;
 	float scope3X_Scale = 3.0;
 	float scope4X_Scale = 4.0;
-	int moveY = 0;
-	int moveYStand = 0;
-	int moveYCrouch = 0;
-	int moveYProne = 0;
+	float moveY = 0;
+	float moveYStand = 0;
+	float moveYCrouch = 0;
+	float moveYProne = 0;
 	int recoil = 0;
 	int recoilStand = 0;
 	int recoilCrouch = 0;
 	int recoilProne = 0;
-	int currentRecoil = 0;
-	int currentRecoil_2 = 0;
+	float currentRecoil = 0;
+	float currentRecoil_2 = 0;
 	int aimRecoil = 4;
 	float crouchEffect = 0.8;
 	float proneEffect = 0.6;
@@ -61,7 +64,7 @@ public:
 
 	CWeapon(string weaponName, int interval, vector<int> offset, int shotCount);
 
-	CWeapon(string weaponName, WEAPON_FUNCTION function) :weaponName(weaponName), function(function) {};
+	CWeapon(string weaponName,string weaponName2, WEAPON_FUNCTION function) :weaponName(weaponName),weaponName2(weaponName2), function(function) {};
 
 	int ComputeXOffset(int orginOffset);
 
@@ -82,6 +85,7 @@ public:
 	std::vector<int> findMatch(int v);
 	void SetParameter(int r);
 	void ResetWeapon();
+	void HoldBreath(bool b);
 
 	int CalculateRecoil(int sens);
 

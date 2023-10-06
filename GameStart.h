@@ -1,6 +1,7 @@
 #pragma once
 #include "framework.h"
 #include "CWeaponLib.h"
+#include "MatchWeapon.hpp"
 class GameStart
 {
 public:
@@ -19,6 +20,8 @@ public:
 	int currentIndexPosition2 = 0;
 	int maxIndex = lib.weaponNameList.size();
 
+	MatchWeapon matchWeapon;
+
 	GameStart() {
 		weaponList[0] = lib.FindWeapon("Default");
 		weaponList[1] = lib.FindWeapon("Default");
@@ -28,6 +31,8 @@ public:
 
 	void Move();
 	void PickWeapon(std::string weaponName);
+	void PickFirstWeapon();
+	void PickSecondWeapon();
 	void PickPreviousWeapon();
 	void PickNextWeapon();
 	void IncrementRecoil();
@@ -35,6 +40,7 @@ public:
 	void SwitchWeapon(int position);
 	void LoadSetting();
 	void SaveSetting();
+	void MatchWeapon();
 	static void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired);
 	
 };

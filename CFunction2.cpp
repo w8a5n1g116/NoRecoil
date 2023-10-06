@@ -3,21 +3,18 @@
 #include "CWeapon.h"
 
 
-void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftShiftPress,int isCapsLockPress,int scrollLock)
+void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress,int scrollLock)
 {
 
     //CurrentWeapon->currentRecoil = capsLock ?  CurrentWeapon->fullAttachmentRecoil : CurrentWeapon->noAttachmentRecoil;
     CurrentWeapon->currentRecoil =  CurrentWeapon->moveY;
     CurrentWeapon->currentRecoil_2 = CurrentWeapon->currentRecoil;
 
-    int scopeRate = 0;
+    float scopeRate = 0;
     switch (CurrentWeapon->scope)
     {
     case 1: 
         scopeRate = CurrentWeapon->scope1X_Scale;
-        break;
-    case 10:
-        scopeRate = CurrentWeapon->scope1_5X_Scale;
         break;
     case 2:
         scopeRate = CurrentWeapon->scope2X_Scale;
@@ -27,6 +24,9 @@ void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftShiftPress,int isCapsLoc
         break;
     case 4:
         scopeRate = CurrentWeapon->scope4X_Scale;
+        break;
+    case 5:
+        scopeRate = CurrentWeapon->scope1_5X_Scale;
         break;
     default:
         break;

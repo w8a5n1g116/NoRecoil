@@ -15,7 +15,7 @@ void GameStart::Move()
 		if (CurrentWeapon->function == CWeapon::FUNCTION2) {
 			//CreateTimerQueueTimer(&m_timerHandle, NULL, this->TimerProc, (void*)this, 1000, 0, WT_EXECUTEINTIMERTHREAD);
 			//if (go) {
-				CFunction2::Move(CurrentWeapon, keyboardState.isLeftShiftPress, keyboardState.isCapsLockPress, keyboardState.scrollLock);
+				CFunction2::Move(CurrentWeapon, keyboardState.isLeftAltPress, keyboardState.scrollLock);
 			//}
 			
 		}
@@ -43,6 +43,33 @@ void GameStart::PickWeapon(std::string weaponName)
 	weaponList[currentPosition -1] = lib.FindWeapon(weaponName);
 	CurrentWeapon = weaponList[currentPosition - 1];
 	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
+}
+
+void GameStart::PickFirstWeapon()
+{
+	std::string weaponName = matchWeapon.MatchFirstWeapon();
+	weaponName.erase(weaponName.find_last_not_of("\n") + 1);	//去掉结尾\n
+	int index = lib.FindWeaponPosition(weaponName);
+	if (index != -1) {
+		currentIndexPosition = index;
+		weaponList[0] = lib.FindWeapon(weaponName);
+		CurrentWeapon = weaponList[0];
+		SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
+	}
+	
+}
+
+void GameStart::PickSecondWeapon()
+{
+	std::string weaponName = matchWeapon.MatchSecondWeapon();
+	weaponName.erase(weaponName.find_last_not_of("\n") + 1);	//去掉结尾\n
+	int index = lib.FindWeaponPosition(weaponName);
+	if (index != -1) {
+		currentIndexPosition = index;
+		weaponList[1] = lib.FindWeapon(weaponName);
+		CurrentWeapon = weaponList[1];
+		SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
+	}
 }
 
 void GameStart::PickPreviousWeapon()
@@ -108,6 +135,12 @@ void GameStart::SaveSetting()
 	for (auto& t : lib.weaponList) {
 		t.ChangeSetting();
 	}
+}
+
+void GameStart::MatchWeapon()
+{
+	PickSecondWeapon();
+	PickFirstWeapon();
 }
 
 void CALLBACK GameStart::TimerProc(void* gameStart, BOOLEAN TimerOrWaitFired) {
