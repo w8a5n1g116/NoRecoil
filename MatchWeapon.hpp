@@ -1,64 +1,10 @@
 #pragma once
-#include "opencv2/imgcodecs.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-#include <tesseract/baseapi.h>
-#include <leptonica/allheaders.h>
 #include "framework.h"
 #include "ScreenShot.hpp"
+#include "CWeapon.h"
 using namespace cv;
 class MatchWeapon {
 	
-	Mat Mk47_Mutant;
-	Mat AKM;
-	Mat Groza;
-	Mat Beryl_M762;
-	Mat ACE32;
-	Mat M16A4;
-	Mat QBZ;
-	Mat SCAR_L;
-	Mat AUG;
-	Mat G36C;
-	Mat K2;
-	Mat M416;
-	Mat FAMAS;
-	Mat DP_28;
-	Mat M249;
-	Mat Mk14;
-	Mat SLR;
-	Mat SKS;
-	Mat Mk12;
-	Mat Mini14;
-	Mat QBU;
-	Mat VSS;
-	Mat Lynx_AMR;
-	Mat AWM;
-	Mat Kar98k;
-	Mat Mosin_Nagant;
-	Mat M24;
-	Mat Win94;
-	Mat UMP45;
-	Mat Tommy_Gun;
-	Mat PP_19_Bizon;
-	Mat P90;
-	Mat MP5K;
-	Mat MP9;
-	Mat Vector;
-	Mat Micro_UZI;
-	Mat DBS;
-	Mat S1897;
-	Mat S686;
-	Mat S12K;
-	Mat Sawed_Off;
-	Mat O1R452;
-	Mat R1895;
-	Mat Deagle;
-	Mat P1911;
-	Mat P92;
-	Mat P18C;
-	Mat Skorpion;
-	Mat MG3_660_RPM;
-	Mat MG3_990_RPM;
 
 	tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
 	Screenshot screenShot;
@@ -69,14 +15,15 @@ public:
 	}
 
 
-	int Match(Mat img, Mat templ) {
+	Point Match(Mat img, Mat templ,Mat mask) {
+
+		cvtColor(img, img, COLOR_RGBA2RGB);
+
 		Mat result;
-		Mat img_display;
-		img.copyTo(img_display);
 		int result_cols = img.cols - templ.cols + 1;
 		int result_rows = img.rows - templ.rows + 1;
-		result.create(result_rows, result_cols, CV_32FC1);
-		matchTemplate(img, templ, result, TM_CCOEFF_NORMED);
+		result.create(result_rows, result_cols, CV_8UC3);
+		matchTemplate(img, templ, result, TM_CCORR_NORMED,mask);
 		normalize(result, result, 0, 1, NORM_MINMAX, -1, Mat());
 		double minVal; double maxVal; Point minLoc; Point maxLoc;
 		//Point matchLoc;
@@ -84,35 +31,110 @@ public:
 		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
 		//matchLoc = maxLoc;
 
-		return maxVal;
+		return maxLoc;
 	}
 
-	std::string MatchFirstWeapon() {
-		Mat img = screenShot.getScreenshot(1815, 120,285,50);
+	Point MatchNoMask(Mat img, Mat templ) {
+
+		cvtColor(img, img, COLOR_RGBA2RGB);
+
+		Mat result;
+		int result_cols = img.cols - templ.cols + 1;
+		int result_rows = img.rows - templ.rows + 1;
+		result.create(result_rows, result_cols, CV_8UC3);
+		matchTemplate(img, templ, result, TM_SQDIFF_NORMED);
+		normalize(result, result, 0, 1, NORM_MINMAX, -1, Mat());
+		double minVal; double maxVal; Point minLoc; Point maxLoc;
+		//Point matchLoc;
+
+		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
+		//matchLoc = maxLoc;
+
+		return maxLoc;
+	}
+
+	std::vector<std::string> MatchWeaponName() {
+		Mat screenshot = screenShot.getScreenshot();
+		Mat img1 = screenshot(cv::Rect(1815, 120, 140, 50));
+		Mat img2 = screenshot(cv::Rect(1815, 395, 140, 50));
+
 		Mat grey;
-		cvtColor(img, grey, COLOR_RGBA2GRAY);
-		return OCR(&grey);
+		Mat binary;
+		cvtColor(img1, grey, COLOR_RGBA2GRAY);
+		threshold(grey, binary, 128, 255, THRESH_BINARY);
+		std::string name1 = OCR(&grey);
+		cvtColor(img2, grey, COLOR_RGBA2GRAY);
+		threshold(grey, binary, 128, 255, THRESH_BINARY);
+		std::string name2= OCR(&grey);
+
+
+
+		return {name1, name2};
 	}
 
-	std::string MatchSecondWeapon() {
-		Mat img = screenShot.getScreenshot(1815, 395, 285, 50);
-		Mat grey;
-		cvtColor(img, grey, COLOR_RGBA2GRAY);
-		return OCR(&grey);
+	bool MatchWeaponNameImage(Mat src,Mat temp,Mat mask) {
+		if (temp.empty() || mask.empty()) {
+			return false;
+		}
+		Point ret = Match(src, temp, mask);
+		if ( ret.x >= 40 && ret.x <= 46  && ret.y >= 0 && ret.y <=4) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
-	/*PIX* cvtMat2PIX(Mat imgGray)
-	{
-		int cols = imgGray.cols;
-		int rows = imgGray.rows;
+	int MatchAttachmentImage(Mat src, Mat temp, Mat mask) {
+		if (temp.empty() || mask.empty()) {
+			return false;
+		}
+		Point ret = Match(src, temp,mask);
+		if (ret.x >= 0 && ret.x <= 6 && ret.y >= 182 && ret.y <= 190) {
+			return 1;
+		}
+		else if (ret.x >= 132 && ret.x <= 140 && ret.y >= 182 && ret.y <= 190) {
+			return 2;
+		}
+		else if (ret.x >= 562 && ret.x <= 572 && ret.y >= 182 && ret.y <= 190) {
+			return 3;
+		}
+		else if (ret.x >= 362 && ret.x <= 372 && ret.y >= 28 && ret.y <= 42) {
+			return 4;
+		}
+		else {
+			return 0;
+		}
+	}
 
-		PIX* pixS = pixCreate(cols, rows, 8);
+	Mat GetScreenShot() {
+		return screenShot.getScreenshot();
+	}
 
-		for (int i = 0; i < rows; i++)
-			for (int j = 0; j < cols; j++)
-				pixSetPixel(pixS, j, i, (l_uint32)imgGray.at<uchar>(i, j));
-		return pixS;
-	}*/
+	void SaveScreenShot(CWeapon* weapon1, CWeapon* weapon2) {
+		Mat screenshot = screenShot.getScreenshot();
+		Mat img = screenshot(Rect(1772, 125, 648, 250));
+		/*Mat weapon1Name = screenshot(Rect(1815, 120, 140, 50));
+		imwrite("image/template/" + weapon1->weaponName + ".png", weapon1Name);
+		Mat weapon2Name = screenshot(Rect(1815, 395, 140, 50));
+		imwrite("image/template/" + weapon2->weaponName + ".png", weapon2Name);*/
+
+		Mat weapon1Scope = img(Rect(368, 32, 57, 35));
+		imwrite("image/template/" + weapon1->cscope->name + ".png", weapon1Scope);
+		Mat weapon1Muzzle = img(Rect(3, 181, 60, 60));
+		imwrite("image/template/" + weapon1->muzzle->name + ".png", weapon1Muzzle);
+		Mat weapon1Grip = img(Rect(138, 181, 60, 60));
+		imwrite("image/template/" + weapon1->grip->name + ".png", weapon1Grip);
+		Mat weapon1Stock = img(Rect(568, 181, 60, 60));
+		imwrite("image/template/" + weapon1->stock->name + ".png", weapon1Stock);
+	}
+
+	void SaveMask(string name) {
+		Mat grey = imread("image/template/" + name + ".png", IMREAD_GRAYSCALE);
+		Mat binary;
+		threshold(grey, binary, 80, 255, THRESH_BINARY_INV);
+		imwrite("image/mask/" + name + ".png", binary);
+	}
 
 	std::string OCR(Mat* im) {
 		std::string ret;

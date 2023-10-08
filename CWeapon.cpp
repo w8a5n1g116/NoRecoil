@@ -4,19 +4,6 @@ CWeapon::CWeapon()
 {
 }
 
-CWeapon::CWeapon(string weaponName, int interval, vector<int> offset, CMuzzle* muzzle, CGrip* grip, CMagazine* magazine, CStock* stock, int shotCount, int scope)
-{
-	this->weaponName = weaponName;
-	this->interval = interval;
-	this->offset = offset;
-	this->muzzle = muzzle;
-	this->grip = grip;
-	this->magazine = magazine;
-	this->stock = stock;
-	this->shotCount = shotCount;
-	this->scope = scope;
-}
-
 CWeapon::CWeapon(string weaponName, int interval, vector<int> offset, int shotCount)
 {
 	this->weaponName = weaponName;
@@ -31,19 +18,23 @@ CWeapon::CWeapon(string weaponName, int interval, vector<int> offset, int shotCo
 	this->scope = 0;
 }
 
-int CWeapon::ComputeXOffset(int orginOffset)
+void CWeapon::ComputeYOffset()
 {
 	float countEeffect = 0;
 	if (muzzle != nullptr) {
-		countEeffect += muzzle->x_effect;
+		countEeffect += muzzle->y_effect;
 	}
 	if (grip != nullptr) {
-		countEeffect += grip->x_effect;
+		countEeffect += grip->y_effect;
 	}
 	if (stock != nullptr) {
-		countEeffect += stock->x_effect;
+		countEeffect += stock->y_effect;
 	}
-	return (1 - countEeffect) * orginOffset;
+
+	LoadSetting();
+
+	float r = (1 - countEeffect) * recoilStand;
+	SetParameter(r);
 }
 
 void CWeapon::AssembleMuzzle(CMuzzle* muzzle)
@@ -69,9 +60,10 @@ void CWeapon::AssembleStock(CStock* stock)
 	this->stock = stock;
 }
 
-void CWeapon::AssembleScope(int scope)
+void CWeapon::AssembleScope(int scope,CScope* cscope)
 {
 	this->scope = scope;
+	this->cscope = cscope;
 }
 
 void CWeapon::LoadSetting()
@@ -83,7 +75,7 @@ void CWeapon::LoadSetting()
 
 void CWeapon::ChangeSetting()
 {
-	WritePrivateProfileStringA(weaponName.c_str(), "recoil", std::to_string(recoil).c_str(), iniFilePath.c_str());
+	WritePrivateProfileStringA(weaponName.c_str(), "recoil", std::to_string(recoilStand).c_str(), iniFilePath.c_str());
 }
 
 
@@ -194,6 +186,9 @@ void CWeapon::SetParameter(int r)
 void CWeapon::ResetWeapon()
 {
 	scope = 0;
+	muzzle = nullptr;
+	grip = nullptr;
+	stock = nullptr;
 }
 
 void CWeapon::HoldBreath(bool b)

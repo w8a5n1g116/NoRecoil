@@ -39,6 +39,9 @@ HWND hStaticText3;
 HWND hMessageText;
 HWND hMessageText2;
 HWND hMessageText3;
+HWND hMessageText4;
+HWND hMessageText5;
+HWND hMessageText6;
 HWND hButton;
 HWND hButton2;
 HWND hInput0;
@@ -173,7 +176,7 @@ ATOM MyRegisterClass2(HINSTANCE hInstance) {
     wcex.hInstance = hInstance;
     wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_NORECOIL));
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)CreateSolidBrush(0x000000);//(HBRUSH)(COLOR_WINDOW + 1);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);//(HBRUSH)CreateSolidBrush(0x000000);//
     wcex.lpszMenuName = NULL;//MAKEINTRESOURCEW(IDC_CONTROLLEGENDWIN32);
     wcex.lpszClassName = L"Message";
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
@@ -202,7 +205,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
 
     hMessageWnd = CreateWindowEx(WS_EX_LAYERED,L"Message", L"", WS_BORDER,//WS_POPUP,WS_BORDER | WS_SIZEBOX
-        screenWidth - 300, 10, 200, 100, nullptr, nullptr, hInstance, nullptr);
+        screenWidth - 300, 10, 200, 110, nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
     {
@@ -369,9 +372,12 @@ LRESULT CALLBACK WndProc2(HWND hMWnd, UINT message, WPARAM wParam, LPARAM lParam
     {
     case WM_CREATE:
     {
-        hMessageText = CreateWindow(L"Static", L"", StaticTextStyle, 0, 0, 185, 50, hMWnd, NULL, hInst, NULL);
-        hMessageText2 = CreateWindow(L"Static", L"", StaticTextStyle, 0, 30, 95, 45, hMWnd, NULL, hInst, NULL);
-        hMessageText3 = CreateWindow(L"Static", L"", StaticTextStyle, 95, 30, 90, 45, hMWnd, NULL, hInst, NULL);
+        hMessageText = CreateWindow(L"Static", L"", StaticTextStyle, 0, 0, 185, 30, hMWnd, NULL, hInst, NULL);
+        hMessageText2 = CreateWindow(L"Static", L"", StaticTextStyle, 0, 30, 95, 20, hMWnd, NULL, hInst, NULL);
+        hMessageText3 = CreateWindow(L"Static", L"", StaticTextStyle, 95, 30, 90, 20, hMWnd, NULL, hInst, NULL);
+        hMessageText4 = CreateWindow(L"Static", L"", StaticTextStyle, 0, 50, 60, 25, hMWnd, NULL, hInst, NULL);
+        hMessageText5 = CreateWindow(L"Static", L"", StaticTextStyle, 60, 50, 60, 25, hMWnd, NULL, hInst, NULL);
+        hMessageText6 = CreateWindow(L"Static", L"", StaticTextStyle, 120, 50, 60, 25, hMWnd, NULL, hInst, NULL);
 
         LOGFONT font;
         font.lfHeight = 32;
@@ -504,6 +510,10 @@ LRESULT CALLBACK LowLevelMouseProc(
         KeyboardInput(VK_SCROLL, FALSE);
     }
 
+    if (keyboardState.isLeftAltPress && wParam == WM_MBUTTONDOWN) {
+        gameStart.CurrentWeapon->ChangeSetting();
+    }
+
     if (keyboardState.isLeftAltPress && mouseState.isRightButtonPress) {
         gameStart.CurrentWeapon->HoldBreath(true);
         SetMessage();
@@ -600,11 +610,17 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == 0x32) { //2
             keyboardState.isNum2Press = 1;
         }
-        else if (kbhook->vkCode == 0x33) { //2
+        else if (kbhook->vkCode == 0x33) { //3
             keyboardState.isNum3Press = 1;
         }
-        else if (kbhook->vkCode == 0x34) { //2
+        else if (kbhook->vkCode == 0x34) { //4
             keyboardState.isNum4Press = 1;
+        }
+        else if (kbhook->vkCode == 0x35) { //5
+            keyboardState.isNum5Press = 1;
+        }
+        else if (kbhook->vkCode == 0x36) { //6
+            keyboardState.isNum6Press = 1;
         }
         else if (kbhook->vkCode == VK_CAPITAL) {
             if (keyboardState.isCapsLockPress == 0) {
@@ -656,6 +672,12 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == 0x34) {
             keyboardState.isNum4Press = 0;
         }
+        else if (kbhook->vkCode == 0x35) {
+            keyboardState.isNum5Press = 0;
+        }
+        else if (kbhook->vkCode == 0x36) {
+            keyboardState.isNum6Press = 0;
+        }
         else if (kbhook->vkCode == 0x58) {
             keyboardState.canFocus = FALSE;
         }
@@ -674,40 +696,68 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             keyboardState.scrollLock = key & 0x0001;
         }
         else if (kbhook->vkCode == 0xC0) {  // `~键
-            gameStart.MatchWeapon();
+            gameStart.PickMatchImageWeapon();
+            //gameStart.SaveScreenShot();
         }
 
         
 
-        /*if (kbhook->vkCode == VK_NUMPAD1) {
-            gameStart.PickWeapon("UMP45");
+        if (kbhook->vkCode == VK_NUMPAD1) {
+            gameStart.AssembleMuzzle("AR_COMP");
+            SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD2) {
-            gameStart.PickWeapon("Tommy Gun");
+            gameStart.AssembleMuzzle("SMG_COMP");
+            SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD3) {
-            gameStart.PickWeapon("Vector");
+            gameStart.AssembleMuzzle("SNIPER_COMP");
+            SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD4) {
-            gameStart.PickWeapon("SCAR-L");
+            gameStart.AssembleMuzzle("AR_LOWFIRE");
+            SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD5) {
-            gameStart.PickWeapon("M416");
+            gameStart.AssembleMuzzle("SMG_LOWFIRE");
+            SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD6) {
-            gameStart.PickWeapon("SKS");
+            gameStart.AssembleMuzzle("SNIPER_LOWFIRE");
+            SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD7) {
-            gameStart.PickWeapon("ACE32");
+            gameStart.AssembleGrip("Half");
+            SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD8) {
-            gameStart.PickWeapon("Beryl M762");
+            gameStart.AssembleGrip("Thumb");
+            SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD9) {
-            gameStart.PickWeapon("Mk47 Mutant");
+            gameStart.AssembleGrip("Vertical");
+            SetMessage();
         }
-        else*/ if (kbhook->vkCode == VK_NUMPAD0) {
-            //gameStart.PickWeapon("VSS");
+        else if (kbhook->vkCode == VK_DIVIDE) {
+            gameStart.AssembleStock("CheekPad");
+            SetMessage();
+        }
+        else if (kbhook->vkCode == VK_MULTIPLY) {
+            gameStart.AssembleStock("Folding");
+            SetMessage();
+        }
+        else if (kbhook->vkCode == VK_SUBTRACT) {
+            gameStart.AssembleStock("Heavy");
+            SetMessage();
+        }
+        else if (kbhook->vkCode == VK_ADD) {
+            gameStart.AssembleMuzzle("Muzzle_None");
+            gameStart.AssembleGrip("Grip_None");
+            gameStart.AssembleStock("Stock_None");
+            gameStart.AssembleScope(0);
+            SetMessage();
+        }
+        else if (kbhook->vkCode == VK_NUMPAD0) {
             gameStart.CurrentWeapon->ResetWeapon();
             gameStart.PickWeapon("Default");            
         }
@@ -729,6 +779,12 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         }
         else if (kbhook->vkCode == 0x34) {
             keyboardState.isNum4Press = 1;
+        }
+        else if (kbhook->vkCode == 0x35) {
+            keyboardState.isNum5Press = 1;
+        }
+        else if (kbhook->vkCode == 0x36) {
+            keyboardState.isNum6Press = 1;
         }
         else if (kbhook->vkCode == VK_XBUTTON1) {
             //keyboardState.isNum4Press = 1;
@@ -754,23 +810,37 @@ LRESULT CALLBACK LowLevelKeyboardProc(
          else if (kbhook->vkCode == 0x34) {
              keyboardState.isNum4Press = 0;
          }
+         else if (kbhook->vkCode == 0x35) {
+             keyboardState.isNum5Press = 0;
+         }
+         else if (kbhook->vkCode == 0x36) {
+             keyboardState.isNum6Press = 0;
+         }
     }
 
     //////////////////////////
     if (keyboardState.isLeftAltPress && keyboardState.isNum1Press) {
-        gameStart.CurrentWeapon->AssembleScope(1);
+        gameStart.AssembleScope(1);
         SetMessage();
     }
     if (keyboardState.isLeftAltPress && keyboardState.isNum2Press) {
-        gameStart.CurrentWeapon->AssembleScope(2);
+        gameStart.AssembleScope(2);
         SetMessage();
     }
     if (keyboardState.isLeftAltPress && keyboardState.isNum3Press) {
-        gameStart.CurrentWeapon->AssembleScope(3);
+        gameStart.AssembleScope(3);
         SetMessage();
     }
     if (keyboardState.isLeftAltPress && keyboardState.isNum4Press) {
-        gameStart.CurrentWeapon->AssembleScope(4);
+        gameStart.AssembleScope(4);
+        SetMessage();
+    }
+    if (keyboardState.isLeftAltPress && keyboardState.isNum5Press) {
+        gameStart.AssembleScope(6);
+        SetMessage();
+    }
+    if (keyboardState.isLeftAltPress && keyboardState.isNum6Press) {
+        gameStart.AssembleScope(8);
         SetMessage();
     }
 
@@ -874,4 +944,10 @@ void SetMessage() {
     sprintf_s(lmessage, 1024, "%d:%d", gameStart.CurrentWeapon->recoil, gameStart.CurrentWeapon->interval);
     SetWindowTextA(hStaticText3, lmessage);
     SetWindowTextA(hMessageText3, lmessage);
+    sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->muzzle != NULL ? gameStart.CurrentWeapon->muzzle->name.c_str() : "");
+    SetWindowTextA(hMessageText4, lmessage);
+    sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->grip != NULL ? gameStart.CurrentWeapon->grip->name.c_str() : "");
+    SetWindowTextA(hMessageText5, lmessage);
+    sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->stock != NULL ? gameStart.CurrentWeapon->stock->name.c_str() : "");
+    SetWindowTextA(hMessageText6, lmessage);
 }

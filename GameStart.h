@@ -31,8 +31,8 @@ public:
 
 	void Move();
 	void PickWeapon(std::string weaponName);
-	void PickFirstWeapon();
-	void PickSecondWeapon();
+	void PickMatchWeapon();
+	void PickMatchImageWeapon();
 	void PickPreviousWeapon();
 	void PickNextWeapon();
 	void IncrementRecoil();
@@ -40,7 +40,18 @@ public:
 	void SwitchWeapon(int position);
 	void LoadSetting();
 	void SaveSetting();
-	void MatchWeapon();
+	void SaveScreenShot();
+
+	void AssembleMuzzle(string name);
+
+	void AssembleGrip(string name);
+
+	void AssembleMagazine(string name);
+
+	void AssembleStock(string name);
+
+	void AssembleScope(int scope);
+
 	static void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired);
 	
 };

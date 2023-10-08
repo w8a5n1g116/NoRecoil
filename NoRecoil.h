@@ -10,6 +10,8 @@ struct KeyBoard_State {
     int isNum2Press = 0;
     int isNum3Press = 0;
     int isNum4Press = 0;
+    int isNum5Press = 0;
+    int isNum6Press = 0;
     int capsLock = 0;
     int isCapsLockPress = 0;
     int scrollLock = 0;

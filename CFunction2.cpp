@@ -13,6 +13,9 @@ void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress,int scrollLock)
     float scopeRate = 0;
     switch (CurrentWeapon->scope)
     {
+    case 0:
+        scopeRate = CurrentWeapon->scope1X_Scale;
+        break;
     case 1: 
         scopeRate = CurrentWeapon->scope1X_Scale;
         break;
@@ -24,6 +27,12 @@ void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress,int scrollLock)
         break;
     case 4:
         scopeRate = CurrentWeapon->scope4X_Scale;
+        break;
+    case 6:
+        scopeRate = CurrentWeapon->scope6X_Scale;
+        break;
+    case 8:
+        scopeRate = CurrentWeapon->scope8X_Scale;
         break;
     case 5:
         scopeRate = CurrentWeapon->scope1_5X_Scale;

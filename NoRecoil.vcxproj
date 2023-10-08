@@ -128,13 +128,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CAttachment.h" />
+    <ClInclude Include="CAttachment.hpp" />
     <ClInclude Include="CFunction1.h" />
     <ClInclude Include="CFunction2.h" />
-    <ClInclude Include="CGrip.h" />
-    <ClInclude Include="CMagazine.h" />
-    <ClInclude Include="CMuzzle.h" />
-    <ClInclude Include="CStock.h" />
+    <ClInclude Include="CGrip.hpp" />
+    <ClInclude Include="CMagazine.hpp" />
+    <ClInclude Include="CMuzzle.hpp" />
+    <ClInclude Include="CScope.hpp" />
+    <ClInclude Include="CStock.hpp" />
     <ClInclude Include="CWeapon.h" />
     <ClInclude Include="CWeaponLib.h" />
     <ClInclude Include="framework.h" />
@@ -146,13 +147,8 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CAttachment.cpp" />
     <ClCompile Include="CFunction1.cpp" />
     <ClCompile Include="CFunction2.cpp" />
-    <ClCompile Include="CGrip.cpp" />
-    <ClCompile Include="CMagazine.cpp" />
-    <ClCompile Include="CMuzzle.cpp" />
-    <ClCompile Include="CStock.cpp" />
     <ClCompile Include="CWeapon.cpp" />
     <ClCompile Include="GameStart.cpp" />
     <ClCompile Include="NoRecoil.cpp" />

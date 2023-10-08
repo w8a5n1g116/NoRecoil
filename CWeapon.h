@@ -1,9 +1,11 @@
 #pragma once
 #include "framework.h"
-#include "CMuzzle.h"
-#include "CStock.h"
-#include "CGrip.h"
-#include "CMagazine.h"
+#include "CMuzzle.hpp"
+#include "CStock.hpp"
+#include "CGrip.hpp"
+#include "CMagazine.hpp"
+#include "CScope.hpp"
+
 class CWeapon
 {
 public:
@@ -28,6 +30,7 @@ public:
 	CGrip* grip = nullptr;
 	CMagazine* magazine = nullptr;
 	CStock* stock = nullptr;
+	CScope* cscope = nullptr;
 	int scope =1;
 	int scopeTemp = 1;
 	bool isHoldBreath = false;
@@ -39,6 +42,8 @@ public:
 	float scope2X_Scale = 2.0;
 	float scope3X_Scale = 3.0;
 	float scope4X_Scale = 4.0;
+	float scope6X_Scale = 6.0;
+	float scope8X_Scale = 8.0;
 	float moveY = 0;
 	float moveYStand = 0;
 	float moveYCrouch = 0;
@@ -54,19 +59,22 @@ public:
 	float proneEffect = 0.6;
 
 	int moveDistance = 0;
+	Mat templateImage;
+	Mat maskImage;
 	WEAPON_FUNCTION function = FUNCTION2;
 
 	std::string iniFilePath = GetUserProfilePath() + "\\config.ini";
 
 	CWeapon();
 
-	CWeapon(string weaponName, int interval, vector<int> offset, CMuzzle* muzzle, CGrip* grip, CMagazine* magazine, CStock* stock, int shotCount, int scope);
-
 	CWeapon(string weaponName, int interval, vector<int> offset, int shotCount);
 
-	CWeapon(string weaponName,string weaponName2, WEAPON_FUNCTION function) :weaponName(weaponName),weaponName2(weaponName2), function(function) {};
+	CWeapon(string weaponName,string weaponName2, WEAPON_FUNCTION function) :weaponName(weaponName),weaponName2(weaponName2), function(function) {
+		templateImage = imread("image/template/" + weaponName + ".png", IMREAD_COLOR);
+		maskImage = imread("image/mask/" + weaponName + ".png", IMREAD_GRAYSCALE);
+	};
 
-	int ComputeXOffset(int orginOffset);
+	void ComputeYOffset();
 
 	void AssembleMuzzle(CMuzzle* muzzle);
 
@@ -76,7 +84,7 @@ public:
 
 	void AssembleStock(CStock* stock);
 
-	void AssembleScope(int scope);
+	void AssembleScope(int scope, CScope* cscope);
 
 	void LoadSetting();
 	void ChangeSetting();
