@@ -8,8 +8,21 @@ public:
 	CMuzzle(string name, float y_effect) {
 		this->name = name;
 		this->y_effect = y_effect;
-		templateImage = imread("image/template/" + name + ".png", IMREAD_COLOR);
-		maskImage = imread("image/mask/" + name + ".png", IMREAD_GRAYSCALE);
+
+		int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
+		string imageSuffix = "";
+		if (screenWidth == 2560) {
+			imageSuffix = "_1440";
+		}
+		else if (screenWidth == 2048) {
+			imageSuffix = "";
+		}
+		else if (screenWidth == 1920) {
+			imageSuffix = "_1080";
+		}
+
+		templateImage = imread("image/template/" + name + imageSuffix + ".png", IMREAD_COLOR);
+		maskImage = imread("image/mask/" + name + imageSuffix + ".png", IMREAD_GRAYSCALE);
 	}
 };
 

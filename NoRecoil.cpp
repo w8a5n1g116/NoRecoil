@@ -4,12 +4,14 @@
 #include "framework.h"
 #include "NoRecoil.h"
 #include <Unknwn.h>
-#include <gdiplus.h>
-#pragma comment(lib,"Gdiplus.lib")
+//#include <gdiplus.h>
+//#pragma comment(lib,"Gdiplus.lib")
 #include "GameStart.h"
-#include "ScreenShot.hpp"
+//#include "ScreenShot.hpp"
 
 #define MAX_LOADSTRING 100
+
+
 
 // 全局变量:
 HINSTANCE hInst;                                // 当前实例
@@ -35,7 +37,7 @@ HHOOK mouseHook;
 //句柄
 HWND hStaticText;
 HWND hStaticText2;
-HWND hStaticText3;
+//HWND hStaticText3;
 HWND hMessageText;
 HWND hMessageText2;
 HWND hMessageText3;
@@ -44,24 +46,23 @@ HWND hMessageText5;
 HWND hMessageText6;
 HWND hButton;
 HWND hButton2;
-HWND hInput0;
-HWND hInput1;
-HWND hInput2;
-HWND hList1;
+HWND hComboBox1;
+HWND hComboBox2;
+//HWND hInput0;
+//HWND hInput1;
+//HWND hInput2;
+//HWND hList1;
 HANDLE m_hThread;
 UINT m_ThreadId;
+HANDLE m_hMatchThread;
+UINT m_matchThreadId;
+
 LONG volatile m_IsShouldThreadFinish{ FALSE };
 LONG volatile startFalg{ TRUE };
 unsigned __stdcall ThreadProc(void* mouseState);
+unsigned __stdcall MatchThreadProc(void* o);
 
 
-
-
-//鼠标状态
-Mouse_State mouseState;
-
-//键盘状态
-KeyBoard_State keyboardState;
 
 //
 void Init();
@@ -77,6 +78,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(
 );
 
 HANDLE StartProcessThread();
+HANDLE MatchProcessThread();
 void DrawMessageWindows(HWND hkeyboardWnd, std::string msg);
 void SetMessage();
 
@@ -152,7 +154,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_NORECOIL));
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_NORECOIL);
+    wcex.lpszMenuName = NULL;//MAKEINTRESOURCEW(IDC_NORECOIL);
     wcex.lpszClassName = szWindowClass;
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -200,7 +202,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     hInst = hInstance; // 将实例句柄存储在全局变量中
 
     hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, 0, 600, 300, nullptr, nullptr, hInstance, nullptr);
+        CW_USEDEFAULT, 0, 250, 220, nullptr, nullptr, hInstance, nullptr);
 
     int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
 
@@ -249,20 +251,41 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE:
     {
-        hStaticText = CreateWindow(L"Static", L"", StaticTextStyle, 220, 10, 200, 30, hWnd, NULL, hInst, NULL);
-        hStaticText2 = CreateWindow(L"Static", L"", StaticTextStyle, 220, 40, 200, 15, hWnd, NULL, hInst, NULL);
-        hStaticText3 = CreateWindow(L"Static", L"", StaticTextStyle, 220, 55, 200, 15, hWnd, NULL, hInst, NULL);
-        hButton = CreateWindow(L"Button", L"X", StaticTextStyle, 10, 10, 100, 40, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hList1 = CreateWindow(L"LISTBOX", L"T", StaticTextStyle | WS_VSCROLL, 10, 60, 100, 100, hWnd, (HMENU)IDB_LIST1, hInst, NULL);
-        hInput0 = CreateWindowA("EDIT", "1", StaticTextStyle, 150, 80, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput1 = CreateWindowA("EDIT", "1", StaticTextStyle, 150, 115, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        hInput2 = CreateWindowA("EDIT", "1", StaticTextStyle, 150, 150, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+       
+        
+        /*hStaticText3 = CreateWindow(L"Static", L"", StaticTextStyle, 220, 55, 200, 15, hWnd, NULL, hInst, NULL); */
+        hButton = CreateWindow(L"Button", L"STOP", StaticTextStyle, 30, 10, 180, 40, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        //hList1 = CreateWindow(L"LISTBOX", L"T", StaticTextStyle | WS_VSCROLL, 10, 60, 100, 100, hWnd, (HMENU)IDB_LIST1, hInst, NULL);
+        //hInput0 = CreateWindowA("EDIT", "1", StaticTextStyle , 150, 80, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        //hInput1 = CreateWindowA("EDIT", "1", StaticTextStyle | ES_READONLY, 150, 115, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
+        //hInput2 = CreateWindowA("EDIT", "1", StaticTextStyle | ES_READONLY, 150, 150, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
 
-        hButton2 = CreateWindow(L"Button", L"Ok", StaticTextStyle, 200, 150, 30, 30, hWnd, (HMENU)IDB_TWO, hInst, NULL);
+        //hButton2 = CreateWindow(L"Button", L"Ok", StaticTextStyle, 200, 150, 30, 30, hWnd, (HMENU)IDB_TWO, hInst, NULL);
+        hStaticText = CreateWindow(L"Static", L"下蹲按键", StaticTextStyle, 30, 55, 180, 20, hWnd, NULL, hInst, NULL);
+        hComboBox1 = CreateWindow(L"ComboBox", L"", CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 30, 80, 180, 100, hWnd, (HMENU)IDB_COMBOBOX1, hInst, NULL);
+        //SendMessage(hComboBox1, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)"C");
+        ComboBox_AddString(hComboBox1, L"C");
+        ComboBox_SetItemData(hComboBox1, 0, 0x43);
+        ComboBox_AddString(hComboBox1, L"左SHIFT");
+        ComboBox_SetItemData(hComboBox1, 1, VK_LSHIFT);
+        ComboBox_AddString(hComboBox1, L"左CTRL");
+        ComboBox_SetItemData(hComboBox1, 2, VK_LCONTROL);
+        
+        hStaticText2 = CreateWindow(L"Static", L"卧倒按键", StaticTextStyle, 30, 110, 180, 20, hWnd, NULL, hInst, NULL);
+        hComboBox2 = CreateWindow(L"ComboBox", L"", CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 30, 135, 180, 100, hWnd, (HMENU)IDB_COMBOBOX2, hInst, NULL);
+        ComboBox_AddString(hComboBox2, L"Z");
+        ComboBox_SetItemData(hComboBox2, 0, 0x5A);
+        ComboBox_AddString(hComboBox2, L"CapsLock");
+        ComboBox_SetItemData(hComboBox2, 1, VK_CAPITAL);
+        ComboBox_AddString(hComboBox2, L"左SHIFT");
+        ComboBox_SetItemData(hComboBox2, 2, VK_LSHIFT);
+        ComboBox_AddString(hComboBox2, L"左CTRL");
+        ComboBox_SetItemData(hComboBox2, 3, VK_LCONTROL);
+        
 
-        for (auto& t : gameStart.lib.weaponNameList) {
+        /*for (auto& t : gameStart.lib.weaponNameList) {
             SendMessageA(hList1, LB_ADDSTRING, 0, (LPARAM)t.c_str());
-        }
+        }*/
         
     }
     case WM_COMMAND:
@@ -282,10 +305,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             switch (HIWORD(wParam)) {
             case BN_CLICKED:
             {
-                if (startFalg == FALSE)
+                if (startFalg == FALSE) {
                     startFalg = TRUE;
-                else
+                    Button_SetText(hButton,L"STOP");
+                }                 
+                else {
                     startFalg = FALSE;
+                    Button_SetText(hButton, L"START");
+                }
+                    
             }
             }
             break;
@@ -294,7 +322,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case BN_CLICKED:
             {
 
-                int nSel = SendMessage(hList1, LB_GETCURSEL, 0, 0);
+                /*int nSel = SendMessage(hList1, LB_GETCURSEL, 0, 0);
                 char tem[128] = { 0 };
                 SendMessageA(hList1, LB_GETTEXT, nSel, (LPARAM)tem);
                 std::string weaponName = std::string(tem);
@@ -303,30 +331,51 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 Edit_GetText(hInput0, buff, 1024);
                 gameStart.lib.FindWeapon(weaponName)->SetParameter(_tstoi(buff));
                 Edit_SetText(hInput1, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->interval).c_str());
-                Edit_SetText(hInput2, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->moveY).c_str());
+                Edit_SetText(hInput2, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->moveY).c_str());*/
                 /*Edit_GetText(hInput1, buff, 1024);
                 gameStart.lib.FindWeapon(weaponName)->fullAttachmentRecoil = _tstoi(buff);*/
 
 
-                gameStart.lib.FindWeapon(weaponName)->ChangeSetting();
+                //gameStart.lib.FindWeapon(weaponName)->ChangeSetting(gameStart.p1440);
             }
             }
-
+            break;
         case IDB_LIST1:
             switch (HIWORD(wParam)) {
             case LBN_DBLCLK:
             {           
-                int nSel = SendMessage(hList1, LB_GETCURSEL, 0, 0);
+                /*int nSel = SendMessage(hList1, LB_GETCURSEL, 0, 0);
                 char tem[128] = { 0 };
                 SendMessageA(hList1, LB_GETTEXT, nSel, (LPARAM)tem);
                 std::string weaponName = std::string(tem);
 
                 Edit_SetText(hInput0, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->recoil).c_str());
                 Edit_SetText(hInput1, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->interval).c_str());
-                Edit_SetText(hInput2, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->moveY).c_str());
+                Edit_SetText(hInput2, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->moveY).c_str());*/
 
             }
             }
+            break;
+        case IDB_COMBOBOX1:
+            switch (HIWORD(wParam)) {
+            case CBN_SELCHANGE:
+            {
+                int index = ComboBox_GetCurSel(hComboBox1);
+                unsigned short key = ComboBox_GetItemData(hComboBox1, index);
+                gameStart.SetCrouchKey(key);
+            }
+            }
+            break;
+        case IDB_COMBOBOX2:
+            switch (HIWORD(wParam)) {
+            case CBN_SELCHANGE:
+            {
+                int index = ComboBox_GetCurSel(hComboBox2);
+                unsigned short key = ComboBox_GetItemData(hComboBox2, index);
+                gameStart.SetProneKey(key);
+            }
+            }
+            break;
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
         }
@@ -342,11 +391,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     break;
     case WM_DESTROY:
         m_IsShouldThreadFinish = TRUE;
-        gameStart.SaveSetting();
         PostQuitMessage(0);
         break;
     case WM_CUSTOM_MESSAGE_PICK_WEAPON:
-        ListBox_SetCurSel(hList1, wParam);
+        //ListBox_SetCurSel(hList1, wParam);
         
         SetMessage();
         break;
@@ -455,23 +503,47 @@ void Init()
 {
 
     short key = GetKeyState(VK_CAPITAL);
-    keyboardState.capsLock = key & 0x0001;
+    gameStart.keyboardState.capsLock = key & 0x0001;
 
     key = GetKeyState(VK_SCROLL);
-    keyboardState.scrollLock = key & 0x0001;
+    gameStart.keyboardState.scrollLock = key & 0x0001;
 
     gameStart.LoadSetting();
 
-    ListBox_SetCurSel(hList1, 0);
+    
+    if (gameStart.crouchKey == 0x43) { //C
+        ComboBox_SelectString(hComboBox1, -1,L"C");
+    }
+    else if (gameStart.crouchKey == VK_LSHIFT) {
+        ComboBox_SelectString(hComboBox1, -1, L"左SHIFT");
+    }
+    else if (gameStart.crouchKey == VK_LCONTROL) {
+        ComboBox_SelectString(hComboBox1, -1, L"左CTRL");
+    }
+
+    if (gameStart.proneKey == 0x5A) { //Z
+        ComboBox_SelectString(hComboBox2, -1, L"Z");
+    }
+    else if (gameStart.proneKey == VK_CAPITAL) {
+        ComboBox_SelectString(hComboBox2, -1, L"CapsLock");
+    }
+    else if (gameStart.proneKey == VK_LSHIFT) {
+        ComboBox_SelectString(hComboBox2, -1, L"左SHIFT");
+    }
+    else if (gameStart.proneKey == VK_LCONTROL) {
+        ComboBox_SelectString(hComboBox2, -1, L"左CTRL");
+    }
+
+    /*ListBox_SetCurSel(hList1, 0);
     CWeapon* weapon = gameStart.lib.FindWeapon("Default");
     Edit_SetText(hInput0, std::to_wstring(weapon->recoil).c_str());
     Edit_SetText(hInput1, std::to_wstring(weapon->interval).c_str());
-    Edit_SetText(hInput2, std::to_wstring(weapon->moveY).c_str());
+    Edit_SetText(hInput2, std::to_wstring(weapon->moveY).c_str());*/
 
     SetMessage();
 
 
-    //设置鼠标钩子
+    //设置鼠标钩子`
     mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), 0);
     //设置键盘钩子
     keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
@@ -492,29 +564,29 @@ LRESULT CALLBACK LowLevelMouseProc(
     switch (wParam)
     {
     case WM_LBUTTONDOWN:
-        mouseState.isLeftButtonPress = 1;
+        gameStart.mouseState.isLeftButtonPress = 1;
         break;
     case WM_LBUTTONUP:
-        mouseState.isLeftButtonPress = 0;
+        gameStart.mouseState.isLeftButtonPress = 0;
         break;
     case WM_RBUTTONDOWN:
-        mouseState.isRightButtonPress = 1;
+        gameStart.mouseState.isRightButtonPress = 1;
         break;
     case WM_RBUTTONUP:
-        mouseState.isRightButtonPress = 0;
+        gameStart.mouseState.isRightButtonPress = 0;
         break;
     }
 
-    if (keyboardState.isLeftContrlPress && wParam == WM_MBUTTONDOWN && !mouseState.isLeftButtonPress) {
+    if (gameStart.keyboardState.isLeftContrlPress && wParam == WM_MBUTTONDOWN && !gameStart.mouseState.isLeftButtonPress) {
         KeyboardInput(VK_SCROLL, TRUE);
         KeyboardInput(VK_SCROLL, FALSE);
     }
 
-    if (keyboardState.isLeftAltPress && wParam == WM_MBUTTONDOWN) {
+    if (gameStart.keyboardState.isLeftAltPress && wParam == WM_MBUTTONDOWN) {
         gameStart.CurrentWeapon->ChangeSetting();
     }
 
-    if (keyboardState.isLeftAltPress && mouseState.isRightButtonPress) {
+    if (gameStart.keyboardState.isLeftAltPress && gameStart.mouseState.isRightButtonPress) {
         gameStart.CurrentWeapon->HoldBreath(true);
         SetMessage();
     }
@@ -525,21 +597,21 @@ LRESULT CALLBACK LowLevelMouseProc(
     
 
     if (wParam == WM_RBUTTONDOWN) {
-        if (keyboardState.canFocus) {
+        if (gameStart.keyboardState.canFocus) {
             CreateTimerQueueTimer(&m_timerHandle, NULL, TimerProc, (void*)VK_RSHIFT, 300, 0, WT_EXECUTEINTIMERTHREAD);
         }
 
     }
 
     if (wParam == WM_RBUTTONUP) {
-        if (keyboardState.canFocus) {
+        if (gameStart.keyboardState.canFocus) {
             DeleteTimerQueueTimer(NULL, m_timerHandle, NULL);
             KeyboardInput(VK_RSHIFT, FALSE);
         }
     }
 
     if (wParam == WM_MOUSEWHEEL) {
-        if (keyboardState.isLeftAltPress) {
+        if (gameStart.keyboardState.isLeftAltPress) {
             short delta = (short)HIWORD(msllhook->mouseData);
             if (delta > 0) {    //滚轮上
                 gameStart.PickPreviousWeapon();
@@ -551,7 +623,7 @@ LRESULT CALLBACK LowLevelMouseProc(
             }
         }
 
-        if (keyboardState.isLeftContrlPress) {
+        if (gameStart.keyboardState.isLeftContrlPress) {
             short delta = (short)HIWORD(msllhook->mouseData);
             if (delta > 0) {    //滚轮上
                 gameStart.DecrementRecoil();
@@ -568,7 +640,7 @@ LRESULT CALLBACK LowLevelMouseProc(
 
 
     short key = GetKeyState(VK_SCROLL);
-    keyboardState.scrollLock = key & 0x0001;
+    gameStart.keyboardState.scrollLock = key & 0x0001;
 
 
     
@@ -588,48 +660,45 @@ LRESULT CALLBACK LowLevelKeyboardProc(
     tagKBDLLHOOKSTRUCT* kbhook = reinterpret_cast<tagKBDLLHOOKSTRUCT*>(lParam);
     if (wParam == WM_KEYDOWN) {
         if (kbhook->vkCode == VK_LCONTROL) {
-            keyboardState.isLeftContrlPress = 1;
+            gameStart.keyboardState.isLeftContrlPress = 1;
+            gameStart.DoKeyBoardEvent(VK_LCONTROL,1);
         }
         else if (kbhook->vkCode == VK_LSHIFT) {
-            if (keyboardState.isLeftShiftPress == 0) {
-                keyboardState.isLeftShiftPress = 1;
-                if (keyboardState.isCapsLockPress == 0) {
-                    gameStart.CurrentWeapon->Crouch(keyboardState.isLeftShiftPress);
-                    SetMessage();
-                }
-                
-            }
-            
+            gameStart.keyboardState.isLeftShiftPress = 1;
+            gameStart.DoKeyBoardEvent(VK_LSHIFT,1); 
         }
         else if (kbhook->vkCode == VK_RSHIFT) {
-            keyboardState.isRightShiftPress = 1;
+            gameStart.keyboardState.isRightShiftPress = 1;
         }
         else if (kbhook->vkCode == 0x31) { //1
-            keyboardState.isNum1Press = 1;
+            gameStart.keyboardState.isNum1Press = 1;
         }
         else if (kbhook->vkCode == 0x32) { //2
-            keyboardState.isNum2Press = 1;
+            gameStart.keyboardState.isNum2Press = 1;
         }
         else if (kbhook->vkCode == 0x33) { //3
-            keyboardState.isNum3Press = 1;
+            gameStart.keyboardState.isNum3Press = 1;
         }
         else if (kbhook->vkCode == 0x34) { //4
-            keyboardState.isNum4Press = 1;
+            gameStart.keyboardState.isNum4Press = 1;
         }
         else if (kbhook->vkCode == 0x35) { //5
-            keyboardState.isNum5Press = 1;
+            gameStart.keyboardState.isNum5Press = 1;
         }
         else if (kbhook->vkCode == 0x36) { //6
-            keyboardState.isNum6Press = 1;
+            gameStart.keyboardState.isNum6Press = 1;
+        }
+        else if (kbhook->vkCode == 0x43) { //C
+            gameStart.keyboardState.isC_Press = 1;
+            gameStart.DoKeyBoardEvent(0x43, 1);
+        }
+        else if (kbhook->vkCode == 0x5A) { //Z
+            gameStart.keyboardState.isZ_Press = 1;
+            gameStart.DoKeyBoardEvent(0x5A, 1);
         }
         else if (kbhook->vkCode == VK_CAPITAL) {
-            if (keyboardState.isCapsLockPress == 0) {
-                keyboardState.isCapsLockPress = 1;
-                if (keyboardState.isLeftShiftPress == 0) {
-                    gameStart.CurrentWeapon->Prone(keyboardState.isCapsLockPress);
-                    SetMessage();
-                }             
-            }   
+            gameStart.keyboardState.isCapsLockPress = 1;
+            gameStart.DoKeyBoardEvent(VK_CAPITAL,1);          
         }
 
         //else if (kbhook->vkCode == 0x52) { //R
@@ -644,60 +713,67 @@ LRESULT CALLBACK LowLevelKeyboardProc(
 
 
         if (kbhook->vkCode == VK_LCONTROL) {
-            keyboardState.isLeftContrlPress = 0;
+            gameStart.keyboardState.isLeftContrlPress = 0;
+            gameStart.DoKeyBoardEvent(VK_LCONTROL,0);
         }
         else if (kbhook->vkCode == VK_LSHIFT) {
-            keyboardState.isLeftShiftPress = 0;
-            gameStart.CurrentWeapon->Crouch(keyboardState.isLeftShiftPress);
-            SetMessage();
+            gameStart.keyboardState.isLeftShiftPress = 0;
+            gameStart.DoKeyBoardEvent(VK_LSHIFT,0);
         }
         else if (kbhook->vkCode == VK_LMENU) {
-            keyboardState.isLeftAltPress = 0;
+            gameStart.keyboardState.isLeftAltPress = 0;
         }
         else if (kbhook->vkCode == 0x31) {
-            keyboardState.isNum1Press = 0;
-            keyboardState.canFocus = FALSE;
+            gameStart.keyboardState.isNum1Press = 0;
+            gameStart.keyboardState.canFocus = FALSE;
             gameStart.SwitchWeapon(1);
             SetMessage();
         }
         else if (kbhook->vkCode == 0x32) {
-            keyboardState.isNum2Press = 0;
-            keyboardState.canFocus = TRUE;
+            gameStart.keyboardState.isNum2Press = 0;
+            gameStart.keyboardState.canFocus = TRUE;
             gameStart.SwitchWeapon(2);
             SetMessage();
         }
         else if (kbhook->vkCode == 0x33) {
-            keyboardState.isNum3Press = 0;
+            gameStart.keyboardState.isNum3Press = 0;
         }
         else if (kbhook->vkCode == 0x34) {
-            keyboardState.isNum4Press = 0;
+            gameStart.keyboardState.isNum4Press = 0;
         }
         else if (kbhook->vkCode == 0x35) {
-            keyboardState.isNum5Press = 0;
+            gameStart.keyboardState.isNum5Press = 0;
         }
         else if (kbhook->vkCode == 0x36) {
-            keyboardState.isNum6Press = 0;
+            gameStart.keyboardState.isNum6Press = 0;
         }
-        else if (kbhook->vkCode == 0x58) {
-            keyboardState.canFocus = FALSE;
+        else if (kbhook->vkCode == 0x58) { //x
+            gameStart.keyboardState.canFocus = FALSE;
+        }
+        else if (kbhook->vkCode == 0x43) { //C
+            gameStart.keyboardState.isC_Press = 0;
+            gameStart.DoKeyBoardEvent(0x43, 0);
+        }
+        else if (kbhook->vkCode == 0x5A) { //Z
+            gameStart.keyboardState.isZ_Press = 0;
+            gameStart.DoKeyBoardEvent(0x5A, 0);
         }
         else if (kbhook->vkCode == VK_RSHIFT) {
-            keyboardState.isRightShiftPress = 0;
+            gameStart.keyboardState.isRightShiftPress = 0;
         }
         else if (kbhook->vkCode == VK_CAPITAL) {
             short key = GetKeyState(VK_CAPITAL);
-            keyboardState.capsLock = key & 0x0001;
-            keyboardState.isCapsLockPress = 0;
-            gameStart.CurrentWeapon->Prone(keyboardState.isCapsLockPress);
-            SetMessage();
+            gameStart.keyboardState.capsLock = key & 0x0001;  
+            gameStart.keyboardState.isCapsLockPress = 0;
+            gameStart.DoKeyBoardEvent(VK_CAPITAL,0);     
         }
         else if (kbhook->vkCode == VK_SCROLL) {
             short key = GetKeyState(VK_SCROLL);
-            keyboardState.scrollLock = key & 0x0001;
+            gameStart.keyboardState.scrollLock = key & 0x0001;
         }
         else if (kbhook->vkCode == 0xC0) {  // `~键
-            gameStart.PickMatchImageWeapon();
             //gameStart.SaveScreenShot();
+            MatchProcessThread();
         }
 
         
@@ -766,80 +842,82 @@ LRESULT CALLBACK LowLevelKeyboardProc(
 
     if (wParam == WM_SYSKEYDOWN) {
         if (kbhook->vkCode == VK_LMENU) {
-            keyboardState.isLeftAltPress = 1;
+            gameStart.keyboardState.isLeftAltPress = 1;
+            gameStart.DoKeyBoardEvent(VK_LMENU,1);
         }
         else if (kbhook->vkCode == 0x31) {
-            keyboardState.isNum1Press = 1;
+            gameStart.keyboardState.isNum1Press = 1;
         }
         else if (kbhook->vkCode == 0x32) {
-            keyboardState.isNum2Press = 1;
+            gameStart.keyboardState.isNum2Press = 1;
         }
         else if (kbhook->vkCode == 0x33) {
-            keyboardState.isNum3Press = 1;
+            gameStart.keyboardState.isNum3Press = 1;
         }
         else if (kbhook->vkCode == 0x34) {
-            keyboardState.isNum4Press = 1;
+            gameStart.keyboardState.isNum4Press = 1;
         }
         else if (kbhook->vkCode == 0x35) {
-            keyboardState.isNum5Press = 1;
+            gameStart.keyboardState.isNum5Press = 1;
         }
         else if (kbhook->vkCode == 0x36) {
-            keyboardState.isNum6Press = 1;
+            gameStart.keyboardState.isNum6Press = 1;
         }
         else if (kbhook->vkCode == VK_XBUTTON1) {
-            //keyboardState.isNum4Press = 1;
+            
         }
         else if (kbhook->vkCode == VK_XBUTTON2) {
-            //keyboardState.isNum4Press = 1;
+            
         }
     }
 
     if (wParam == WM_SYSKEYUP) {
          if (kbhook->vkCode == VK_LMENU) {
-            keyboardState.isLeftAltPress = 0;
+             gameStart.keyboardState.isLeftAltPress = 0;
+            gameStart.DoKeyBoardEvent(VK_LMENU,0);
          }
          else if (kbhook->vkCode == 0x31) {
-             keyboardState.isNum1Press = 0;
+             gameStart.keyboardState.isNum1Press = 0;
          }
          else if (kbhook->vkCode == 0x32) {
-             keyboardState.isNum2Press = 0;
+             gameStart.keyboardState.isNum2Press = 0;
          }
          else if (kbhook->vkCode == 0x33) {
-             keyboardState.isNum3Press = 0;
+             gameStart.keyboardState.isNum3Press = 0;
          }
          else if (kbhook->vkCode == 0x34) {
-             keyboardState.isNum4Press = 0;
+             gameStart.keyboardState.isNum4Press = 0;
          }
          else if (kbhook->vkCode == 0x35) {
-             keyboardState.isNum5Press = 0;
+             gameStart.keyboardState.isNum5Press = 0;
          }
          else if (kbhook->vkCode == 0x36) {
-             keyboardState.isNum6Press = 0;
+             gameStart.keyboardState.isNum6Press = 0;
          }
     }
 
     //////////////////////////
-    if (keyboardState.isLeftAltPress && keyboardState.isNum1Press) {
+    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isNum1Press) {
         gameStart.AssembleScope(1);
         SetMessage();
     }
-    if (keyboardState.isLeftAltPress && keyboardState.isNum2Press) {
+    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isNum2Press) {
         gameStart.AssembleScope(2);
         SetMessage();
     }
-    if (keyboardState.isLeftAltPress && keyboardState.isNum3Press) {
+    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isNum3Press) {
         gameStart.AssembleScope(3);
         SetMessage();
     }
-    if (keyboardState.isLeftAltPress && keyboardState.isNum4Press) {
+    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isNum4Press) {
         gameStart.AssembleScope(4);
         SetMessage();
     }
-    if (keyboardState.isLeftAltPress && keyboardState.isNum5Press) {
+    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isNum5Press) {
         gameStart.AssembleScope(6);
         SetMessage();
     }
-    if (keyboardState.isLeftAltPress && keyboardState.isNum6Press) {
+    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isNum6Press) {
         gameStart.AssembleScope(8);
         SetMessage();
     }
@@ -854,6 +932,12 @@ HANDLE StartProcessThread() {
     return HANDLE();
 }
 
+HANDLE MatchProcessThread()
+{
+    m_hMatchThread = (HANDLE)_beginthreadex(NULL, 0, &MatchThreadProc, NULL, 0, &m_ThreadId);
+    return HANDLE();
+}
+
 unsigned __stdcall ThreadProc(void* o) {
     //Mouse_State* state = (Mouse_State*)mouseState;
     while (m_IsShouldThreadFinish == FALSE) {
@@ -861,6 +945,12 @@ unsigned __stdcall ThreadProc(void* o) {
             gameStart.Move();
         }
     }
+    _endthreadex(0);
+    return 0;
+}
+
+unsigned __stdcall MatchThreadProc(void* o) {
+    gameStart.PickMatchImageWeapon();
     _endthreadex(0);
     return 0;
 }
@@ -884,65 +974,19 @@ void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired) {
     mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
     Sleep(gameStart.CurrentWeapon->interval);
     mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-    mouseState.count++;
-}
-
-void DrawMessageWindows(HWND hkeyboardWnd,std::string msg) {
-    RECT wndRect;
-    ::GetWindowRect(hkeyboardWnd, &wndRect);
-    SIZE wndSize = { wndRect.right - wndRect.left,wndRect.bottom - wndRect.top };
-    HDC hdc = ::GetDC(hkeyboardWnd);
-    HDC memDC = ::CreateCompatibleDC(hdc);
-    HBITMAP memBitmap = ::CreateCompatibleBitmap(hdc, wndSize.cx, wndSize.cy);
-    ::SelectObject(memDC, memBitmap);
-
-
-    Gdiplus::Graphics graphics(memDC);
-
-    Gdiplus::SolidBrush  brush(Gdiplus::Color(0,0, 0, 0));
-    Gdiplus::FontFamily  fontFamily(L"Times New Roman");
-    Gdiplus::Font font(&fontFamily, 24, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
-
-
-    RECT rc;
-    GetClientRect(hkeyboardWnd, &rc);
-    INT left = rc.left;
-    INT top = rc.top;
-    INT right = rc.right;
-    INT bottom = rc.bottom;
-
-    Gdiplus::PointF RegionPoint = Gdiplus::PointF(left, top);
-
-    graphics.DrawString(L"123", 3, &font, RegionPoint, &brush);
-    Gdiplus::Rect gdiRect{ rc.left ,rc.top ,rc.right - rc.left ,rc.bottom - rc.top };
-    graphics.FillRectangle(&brush, gdiRect);
-
-    // get screen dc 
-    HDC screenDC = GetDC(NULL);
-    POINT ptSrc = { 0,0 };
-
-    //BLENDFUNCTION blendFunction;
-    //blendFunction.AlphaFormat = AC_SRC_ALPHA;
-    //blendFunction.BlendFlags = 0;
-    //blendFunction.BlendOp = AC_SRC_OVER;
-    //blendFunction.SourceConstantAlpha = 255;
-    //UpdateLayeredWindow(hkeyboardWnd, screenDC, /*&ptSrc*/NULL, &wndSize, memDC, &ptSrc, 0, &blendFunction, ULW_ALPHA);
-
-    ::DeleteDC(memDC);
-    ::DeleteObject(memBitmap);
-
+    gameStart.mouseState.count++;
 }
 
 void SetMessage() {
     char lmessage[1024];
     sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->weaponName.c_str());
-    SetWindowTextA(hStaticText, lmessage);
+    //SetWindowTextA(hStaticText, lmessage);
     SetWindowTextA(hMessageText, lmessage);
     sprintf_s(lmessage, 1024, "%d",  gameStart.CurrentWeapon->scope);
-    SetWindowTextA(hStaticText2, lmessage);
+    //SetWindowTextA(hStaticText2, lmessage);
     SetWindowTextA(hMessageText2, lmessage);
     sprintf_s(lmessage, 1024, "%d:%d", gameStart.CurrentWeapon->recoil, gameStart.CurrentWeapon->interval);
-    SetWindowTextA(hStaticText3, lmessage);
+    //SetWindowTextA(hStaticText3, lmessage);
     SetWindowTextA(hMessageText3, lmessage);
     sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->muzzle != NULL ? gameStart.CurrentWeapon->muzzle->name.c_str() : "");
     SetWindowTextA(hMessageText4, lmessage);

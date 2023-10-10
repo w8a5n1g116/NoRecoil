@@ -63,15 +63,28 @@ public:
 	Mat maskImage;
 	WEAPON_FUNCTION function = FUNCTION2;
 
-	std::string iniFilePath = GetUserProfilePath() + "\\config.ini";
+	std::string iniFilePath =  ".\\config.ini";
 
 	CWeapon();
 
 	CWeapon(string weaponName, int interval, vector<int> offset, int shotCount);
 
 	CWeapon(string weaponName,string weaponName2, WEAPON_FUNCTION function) :weaponName(weaponName),weaponName2(weaponName2), function(function) {
-		templateImage = imread("image/template/" + weaponName + ".png", IMREAD_COLOR);
-		maskImage = imread("image/mask/" + weaponName + ".png", IMREAD_GRAYSCALE);
+
+		int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
+		string imageSuffix = "";
+		if (screenWidth == 2560) {
+			imageSuffix = "_1440";
+		}
+		else if (screenWidth == 2048) {
+			imageSuffix = "";
+		}
+		else if (screenWidth == 1920) {
+			imageSuffix = "_1080";
+		}
+
+		templateImage = imread("image/template/" + weaponName + imageSuffix + ".png", IMREAD_COLOR);
+		maskImage = imread("image/mask/" + weaponName + imageSuffix + ".png", IMREAD_GRAYSCALE);
 	};
 
 	void ComputeYOffset();
@@ -96,6 +109,8 @@ public:
 	void HoldBreath(bool b);
 
 	int CalculateRecoil(int sens);
+
+	void LoadWeaponImage();
 
 	std::string GetUserProfilePath() {
 		std::string path = "";

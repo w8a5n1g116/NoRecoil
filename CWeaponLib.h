@@ -116,33 +116,39 @@ public:
 	CWeaponLib() {
 		weaponList.push_back(&Default);
 		weaponList.push_back(&M416);	
+		weaponList.push_back(&AKM);
 		weaponList.push_back(&SCAR_L);
-		weaponList.push_back(&AUG);		
-		weaponList.push_back(&Mini14);
-		weaponList.push_back(&Mk12);
-		weaponList.push_back(&M16A4);
-		weaponList.push_back(&QBU);
-			
+		weaponList.push_back(&ACE32);
+		weaponList.push_back(&AUG);	
+		weaponList.push_back(&Beryl_M762);
 		weaponList.push_back(&UMP45);
 		weaponList.push_back(&Tommy_Gun);
 		weaponList.push_back(&PP_19_Bizon);
 		weaponList.push_back(&Vector);
 		weaponList.push_back(&Micro_UZI);
+		weaponList.push_back(&M16A4);
+		weaponList.push_back(&Mk47_Mutant);
+		weaponList.push_back(&Mini14);
+		weaponList.push_back(&SKS);
+		weaponList.push_back(&Mk12);
+		weaponList.push_back(&SLR);
+		weaponList.push_back(&Dragunov);
+		weaponList.push_back(&QBU);
+		weaponList.push_back(&DP_28);
+		weaponList.push_back(&M249);
+		weaponList.push_back(&VSS);
 		weaponList.push_back(&MP5K);
 		weaponList.push_back(&MP9);
-		
 		weaponList.push_back(&K2);
 		weaponList.push_back(&G36C);
 		weaponList.push_back(&QBZ);
-		
-	
 		weaponList.push_back(&Groza);
 		weaponList.push_back(&FAMAS);
 		weaponList.push_back( &Mk14);
 		weaponList.push_back(&P90);
-		weaponList.push_back(&Lynx_AMR);
-		weaponList.push_back(&AWM);
-		weaponList.push_back(&O1R452);
+		//weaponList.push_back(&Lynx_AMR);
+		//weaponList.push_back(&AWM);
+		//weaponList.push_back(&O1R452);
 		//weaponList.push_back(MG3_660_RPM);
 				
 		//weaponList.push_back( R1895);
@@ -153,26 +159,19 @@ public:
 		//weaponList.push_back( Skorpion);		
 		
 
-		weaponList.push_back(&DP_28);
-		weaponList.push_back(&M249);
+		
 
-		weaponList.push_back(&VSS);
-		weaponList.push_back(&Win94);
-		weaponList.push_back(&M24);
-		weaponList.push_back(&Mosin_Nagant);
-		weaponList.push_back(&Kar98k);	
+		
+		//weaponList.push_back(&Win94);
+		//weaponList.push_back(&M24);
+		//weaponList.push_back(&Mosin_Nagant);
+		//weaponList.push_back(&Kar98k);	
 		
 		//weaponList.push_back(DBS);
 		//weaponList.push_back(S12K);
 		//weaponList.push_back(S686);
 		//weaponList.push_back(S1897);
-		weaponList.push_back(&Mk47_Mutant);
-		weaponList.push_back(&Dragunov);
-		weaponList.push_back(&SLR);
-		weaponList.push_back(&SKS);		
-		weaponList.push_back(&AKM);
-		weaponList.push_back(&ACE32);
-		weaponList.push_back(&Beryl_M762);
+		
 
 		for (auto t : weaponList) {
 			weaponNameList.push_back(t->weaponName);

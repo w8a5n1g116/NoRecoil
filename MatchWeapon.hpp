@@ -6,12 +6,12 @@ using namespace cv;
 class MatchWeapon {
 	
 
-	tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
+	//tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
 	Screenshot screenShot;
 public:
 
 	MatchWeapon() {
-		api->Init(NULL, "eng");
+		//api->Init(NULL, "eng");
 	}
 
 
@@ -72,12 +72,12 @@ public:
 		return {name1, name2};
 	}
 
-	bool MatchWeaponNameImage(Mat src,Mat temp,Mat mask) {
+	bool MatchWeaponNameImage(Mat src,Mat temp,Mat mask,Rect weaponNameRect) {
 		if (temp.empty() || mask.empty()) {
 			return false;
 		}
 		Point ret = Match(src, temp, mask);
-		if ( ret.x >= 40 && ret.x <= 46  && ret.y >= 0 && ret.y <=4) {
+		if ( ret.x >= weaponNameRect.x && ret.x <= weaponNameRect.y && ret.y >= weaponNameRect.width && ret.y <= weaponNameRect.height) {
 			return true;
 		}
 		else {
@@ -85,21 +85,21 @@ public:
 		}
 	}
 
-	int MatchAttachmentImage(Mat src, Mat temp, Mat mask) {
+	int MatchAttachmentImage(Mat src, Mat temp, Mat mask,Rect muzzleRect,Rect gripRect,Rect stockRect,Rect scopeRect) {
 		if (temp.empty() || mask.empty()) {
 			return false;
 		}
 		Point ret = Match(src, temp,mask);
-		if (ret.x >= 0 && ret.x <= 6 && ret.y >= 182 && ret.y <= 190) {
+		if (ret.x >= muzzleRect.x && ret.x <= muzzleRect.y && ret.y >= muzzleRect.width && ret.y <= muzzleRect.height) {
 			return 1;
 		}
-		else if (ret.x >= 132 && ret.x <= 140 && ret.y >= 182 && ret.y <= 190) {
+		else if (ret.x >= gripRect.x && ret.x <= gripRect.y && ret.y >= gripRect.width && ret.y <= gripRect.height) {
 			return 2;
 		}
-		else if (ret.x >= 562 && ret.x <= 572 && ret.y >= 182 && ret.y <= 190) {
+		else if (ret.x >= stockRect.x && ret.x <= stockRect.y && ret.y >= stockRect.width && ret.y <= stockRect.height) {
 			return 3;
 		}
-		else if (ret.x >= 362 && ret.x <= 372 && ret.y >= 28 && ret.y <= 42) {
+		else if (ret.x >= scopeRect.x && ret.x <= scopeRect.y && ret.y >= scopeRect.width && ret.y <= scopeRect.height) {
 			return 4;
 		}
 		else {
@@ -113,37 +113,35 @@ public:
 
 	void SaveScreenShot(CWeapon* weapon1, CWeapon* weapon2) {
 		Mat screenshot = screenShot.getScreenshot();
-		Mat img = screenshot(Rect(1772, 125, 648, 250));
-		/*Mat weapon1Name = screenshot(Rect(1815, 120, 140, 50));
-		imwrite("image/template/" + weapon1->weaponName + ".png", weapon1Name);
-		Mat weapon2Name = screenshot(Rect(1815, 395, 140, 50));
-		imwrite("image/template/" + weapon2->weaponName + ".png", weapon2Name);*/
+		Mat img = screenshot(Rect(1769, 117,657 , 255));
+		/*Mat weapon1Name = img(Rect(52, 3, 140, 46));
+		imwrite("image/template/" + weapon1->weaponName + ".png", weapon1Name);*/
 
-		Mat weapon1Scope = img(Rect(368, 32, 57, 35));
-		imwrite("image/template/" + weapon1->cscope->name + ".png", weapon1Scope);
-		Mat weapon1Muzzle = img(Rect(3, 181, 60, 60));
-		imwrite("image/template/" + weapon1->muzzle->name + ".png", weapon1Muzzle);
-		Mat weapon1Grip = img(Rect(138, 181, 60, 60));
-		imwrite("image/template/" + weapon1->grip->name + ".png", weapon1Grip);
-		Mat weapon1Stock = img(Rect(568, 181, 60, 60));
-		imwrite("image/template/" + weapon1->stock->name + ".png", weapon1Stock);
+		/*Mat weapon1Scope = img(Rect(369, 38, 59, 35));
+		imwrite("image/template/" + weapon1->cscope->name + "_1440.png", weapon1Scope);
+		Mat weapon1Muzzle = img(Rect(6 ,189, 59, 59));
+		imwrite("image/template/" + weapon1->muzzle->name + "_1440.png", weapon1Muzzle);
+		Mat weapon1Grip = img(Rect(142 ,189 ,59 ,59));
+		imwrite("image/template/" + weapon1->grip->name + "_1440.png", weapon1Grip);
+		Mat weapon1Stock = img(Rect(572, 189 ,59 ,59));
+		imwrite("image/template/" + weapon1->stock->name + "_1440.png", weapon1Stock);*/
 	}
 
 	void SaveMask(string name) {
-		Mat grey = imread("image/template/" + name + ".png", IMREAD_GRAYSCALE);
+		Mat grey = imread("image/template/" + name + "_1440.png", IMREAD_GRAYSCALE);
 		Mat binary;
 		threshold(grey, binary, 80, 255, THRESH_BINARY_INV);
-		imwrite("image/mask/" + name + ".png", binary);
+		imwrite("image/mask/" + name + "_1440.png", binary);
 	}
 
 	std::string OCR(Mat* im) {
-		std::string ret;
+		//std::string ret;
 
-		api->SetImage(im->data, im->cols, im->rows, 1, im->step);
-		ret = api->GetUTF8Text();
-		//pixDestroy(&image);
+		//api->SetImage(im->data, im->cols, im->rows, 1, im->step);
+		//ret = api->GetUTF8Text();
+		////pixDestroy(&image);
 
-		return ret;
+		return "ret";
 	}
 private:
 };

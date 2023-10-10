@@ -5,8 +5,7 @@
 #include "NoRecoil.h"
 #include "CWeapon.h"
 
-extern Mouse_State mouseState;
-extern KeyBoard_State keyboardState;
+extern void SetMessage();
 extern HWND hWnd;
 
 void GameStart::Move()
@@ -73,8 +72,40 @@ void GameStart::PickMatchWeapon()
 void GameStart::PickMatchImageWeapon()
 {
 	Mat screenshot = matchWeapon.GetScreenShot();
-	Mat weapon1Src = screenshot(Rect(1772, 120, 648, 255));
-	Mat weapon2Src = screenshot(Rect(1772, 394, 648, 255));
+	Rect weaponRect1, weaponRect2, weaponNaceRect,muzzleRect, gripRect, stockRect, scopeRect;
+	if (p1440) {
+		weaponRect1 = p1440WeaponRect1;
+		weaponRect2 = p1440WeaponRect2;
+		weaponNaceRect = p1440WeaponNameXY;
+		muzzleRect = p1440MuzzleXY;	
+		gripRect = p1440GripXY;
+		stockRect = p1440StockXY;
+		scopeRect = p1440ScopeXY;
+	}
+	else if (p1440_zoom_1_25) {
+		weaponRect1 = p1440_125WeaponRect1;
+		weaponRect2 = p1440_125WeaponRect2;
+		weaponNaceRect = p1440_125WeaponNameXY;
+		muzzleRect = p1440_125MuzzleXY;
+		gripRect = p1440_125GripXY;
+		stockRect = p1440_125StockXY;
+		scopeRect = p1440_125ScopeXY;
+	}
+	else if (p1080) {
+		weaponRect1 = p1080WeaponRect1;
+		weaponRect2 = p1080WeaponRect2;
+		weaponNaceRect = p1080WeaponNameXY;
+		muzzleRect = p1080MuzzleXY;
+		gripRect = p1080GripXY;
+		stockRect = p1080StockXY;
+		scopeRect = p1080ScopeXY;
+	}
+	else {
+		return;
+	}
+
+	Mat weapon1Src = screenshot(weaponRect1);
+	Mat weapon2Src = screenshot(weaponRect2);
 	bool weapon1Matched = false;
 	bool weapon2Matched = false;
 	for (auto w : lib.weaponList) {
@@ -88,7 +119,7 @@ void GameStart::PickMatchImageWeapon()
 				else {
 					src = weapon2Src;
 				}
-				bool matched = matchWeapon.MatchWeaponNameImage(src, w->templateImage, w->maskImage);	//ÎäÆ÷1
+				bool matched = matchWeapon.MatchWeaponNameImage(src,  w->templateImage ,  w->maskImage,weaponNaceRect);	//ÎäÆ÷1
 				if (matched) {
 					int index = lib.FindWeaponPosition(w->weaponName);
 					if (index != -1) {
@@ -102,7 +133,7 @@ void GameStart::PickMatchImageWeapon()
 								continue;
 							}
 							if (!muzzleMatched) {
-								int matched = matchWeapon.MatchAttachmentImage(src, m->templateImage, m->maskImage);
+								int matched = matchWeapon.MatchAttachmentImage(src,  m->templateImage , m->maskImage, muzzleRect, gripRect, stockRect, scopeRect);
 								if (matched == 1) {
 									weaponList[i]->AssembleMuzzle(m);
 									muzzleMatched = true;
@@ -119,7 +150,7 @@ void GameStart::PickMatchImageWeapon()
 								continue;
 							}
 							if (!gripMatched) {
-								int matched = matchWeapon.MatchAttachmentImage(src, m->templateImage, m->maskImage);
+								int matched = matchWeapon.MatchAttachmentImage(src, m->templateImage,  m->maskImage, muzzleRect, gripRect, stockRect, scopeRect);
 								if (matched == 2) {
 									weaponList[i]->AssembleGrip(m);
 									gripMatched = true;
@@ -136,7 +167,7 @@ void GameStart::PickMatchImageWeapon()
 								continue;
 							}
 							if (!stockMatched) {
-								int matched = matchWeapon.MatchAttachmentImage(src, m->templateImage, m->maskImage);
+								int matched = matchWeapon.MatchAttachmentImage(src,  m->templateImage ,  m->maskImage , muzzleRect, gripRect, stockRect, scopeRect);
 								if (matched == 3) {
 									weaponList[i]->AssembleStock(m);
 									stockMatched = true;
@@ -153,7 +184,7 @@ void GameStart::PickMatchImageWeapon()
 								continue;
 							}
 							if (!scopeMatched) {
-								int matched = matchWeapon.MatchAttachmentImage(src, m->templateImage, m->maskImage);
+								int matched = matchWeapon.MatchAttachmentImage(src, m->templateImage,  m->maskImage, muzzleRect, gripRect, stockRect, scopeRect);
 								if (matched == 4) {
 									weaponList[i]->AssembleScope(m->scope, m);
 									scopeMatched = true;
@@ -239,6 +270,7 @@ void GameStart::SwitchWeapon(int position)
 
 void GameStart::LoadSetting()
 {
+	LoadKeys();
 	for (auto t : lib.weaponList) {
 		t->LoadSetting();
 	}
@@ -256,23 +288,35 @@ void GameStart::SaveScreenShot()
 	//matchWeapon.SaveScreenShot(weaponList[0], weaponList[1]);
 
 	/*for (auto t : lib.weaponList) {
-		if(t.weaponName != "Default")
-		matchWeapon.SaveMask(t.weaponName);
+		if(t->weaponName != "Default")
+		matchWeapon.SaveMask(t->weaponName);
 	}*/
 
 	for (auto t : lib.muzzleList) {
+		if (t->name == "Muzzle_None") {
+			continue;
+		}
 		matchWeapon.SaveMask(t->name);
 	}
 
 	for (auto t : lib.gripList) {
+		if (t->name == "Grip_None") {
+			continue;
+		}
 		matchWeapon.SaveMask(t->name);
 	}
 
 	for (auto t : lib.stockList) {
+		if (t->name == "Stock_None") {
+			continue;
+		}
 		matchWeapon.SaveMask(t->name);
 	}
 
 	for (auto t : lib.scopeList) {
+		if (t->name == "Scope_None") {
+			continue;
+		}
 		matchWeapon.SaveMask(t->name);
 	}
 }
@@ -311,6 +355,89 @@ void GameStart::AssembleScope(int scope)
 	if (cscope != nullptr) {
 		CurrentWeapon->AssembleScope(cscope->scope, cscope);
 	}
+}
+
+void GameStart::DoKeyBoardEvent(unsigned short key, int keyDownOrUp)
+{
+	if (key == crouchKey) {
+		if (keyDownOrUp == 1) {
+			isCrouch = true;			
+			if (!isProne) {
+				CurrentWeapon->Crouch(isCrouch);
+			}
+		}
+		else {
+			isCrouch = false;
+			if (!isProne) {
+				CurrentWeapon->Crouch(isCrouch);
+			}
+		}
+	}
+	else if (key == proneKey) {
+		if (keyDownOrUp == 1) {
+			isProne = true;
+			if (!isCrouch) {
+				CurrentWeapon->Prone(isProne);
+			}
+
+		}
+		else {			
+			isProne = false;
+			if (!isCrouch) {
+				CurrentWeapon->Prone(isProne);
+			}
+		}
+	}
+	else if (key == focusKey) {
+		if (keyDownOrUp == 1) {
+
+		}
+		else {
+
+		}
+	}
+	else if (key == holdBreathKey) {
+		if (keyDownOrUp == 1) {
+
+		}
+		else {
+
+		}
+	}
+
+	SetMessage();
+}
+
+void GameStart::LoadKeys()
+{
+	crouchKey = (unsigned short)GetPrivateProfileIntA("Key", "CrouchKey", VK_LSHIFT, iniFilePath.c_str());
+	proneKey = (unsigned short)GetPrivateProfileIntA("Key", "ProneKey", VK_CAPITAL, iniFilePath.c_str());
+	focusKey = (unsigned short)GetPrivateProfileIntA("Key", "FocusKey", VK_LCONTROL, iniFilePath.c_str());
+	holdBreathKey = (unsigned short)GetPrivateProfileIntA("Key", "HoldBreathKey", VK_LMENU, iniFilePath.c_str());
+}
+
+void GameStart::SetCrouchKey(unsigned short key)
+{
+	crouchKey = key;
+	WritePrivateProfileStringA("Key", "CrouchKey", std::to_string(key).c_str(), iniFilePath.c_str());
+}
+
+void GameStart::SetProneKey(unsigned short key)
+{
+	proneKey = key;
+	WritePrivateProfileStringA("Key", "ProneKey", std::to_string(key).c_str(), iniFilePath.c_str());
+}
+
+void GameStart::SetFocusKey(unsigned short key)
+{
+	focusKey = key;
+	WritePrivateProfileStringA("Key", "FocusKey", std::to_string(key).c_str(), iniFilePath.c_str());
+}
+
+void GameStart::SetHoldBreathKey(unsigned short key)
+{
+	holdBreathKey = key;
+	WritePrivateProfileStringA("Key", "HoldBreathKey", std::to_string(key).c_str(), iniFilePath.c_str());
 }
 
 void CALLBACK GameStart::TimerProc(void* gameStart, BOOLEAN TimerOrWaitFired) {
