@@ -15,15 +15,13 @@ public:
 	}
 
 
-	Point Match(Mat img, Mat templ,Mat mask) {
-
-		cvtColor(img, img, COLOR_RGBA2RGB);
+	Point Match(Mat* img, Mat* templ,Mat* mask) {
 
 		Mat result;
-		int result_cols = img.cols - templ.cols + 1;
-		int result_rows = img.rows - templ.rows + 1;
+		int result_cols = img->cols - templ->cols + 1;
+		int result_rows = img->rows - templ->rows + 1;
 		result.create(result_rows, result_cols, CV_8UC3);
-		matchTemplate(img, templ, result, TM_CCORR_NORMED,mask);
+		matchTemplate(*img, *templ, result, TM_CCORR_NORMED,*mask);
 		normalize(result, result, 0, 1, NORM_MINMAX, -1, Mat());
 		double minVal; double maxVal; Point minLoc; Point maxLoc;
 		//Point matchLoc;
@@ -53,27 +51,9 @@ public:
 		return maxLoc;
 	}
 
-	std::vector<std::string> MatchWeaponName() {
-		Mat screenshot = screenShot.getScreenshot();
-		Mat img1 = screenshot(cv::Rect(1815, 120, 140, 50));
-		Mat img2 = screenshot(cv::Rect(1815, 395, 140, 50));
 
-		Mat grey;
-		Mat binary;
-		cvtColor(img1, grey, COLOR_RGBA2GRAY);
-		threshold(grey, binary, 128, 255, THRESH_BINARY);
-		std::string name1 = OCR(&grey);
-		cvtColor(img2, grey, COLOR_RGBA2GRAY);
-		threshold(grey, binary, 128, 255, THRESH_BINARY);
-		std::string name2= OCR(&grey);
-
-
-
-		return {name1, name2};
-	}
-
-	bool MatchWeaponNameImage(Mat src,Mat temp,Mat mask,Rect weaponNameRect) {
-		if (temp.empty() || mask.empty()) {
+	bool MatchWeaponNameImage(Mat* src,Mat* temp,Mat* mask,Rect weaponNameRect) {
+		if (temp->empty() || mask->empty()) {
 			return false;
 		}
 		Point ret = Match(src, temp, mask);
@@ -85,8 +65,8 @@ public:
 		}
 	}
 
-	int MatchAttachmentImage(Mat src, Mat temp, Mat mask,Rect muzzleRect,Rect gripRect,Rect stockRect,Rect scopeRect) {
-		if (temp.empty() || mask.empty()) {
+	int MatchAttachmentImage(Mat* src, Mat* temp, Mat* mask,Rect muzzleRect,Rect gripRect,Rect stockRect,Rect scopeRect) {
+		if (temp->empty() || mask->empty()) {
 			return false;
 		}
 		Point ret = Match(src, temp,mask);

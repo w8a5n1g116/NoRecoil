@@ -700,6 +700,12 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             gameStart.keyboardState.isCapsLockPress = 1;
             gameStart.DoKeyBoardEvent(VK_CAPITAL,1);          
         }
+        else if (kbhook->vkCode == VK_TAB) {
+            if (gameStart.keyboardState.isTabPress == 0) {
+                gameStart.keyboardState.isTabPress = 1;
+                CreateTimerQueueTimer(&m_timerHandle2, NULL, TimerProc2, (void*)VK_RSHIFT, 2000, 0, WT_EXECUTEINTIMERTHREAD);
+            }           
+        }
 
         //else if (kbhook->vkCode == 0x52) { //R
         //    function.Reload();
@@ -772,8 +778,14 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             gameStart.keyboardState.scrollLock = key & 0x0001;
         }
         else if (kbhook->vkCode == 0xC0) {  // `~键
-            //gameStart.SaveScreenShot();
-            MatchProcessThread();
+            gameStart.PickMatchImageWeapon();
+            //MatchProcessThread();
+        }
+        else if (kbhook->vkCode == VK_TAB) {
+            if (gameStart.keyboardState.isTabPress == 1) {
+                gameStart.keyboardState.isTabPress = 0;
+                DeleteTimerQueueTimer(NULL, m_timerHandle2, NULL);
+            }
         }
 
         
@@ -971,10 +983,7 @@ void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired) {
 }
 
 void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired) {
-    mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-    Sleep(gameStart.CurrentWeapon->interval);
-    mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-    gameStart.mouseState.count++;
+    MatchProcessThread();
 }
 
 void SetMessage() {

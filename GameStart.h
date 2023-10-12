@@ -19,6 +19,7 @@ public:
 		int isNum4Press = 0;
 		int isNum5Press = 0;
 		int isNum6Press = 0;
+		int isTabPress = 0;
 		int capsLock = 0;
 		int isCapsLockPress = 0;
 		int scrollLock = 0;
@@ -33,6 +34,24 @@ public:
 		int count = 0;
 	};
 
+	Mat screenShot;
+
+	Mat weapon1Src;
+	Mat weapon2Src;
+
+	struct ThisAndIndex {
+		GameStart* _this;
+		Mat* image;
+		int index;
+	};
+
+	ThisAndIndex ti1;
+	ThisAndIndex ti2;
+
+	Rect weaponRect1, weaponRect2, weaponNaceRect, muzzleRect, gripRect, stockRect, scopeRect;
+
+
+	TP_CALLBACK_ENVIRON callbackEnviron;
 	//Êó±ê×´Ì¬
 	Mouse_State mouseState;
 
@@ -111,12 +130,44 @@ public:
 		else if (screenWidth == 1920) {
 			p1080 = 1;
 		}
+
+		if (p1440) {
+			weaponRect1 = p1440WeaponRect1;
+			weaponRect2 = p1440WeaponRect2;
+			weaponNaceRect = p1440WeaponNameXY;
+			muzzleRect = p1440MuzzleXY;
+			gripRect = p1440GripXY;
+			stockRect = p1440StockXY;
+			scopeRect = p1440ScopeXY;
+		}
+		else if (p1440_zoom_1_25) {
+			weaponRect1 = p1440_125WeaponRect1;
+			weaponRect2 = p1440_125WeaponRect2;
+			weaponNaceRect = p1440_125WeaponNameXY;
+			muzzleRect = p1440_125MuzzleXY;
+			gripRect = p1440_125GripXY;
+			stockRect = p1440_125StockXY;
+			scopeRect = p1440_125ScopeXY;
+		}
+		else if (p1080) {
+			weaponRect1 = p1080WeaponRect1;
+			weaponRect2 = p1080WeaponRect2;
+			weaponNaceRect = p1080WeaponNameXY;
+			muzzleRect = p1080MuzzleXY;
+			gripRect = p1080GripXY;
+			stockRect = p1080StockXY;
+			scopeRect = p1080ScopeXY;
+		}
+
+		
+		InitializeThreadpoolEnvironment(&callbackEnviron);
 	}
 
 	void Move();
 	void PickWeapon(std::string weaponName);
 	void PickMatchWeapon();
 	void PickMatchImageWeapon();
+	void Match(Mat* src, int index);
 	void PickPreviousWeapon();
 	void PickNextWeapon();
 	void IncrementRecoil();
@@ -145,6 +196,8 @@ public:
 	void SetHoldBreathKey(unsigned short key);
 
 	static void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired);
+
+	static void CALLBACK MatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance,_Inout_opt_ PVOID Context);
 	
 };
 

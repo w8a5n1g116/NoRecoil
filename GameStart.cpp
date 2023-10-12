@@ -47,174 +47,50 @@ void GameStart::PickWeapon(std::string weaponName)
 
 void GameStart::PickMatchWeapon()
 {
-	auto vec = matchWeapon.MatchWeaponName();
-	std::string weaponName = vec[0];	
-	weaponName.erase(weaponName.find_last_not_of("\n") + 1);	//去掉结尾\n	
-	int index = lib.FindWeaponPosition(weaponName);
-	if (index != -1) {
-		currentIndexPosition = index;
-		weaponList[0] = lib.FindWeapon(weaponName);
-		CurrentWeapon = weaponList[0];
-		SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
-	}
+	//auto vec = matchWeapon.MatchWeaponName();
+	//std::string weaponName = vec[0];	
+	//weaponName.erase(weaponName.find_last_not_of("\n") + 1);	//去掉结尾\n	
+	//int index = lib.FindWeaponPosition(weaponName);
+	//if (index != -1) {
+	//	currentIndexPosition = index;
+	//	weaponList[0] = lib.FindWeapon(weaponName);
+	//	CurrentWeapon = weaponList[0];
+	//	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
+	//}
 
-	std::string weaponName2 = vec[1];
-	weaponName2.erase(weaponName.find_last_not_of("\n") + 1);	//去掉结尾\n
-	int index2 = lib.FindWeaponPosition(weaponName2);
-	if (index2 != -1) {
-		currentIndexPosition = index2;
-		weaponList[1] = lib.FindWeapon(weaponName2);
-		CurrentWeapon = weaponList[1];
-		SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
-	}
+	//std::string weaponName2 = vec[1];
+	//weaponName2.erase(weaponName.find_last_not_of("\n") + 1);	//去掉结尾\n
+	//int index2 = lib.FindWeaponPosition(weaponName2);
+	//if (index2 != -1) {
+	//	currentIndexPosition = index2;
+	//	weaponList[1] = lib.FindWeapon(weaponName2);
+	//	CurrentWeapon = weaponList[1];
+	//	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
+	//}
 }
 
 void GameStart::PickMatchImageWeapon()
 {
-	Mat screenshot = matchWeapon.GetScreenShot();
-	Rect weaponRect1, weaponRect2, weaponNaceRect,muzzleRect, gripRect, stockRect, scopeRect;
-	if (p1440) {
-		weaponRect1 = p1440WeaponRect1;
-		weaponRect2 = p1440WeaponRect2;
-		weaponNaceRect = p1440WeaponNameXY;
-		muzzleRect = p1440MuzzleXY;	
-		gripRect = p1440GripXY;
-		stockRect = p1440StockXY;
-		scopeRect = p1440ScopeXY;
-	}
-	else if (p1440_zoom_1_25) {
-		weaponRect1 = p1440_125WeaponRect1;
-		weaponRect2 = p1440_125WeaponRect2;
-		weaponNaceRect = p1440_125WeaponNameXY;
-		muzzleRect = p1440_125MuzzleXY;
-		gripRect = p1440_125GripXY;
-		stockRect = p1440_125StockXY;
-		scopeRect = p1440_125ScopeXY;
-	}
-	else if (p1080) {
-		weaponRect1 = p1080WeaponRect1;
-		weaponRect2 = p1080WeaponRect2;
-		weaponNaceRect = p1080WeaponNameXY;
-		muzzleRect = p1080MuzzleXY;
-		gripRect = p1080GripXY;
-		stockRect = p1080StockXY;
-		scopeRect = p1080ScopeXY;
-	}
-	else {
-		return;
-	}
+	screenShot = matchWeapon.GetScreenShot();
+	weapon1Src = screenShot(weaponRect1);
+	weapon2Src = screenShot(weaponRect2);
 
-	Mat weapon1Src = screenshot(weaponRect1);
-	Mat weapon2Src = screenshot(weaponRect2);
-	bool weapon1Matched = false;
-	bool weapon2Matched = false;
-	for (auto w : lib.weaponList) {
-		if (!weapon1Matched || !weapon2Matched) {
+	cvtColor(weapon1Src, weapon1Src, COLOR_RGBA2RGB);
+	cvtColor(weapon2Src, weapon2Src, COLOR_RGBA2RGB);
 
-			for (int i = 1; i >=0; i--) {
-				Mat src;
-				if (i == 0) {
-					src = weapon1Src;
-				}
-				else {
-					src = weapon2Src;
-				}
-				bool matched = matchWeapon.MatchWeaponNameImage(src,  w->templateImage ,  w->maskImage,weaponNaceRect);	//武器1
-				if (matched) {
-					int index = lib.FindWeaponPosition(w->weaponName);
-					if (index != -1) {
-						currentIndexPosition = index;
-						weaponList[i] = lib.FindWeapon(w->weaponName);
+	ti1.image = &weapon1Src;
+	ti1.index = 0;
+	ti1._this = this;
+	ti2.image = &weapon2Src;
+	ti2.index = 1;
+	ti2._this = this;
 
-
-						bool muzzleMatched = false;
-						for (auto m : lib.muzzleList) {
-							if (m->name == "Muzzle_None") {
-								continue;
-							}
-							if (!muzzleMatched) {
-								int matched = matchWeapon.MatchAttachmentImage(src,  m->templateImage , m->maskImage, muzzleRect, gripRect, stockRect, scopeRect);
-								if (matched == 1) {
-									weaponList[i]->AssembleMuzzle(m);
-									muzzleMatched = true;
-								}
-							}
-						}
-						if (!muzzleMatched) {
-							weaponList[i]->AssembleMuzzle(lib.FindMuzzle("Muzzle_None"));
-						}
-
-						bool gripMatched = false;
-						for (auto m : lib.gripList) {
-							if (m->name == "Grip_None") {
-								continue;
-							}
-							if (!gripMatched) {
-								int matched = matchWeapon.MatchAttachmentImage(src, m->templateImage,  m->maskImage, muzzleRect, gripRect, stockRect, scopeRect);
-								if (matched == 2) {
-									weaponList[i]->AssembleGrip(m);
-									gripMatched = true;
-								}
-							}
-						}
-						if (!gripMatched) {
-							weaponList[i]->AssembleGrip(lib.FindGrip("Grip_None"));
-						}
-
-						bool stockMatched = false;
-						for (auto m : lib.stockList) {
-							if (m->name == "Stock_None") {
-								continue;
-							}
-							if (!stockMatched) {
-								int matched = matchWeapon.MatchAttachmentImage(src,  m->templateImage ,  m->maskImage , muzzleRect, gripRect, stockRect, scopeRect);
-								if (matched == 3) {
-									weaponList[i]->AssembleStock(m);
-									stockMatched = true;
-								}
-							}
-						}
-						if (!stockMatched) {
-							weaponList[i]->AssembleStock(lib.FindStock("Stock_None"));
-						}
-
-						bool scopeMatched = false;
-						for (auto m : lib.scopeList) {
-							if (m->name == "Scope_None") {
-								continue;
-							}
-							if (!scopeMatched) {
-								int matched = matchWeapon.MatchAttachmentImage(src, m->templateImage,  m->maskImage, muzzleRect, gripRect, stockRect, scopeRect);
-								if (matched == 4) {
-									weaponList[i]->AssembleScope(m->scope, m);
-									scopeMatched = true;
-								}
-							}
-						}
-						if (!scopeMatched) {
-							CScope* scope = lib.FindCScope(0);
-							weaponList[i]->AssembleScope(scope->scope, scope);
-						}
-
-						
-					}
-					if (i == 0) {
-						weapon1Matched = true;
-					}
-					else {
-						weapon2Matched = true;
-					}
-					
-					weaponList[i]->ComputeYOffset();
-				}
-
-			
-			}
-		}	
-	}
+	//提交线程池
+	TrySubmitThreadpoolCallback(MatchThreadProc, &ti1, &callbackEnviron);
+	TrySubmitThreadpoolCallback(MatchThreadProc, &ti2, &callbackEnviron);
+	
 	CurrentWeapon = weaponList[0];
 	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
-	
 }
 
 void GameStart::PickPreviousWeapon()
@@ -225,6 +101,94 @@ void GameStart::PickPreviousWeapon()
 		currentIndexPosition = maxIndex - 1;
 	}
 	PickWeapon(lib.weaponNameList[currentIndexPosition]);	
+}
+
+void GameStart::Match(Mat* src,int i)
+{
+	for (auto w : lib.weaponList) {
+		bool matched = matchWeapon.MatchWeaponNameImage(src, &w->templateImage, &w->maskImage, weaponNaceRect);	//武器1
+		if (matched) {
+			int index = lib.FindWeaponPosition(w->weaponName);
+			if (index != -1) {
+				currentIndexPosition = index;
+				weaponList[i] = lib.FindWeapon(w->weaponName);
+
+
+				bool muzzleMatched = false;
+				for (auto m : lib.muzzleList) {
+					if (m->name == "Muzzle_None") {
+						continue;
+					}
+					if (!muzzleMatched) {
+						int matched = matchWeapon.MatchAttachmentImage(src, &m->templateImage, &m->maskImage, muzzleRect, gripRect, stockRect, scopeRect);
+						if (matched == 1) {
+							weaponList[i]->AssembleMuzzle(m);
+							muzzleMatched = true;
+						}
+					}
+				}
+				if (!muzzleMatched) {
+					weaponList[i]->AssembleMuzzle(lib.FindMuzzle("Muzzle_None"));
+				}
+
+				bool gripMatched = false;
+				for (auto m : lib.gripList) {
+					if (m->name == "Grip_None") {
+						continue;
+					}
+					if (!gripMatched) {
+						int matched = matchWeapon.MatchAttachmentImage(src, &m->templateImage, &m->maskImage, muzzleRect, gripRect, stockRect, scopeRect);
+						if (matched == 2) {
+							weaponList[i]->AssembleGrip(m);
+							gripMatched = true;
+						}
+					}
+				}
+				if (!gripMatched) {
+					weaponList[i]->AssembleGrip(lib.FindGrip("Grip_None"));
+				}
+
+				bool stockMatched = false;
+				for (auto m : lib.stockList) {
+					if (m->name == "Stock_None") {
+						continue;
+					}
+					if (!stockMatched) {
+						int matched = matchWeapon.MatchAttachmentImage(src, &m->templateImage, &m->maskImage, muzzleRect, gripRect, stockRect, scopeRect);
+						if (matched == 3) {
+							weaponList[i]->AssembleStock(m);
+							stockMatched = true;
+						}
+					}
+				}
+				if (!stockMatched) {
+					weaponList[i]->AssembleStock(lib.FindStock("Stock_None"));
+				}
+
+				bool scopeMatched = false;
+				for (auto m : lib.scopeList) {
+					if (m->name == "Scope_None") {
+						continue;
+					}
+					if (!scopeMatched) {
+						int matched = matchWeapon.MatchAttachmentImage(src, &m->templateImage, &m->maskImage, muzzleRect, gripRect, stockRect, scopeRect);
+						if (matched == 4) {
+							weaponList[i]->AssembleScope(m->scope, m);
+							scopeMatched = true;
+						}
+					}
+				}
+				if (!scopeMatched) {
+					CScope* scope = lib.FindCScope(0);
+					weaponList[i]->AssembleScope(scope->scope, scope);
+				}
+
+
+			}
+			weaponList[i]->ComputeYOffset();
+			break;			
+		}
+	}
 }
 
 void GameStart::PickNextWeapon()
@@ -442,4 +406,9 @@ void GameStart::SetHoldBreathKey(unsigned short key)
 
 void CALLBACK GameStart::TimerProc(void* gameStart, BOOLEAN TimerOrWaitFired) {
 	((GameStart*)gameStart)->go = false;
+}
+
+void CALLBACK GameStart::MatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context) {
+	ThisAndIndex* ti = (ThisAndIndex*)Context;
+	ti->_this->Match(ti->image,ti->index);
 }
