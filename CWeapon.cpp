@@ -117,9 +117,9 @@ std::vector<int> CWeapon::findMatch(int v)
 	std::vector<int> candidateResult;
 	int maxMultiple = 50;
 	for (int i = 1; i <= maxMultiple; i++) {
-		for (int j = 0; j < 35; j++) {
+		for (int j = 0; j < 50; j++) {
 			int r = 0;
-			if (GameStart::DataMatrix.size() == 35) {
+			if (GameStart::DataMatrix.size() == 50) {
 				r= v - (GameStart::DataMatrix[j] * i);
 			}						
 			if (r <= 5 && r >= -5) {

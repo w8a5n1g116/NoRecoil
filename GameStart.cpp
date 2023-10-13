@@ -11,12 +11,15 @@ extern HWND hWnd;
 //默认数据
 vector<int> GameStart::DataMatrix = {
 		0,0,0,0,0,
-		0,0,0,0,0,
+		142,124,110,100,91,
 		83,77,72,67,63,
 		60,56,53,50,48,
 		46,44,42,40,39,
 		38,36,35,34,33,
-		32,31,30,29,28
+		32,31,30,29,28,
+		28,27,26,26,25,
+		24,24,23,23,22,
+		22,21,21,21,20
 };
 
 void GameStart::Move()
@@ -435,7 +438,7 @@ void CALLBACK GameStart::MatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance,
 void GameStart::TestDataMatrix() {
 	MessageBoxA(hWnd, "点击确定开始测试。", "提示", MB_OK);
 	DataMatrix.clear();
-	for (int i = 1; i <= 35; i++) {
+	for (int i = 1; i <= 50; i++) {
 		int count = 0;
 		go = true;
 		HANDLE timerHandle;
@@ -454,29 +457,30 @@ void GameStart::TestDataMatrix() {
 }
 
 void GameStart::SaveDataMatrix() {
-	for (int i = 1; i <= 35; i++) {
+	for (int i = 1; i <= 50; i++) {
 		
 		string name = "data_" + to_string(i);
 		string value = to_string(DataMatrix[i - 1]);
-		if (i < 10) {
-			WritePrivateProfileStringA("DataMatrix", name.c_str(), "0", iniFilePath.c_str());
-		}
-		else {
-
-		}
-		WritePrivateProfileStringA("DataMatrix", name.c_str(), value.c_str(), iniFilePath.c_str());
+		WritePrivateProfileStringA("DataMatrix", name.c_str(), value.c_str(), iniFilePath.c_str());	
 	}
 }
 
 void GameStart::LoadDataMatrix() {
-	for (int i = 1; i <= 35; i++) {
+	DataMatrix.clear();
+	for (int i = 1; i <= 50; i++) {
 		string name = "data_" + to_string(i);
-		int data = GetPrivateProfileIntA("DataMatrix", name.c_str(), 0, iniFilePath.c_str());
+		int data = 0;
+		if (i <= 5) {
+			data = 0;
+		}
+		else {
+			data = GetPrivateProfileIntA("DataMatrix", name.c_str(), 0, iniFilePath.c_str());
+		}
 		DataMatrix.push_back(data);
 	}
 
-	if (DataMatrix[10] == 0 || tested == false) {
-		MessageBoxA(hWnd, "首次运行请在游戏中完成测试操作，具体操作为:\n 1.进入游戏后进入训练场或任意一局游戏.\n2.按下组合键ALT + T一次后等待,请勿多次点击，不然可能会影响测试结果.\n3.等待35s左右，直到提示出现.", "提示", MB_OK);
+	if (DataMatrix[10] == 0) {
+		MessageBoxA(hWnd, "首次运行请在游戏中完成测试操作，具体操作为:\n 1.进入游戏后进入训练场或任意一局游戏.\n2.按下组合键ALT + T一次后等待,请勿多次点击，不然可能会影响测试结果.\n3.等待50秒左右，直到提示出现.", "提示", MB_OK);
 	}
 	else {
 		tested = true;
