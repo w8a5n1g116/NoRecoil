@@ -1,4 +1,5 @@
 #include "CWeapon.h"
+#include "GameStart.h"
 
 CWeapon::CWeapon()
 {
@@ -117,7 +118,10 @@ std::vector<int> CWeapon::findMatch(int v)
 	int maxMultiple = 50;
 	for (int i = 1; i <= maxMultiple; i++) {
 		for (int j = 0; j < 35; j++) {
-			int r = v - (data[j] * i);
+			int r = 0;
+			if (GameStart::DataMatrix.size() == 35) {
+				r= v - (GameStart::DataMatrix[j] * i);
+			}						
 			if (r <= 5 && r >= -5) {
 				candidateInterval.push_back(j);
 				candidateY.push_back(i);

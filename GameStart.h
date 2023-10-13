@@ -13,6 +13,7 @@ public:
 		int isLeftAltPress = 0;
 		int isC_Press = 0;
 		int isZ_Press = 0;
+		int isT_Press = 0;
 		int isNum1Press = 0;
 		int isNum2Press = 0;
 		int isNum3Press = 0;
@@ -60,6 +61,7 @@ public:
 
 
 	CWeaponLib lib;
+	static vector<int> DataMatrix;
 	
 	CWeapon* weaponList[2] = { 0 };
 	CWeapon* CurrentWeapon = nullptr;
@@ -80,6 +82,10 @@ public:
 	bool isFocus = false;
 	unsigned short holdBreathKey = VK_LMENU;
 	bool isHoldBreath = false;
+
+	bool allowMatch = true;
+	bool tested = false;
+	bool isTesting = false;
 
 	std::string iniFilePath = ".\\config.ini";
 
@@ -115,6 +121,7 @@ public:
 	MatchWeapon matchWeapon;
 
 	GameStart() {
+
 		weaponList[0] = lib.FindWeapon("Default");
 		weaponList[1] = lib.FindWeapon("Default");
 		CurrentWeapon = weaponList[0];
@@ -159,7 +166,7 @@ public:
 			scopeRect = p1080ScopeXY;
 		}
 
-		
+		//初始化线程池
 		InitializeThreadpoolEnvironment(&callbackEnviron);
 	}
 
@@ -195,7 +202,13 @@ public:
 	void SetFocusKey(unsigned short key);
 	void SetHoldBreathKey(unsigned short key);
 
+	void TestDataMatrix();
+	void SaveDataMatrix();
+	void LoadDataMatrix();
+
 	static void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired);
+
+	static void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired);
 
 	static void CALLBACK MatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance,_Inout_opt_ PVOID Context);
 	

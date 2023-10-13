@@ -84,9 +84,14 @@ void SetMessage();
 
 HANDLE m_timerHandle = NULL;
 HANDLE m_timerHandle2 = NULL;
+HANDLE m_timerHandle3 = NULL;
+HANDLE m_timerHandle4 = NULL;
+
 void KeyboardInput(UINT key, BOOL isKeyDown);
 void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired);
 void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired);
+void CALLBACK TimerProc3(void* key, BOOLEAN TimerOrWaitFired);
+void CALLBACK TimerProc4(void* key, BOOLEAN TimerOrWaitFired);
 
 /////////////////////////////////
 GameStart gameStart;
@@ -703,7 +708,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == VK_TAB) {
             if (gameStart.keyboardState.isTabPress == 0) {
                 gameStart.keyboardState.isTabPress = 1;
-                CreateTimerQueueTimer(&m_timerHandle2, NULL, TimerProc2, (void*)VK_RSHIFT, 2000, 0, WT_EXECUTEINTIMERTHREAD);
+                CreateTimerQueueTimer(&m_timerHandle2, NULL, TimerProc2, (void*)VK_RSHIFT, 150, 0, WT_EXECUTEINTIMERTHREAD);
             }           
         }
 
@@ -784,7 +789,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == VK_TAB) {
             if (gameStart.keyboardState.isTabPress == 1) {
                 gameStart.keyboardState.isTabPress = 0;
-                DeleteTimerQueueTimer(NULL, m_timerHandle2, NULL);
+                //DeleteTimerQueueTimer(NULL, m_timerHandle2, NULL);
             }
         }
 
@@ -875,6 +880,9 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == 0x36) {
             gameStart.keyboardState.isNum6Press = 1;
         }
+        else if (kbhook->vkCode == 0x54) {
+            gameStart.keyboardState.isT_Press = 1;
+        }
         else if (kbhook->vkCode == VK_XBUTTON1) {
             
         }
@@ -906,6 +914,9 @@ LRESULT CALLBACK LowLevelKeyboardProc(
          else if (kbhook->vkCode == 0x36) {
              gameStart.keyboardState.isNum6Press = 0;
          }
+         else if (kbhook->vkCode == 0x54) {
+             gameStart.keyboardState.isT_Press = 0;
+         }
     }
 
     //////////////////////////
@@ -932,6 +943,14 @@ LRESULT CALLBACK LowLevelKeyboardProc(
     if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isNum6Press) {
         gameStart.AssembleScope(8);
         SetMessage();
+    }
+    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isT_Press) {
+        if (gameStart.isTesting == false) {
+            gameStart.isTesting = true;
+            gameStart.TestDataMatrix();
+            gameStart.isTesting = false;
+        }
+        
     }
 
     return 0;
@@ -983,8 +1002,19 @@ void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired) {
 }
 
 void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired) {
-    MatchProcessThread();
+    if (gameStart.allowMatch) {
+        gameStart.allowMatch = false;
+        CreateTimerQueueTimer(&m_timerHandle3, NULL, TimerProc3, NULL, 3000, 0, WT_EXECUTEINTIMERTHREAD);
+        gameStart.PickMatchImageWeapon();
+    }
+    
 }
+
+void CALLBACK TimerProc3(void* key, BOOLEAN TimerOrWaitFired) {
+    gameStart.allowMatch = true;
+}
+
+
 
 void SetMessage() {
     char lmessage[1024];

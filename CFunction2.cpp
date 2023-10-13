@@ -56,6 +56,13 @@ void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress,int scrollLock)
     //}
 }
 
+int CFunction2::MoveTest(int delay)
+{
+    mouse_event(MOUSEEVENTF_MOVE, 0, 1, 0, 0);
+    Delay(delay);
+    return 1;
+}
+
 void CFunction2::Move2(CWeapon* CurrentWeapon)
 {
     int y =  CurrentWeapon->recoil;

@@ -8,6 +8,17 @@
 extern void SetMessage();
 extern HWND hWnd;
 
+//默认数据
+vector<int> GameStart::DataMatrix = {
+		0,0,0,0,0,
+		0,0,0,0,0,
+		83,77,72,67,63,
+		60,56,53,50,48,
+		46,44,42,40,39,
+		38,36,35,34,33,
+		32,31,30,29,28
+};
+
 void GameStart::Move()
 {
 	if (mouseState.isRightButtonPress && mouseState.isLeftButtonPress) {
@@ -234,6 +245,7 @@ void GameStart::SwitchWeapon(int position)
 
 void GameStart::LoadSetting()
 {
+	LoadDataMatrix();
 	LoadKeys();
 	for (auto t : lib.weaponList) {
 		t->LoadSetting();
@@ -408,7 +420,65 @@ void CALLBACK GameStart::TimerProc(void* gameStart, BOOLEAN TimerOrWaitFired) {
 	((GameStart*)gameStart)->go = false;
 }
 
+void CALLBACK GameStart::TimerProc2(void* key, BOOLEAN TimerOrWaitFired) {
+	/*mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+	Sleep(function2.interval);
+	mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+	mouseState.count++;*/
+}
+
 void CALLBACK GameStart::MatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context) {
 	ThisAndIndex* ti = (ThisAndIndex*)Context;
 	ti->_this->Match(ti->image,ti->index);
+}
+
+void GameStart::TestDataMatrix() {
+	MessageBoxA(hWnd, "点击确定开始测试。", "提示", MB_OK);
+	DataMatrix.clear();
+	for (int i = 1; i <= 35; i++) {
+		int count = 0;
+		go = true;
+		HANDLE timerHandle;
+		CreateTimerQueueTimer(&timerHandle, NULL, TimerProc, this, 1000, 0, WT_EXECUTEINTIMERTHREAD);
+		while (go) {
+			count += CFunction2::MoveTest(i);
+		}
+		DataMatrix.push_back(count);
+	}
+
+	SaveDataMatrix();
+	tested = true;
+	//重新读取配置
+	LoadSetting();
+	MessageBoxA(hWnd, "测试完成", "提示", MB_OK);
+}
+
+void GameStart::SaveDataMatrix() {
+	for (int i = 1; i <= 35; i++) {
+		
+		string name = "data_" + to_string(i);
+		string value = to_string(DataMatrix[i - 1]);
+		if (i < 10) {
+			WritePrivateProfileStringA("DataMatrix", name.c_str(), "0", iniFilePath.c_str());
+		}
+		else {
+
+		}
+		WritePrivateProfileStringA("DataMatrix", name.c_str(), value.c_str(), iniFilePath.c_str());
+	}
+}
+
+void GameStart::LoadDataMatrix() {
+	for (int i = 1; i <= 35; i++) {
+		string name = "data_" + to_string(i);
+		int data = GetPrivateProfileIntA("DataMatrix", name.c_str(), 0, iniFilePath.c_str());
+		DataMatrix.push_back(data);
+	}
+
+	if (DataMatrix[10] == 0 || tested == false) {
+		MessageBoxA(hWnd, "首次运行请在游戏中完成测试操作，具体操作为:\n 1.进入游戏后进入训练场或任意一局游戏.\n2.按下组合键ALT + T一次后等待,请勿多次点击，不然可能会影响测试结果.\n3.等待35s左右，直到提示出现.", "提示", MB_OK);
+	}
+	else {
+		tested = true;
+	}
 }

@@ -10,7 +10,7 @@ class CWeapon
 {
 public:
 	static enum WEAPON_FUNCTION{FUNCTION1,FUNCTION2};
-	int data[35] = {
+	/*int data[35] = {
 		0,0,0,0,0,
 		0,0,0,0,0,
 		87,80,72,68,64,
@@ -18,7 +18,7 @@ public:
 		46,44,42,41,39,
 		37,36,35,33,32,
 		31,30,29,28,27
-	};
+	};*/
 	string weaponName = "";
 	string weaponName2 = "";
 	int interval = 1;
