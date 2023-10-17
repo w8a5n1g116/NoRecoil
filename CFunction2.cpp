@@ -44,16 +44,10 @@ void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress,int scrollLock)
     
 
     int y = scrollLock ? CurrentWeapon->currentRecoil_2 : CurrentWeapon->currentRecoil  * scopeRate;
-    //y += 10;
-    //int count = 10;
-    //int base = y / count;
-    //int remainder = y % count;
-    //for (int i = 0; i < count; i++)
-    //{
-        mouse_event(MOUSEEVENTF_MOVE, 0, y, 0, 0);
-        Delay(CurrentWeapon->interval);
-        //CurrentWeapon->moveDistance += y;
-    //}
+
+    mouse_event(MOUSEEVENTF_MOVE, 0, y, 0, 0);
+    Delay(CurrentWeapon->interval);
+
 }
 
 int CFunction2::MoveTest(int delay)
@@ -65,13 +59,39 @@ int CFunction2::MoveTest(int delay)
 
 void CFunction2::Move2(CWeapon* CurrentWeapon)
 {
-    int y =  CurrentWeapon->recoil;
-    //y += 10;
-    //int count = 10;
-    //int base = y / count;
-    //int remainder = y % count;
-    //for (int i = 0; i < count; i++)
-    //{
+    float scopeRate = 0;
+    switch (CurrentWeapon->scope)
+    {
+    case 0:
+        scopeRate = CurrentWeapon->scope1X_Scale;
+        break;
+    case 1:
+        scopeRate = CurrentWeapon->scope1X_Scale;
+        break;
+    case 2:
+        scopeRate = CurrentWeapon->scope2X_Scale;
+        break;
+    case 3:
+        scopeRate = CurrentWeapon->scope3X_Scale;
+        break;
+    case 4:
+        scopeRate = CurrentWeapon->scope4X_Scale;
+        break;
+    case 6:
+        scopeRate = CurrentWeapon->scope6X_Scale;
+        break;
+    case 8:
+        scopeRate = CurrentWeapon->scope8X_Scale;
+        break;
+    case 5:
+        scopeRate = CurrentWeapon->scope1_5X_Scale;
+        break;
+    default:
+        break;
+    }
+
+    CurrentWeapon->currentRecoil = CurrentWeapon->recoil;
+    int y =  CurrentWeapon->currentRecoil * scopeRate;
     mouse_event(MOUSEEVENTF_MOVE, 0, y, 0, 0);
     Delay(CurrentWeapon->interval);
 }
