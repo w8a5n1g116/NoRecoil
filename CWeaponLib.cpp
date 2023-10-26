@@ -56,7 +56,7 @@ void CWeaponLib::InitAttachment()
 	Scope_6 = CScope("Scope_6", 6, 6.0f);
 	Scope_8 = CScope("Scope_8", 8, 8.0f);
 
-
+	muzzleList.clear();
 	muzzleList.push_back(&Muzzle_None);
 	muzzleList.push_back(&AR_COMP);
 	muzzleList.push_back(&AR_LOWFIRE);
@@ -65,16 +65,19 @@ void CWeaponLib::InitAttachment()
 	muzzleList.push_back(&SNIPER_COMP);
 	muzzleList.push_back(&SNIPER_LOWFIRE);
 
+	gripList.clear();
 	gripList.push_back(&Grip_None);
 	gripList.push_back(&Half);
 	gripList.push_back(&Thumb);
 	gripList.push_back(&Vertical);
 
+	stockList.clear();
 	stockList.push_back(&Stock_None);
 	stockList.push_back(&CheekPad);
 	stockList.push_back(&Folding);
 	stockList.push_back(&Heavy);
 
+	scopeList.clear();
 	scopeList.push_back(&Scope_None);
 	scopeList.push_back(&Scope_1);
 	scopeList.push_back(&Scope_2);
@@ -86,6 +89,7 @@ void CWeaponLib::InitAttachment()
 
 void CWeaponLib::InitWeapon()
 {
+
 	None = CWeapon("WNone");
 	Default = CWeapon("Default");
 	Mk47_Mutant = CWeapon("Mk47 Mutant");
@@ -139,7 +143,7 @@ void CWeaponLib::InitWeapon()
 	MG3_660_RPM = CWeapon("MG3");
 	Dragunov = CWeapon("Dragunov");
 
-
+	weaponList.clear();
 	weaponList.push_back(&Default);
 	weaponList.push_back(&M416);
 	weaponList.push_back(&AKM);
@@ -205,7 +209,7 @@ void CWeaponLib::InitWeapon()
 	Beryl_M762.SetRecoilRates({
 		1.00,0.82,1.10,1.29,1.03,1.46,1.25,1.38,1.54,1.62,1.82,1.99,2.17,2.31,2.23,2.95,2.65,2.96,3.07,3.89,3.32,3.40,3.43,4.30,3.77,3.21,3.01,2.93,2.92,2.49,2.77,2.23,2.19,2.41,1.94,1.79,1.70,1.98,1.69,1.70,1.70 });
 
-
+	weaponNameList.clear();
 	for (auto t : weaponList) {
 		weaponNameList.push_back(t->weaponName);
 	}

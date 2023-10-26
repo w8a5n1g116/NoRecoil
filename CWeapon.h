@@ -1,10 +1,10 @@
 #pragma once
 #include "framework.h"
-#include "CMuzzle.hpp"
-#include "CStock.hpp"
-#include "CGrip.hpp"
-#include "CMagazine.hpp"
-#include "CScope.hpp"
+#include "CMuzzle.h"
+#include "CStock.h"
+#include "CGrip.h"
+#include "CMagazine.h"
+#include "CScope.h"
 
 class CWeapon
 {

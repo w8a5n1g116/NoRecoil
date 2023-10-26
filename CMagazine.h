@@ -5,10 +5,6 @@ class CMagazine : public CAttachment
 public:
 	CMagazine() {};
 	int shots = 0;
-	CMagazine(string name, int shots)
-	{
-		this->name = name;
-		this->shots = shots;
-	}
+	CMagazine(string name, int shots);
 };
 

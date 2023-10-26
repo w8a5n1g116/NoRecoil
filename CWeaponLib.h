@@ -1,11 +1,6 @@
 #pragma once
 #include "framework.h"
 #include "CWeapon.h"
-#include "CMuzzle.hpp"
-#include "CGrip.hpp"
-#include "CMagazine.hpp"
-#include "CStock.hpp"
-#include "CScope.hpp"
 
 class CWeaponLib
 {

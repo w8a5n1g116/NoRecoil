@@ -5,15 +5,14 @@ vector<string> split(const string& s, const string& seperator);
 
 CWeapon::CWeapon(string weaponName) :weaponName(weaponName), function(FUNCTION2) {
 
-	int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
 	string imageSuffix = "";
-	if (screenWidth == 2560) {
+	if (GameStart::RESOLUTION_TYPE == 0) {
 		imageSuffix = "_1440";
 	}
-	else if (screenWidth == 2048) {
+	else if (GameStart::RESOLUTION_TYPE == 1) {
 		imageSuffix = "";
 	}
-	else if (screenWidth == 1920) {
+	else if (GameStart::RESOLUTION_TYPE == 2) {
 		imageSuffix = "_1080";
 	}
 

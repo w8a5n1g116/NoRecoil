@@ -29,7 +29,7 @@ LRESULT CALLBACK    WndProc2(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 //StaticText Style
-DWORD StaticTextStyle = SS_CENTER | SS_LEFT | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE;
+DWORD StaticTextStyle = SS_CENTER  | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE;
 //键盘钩子
 HHOOK keyboardHook;
 //鼠标钩子
@@ -37,6 +37,10 @@ HHOOK mouseHook;
 //句柄
 HWND hStaticText;
 HWND hStaticText2;
+HWND hStaticText3;
+HWND hStaticText4;
+HWND hStaticText5;
+HWND hStaticText6;
 //HWND hStaticText3;
 HWND hMessageText;
 HWND hMessageText2;
@@ -48,10 +52,11 @@ HWND hButton;
 HWND hButton2;
 HWND hComboBox1;
 HWND hComboBox2;
-//HWND hInput0;
-//HWND hInput1;
-//HWND hInput2;
-//HWND hList1;
+HWND hComboBox3;
+HWND hComboBox4;
+HWND hComboBox5;
+HWND hInput0;
+
 HANDLE m_hThread;
 UINT m_ThreadId;
 HANDLE m_hMatchThread;
@@ -79,7 +84,6 @@ LRESULT CALLBACK LowLevelKeyboardProc(
 
 HANDLE StartProcessThread();
 HANDLE MatchProcessThread();
-void DrawMessageWindows(HWND hkeyboardWnd, std::string msg);
 void SetMessage();
 
 HANDLE m_timerHandle = NULL;
@@ -91,7 +95,6 @@ void KeyboardInput(UINT key, BOOL isKeyDown);
 void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired);
 void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired);
 void CALLBACK TimerProc3(void* key, BOOLEAN TimerOrWaitFired);
-void CALLBACK TimerProc4(void* key, BOOLEAN TimerOrWaitFired);
 
 /////////////////////////////////
 GameStart gameStart;
@@ -207,7 +210,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     hInst = hInstance; // 将实例句柄存储在全局变量中
 
     hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, 0, 250, 220, nullptr, nullptr, hInstance, nullptr);
+        CW_USEDEFAULT, 0, 250, 465, nullptr, nullptr, hInstance, nullptr);
 
     int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
 
@@ -258,17 +261,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
        
         
-        /*hStaticText3 = CreateWindow(L"Static", L"", StaticTextStyle, 220, 55, 200, 15, hWnd, NULL, hInst, NULL); */
         hButton = CreateWindow(L"Button", L"STOP", StaticTextStyle, 30, 10, 180, 40, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        //hList1 = CreateWindow(L"LISTBOX", L"T", StaticTextStyle | WS_VSCROLL, 10, 60, 100, 100, hWnd, (HMENU)IDB_LIST1, hInst, NULL);
-        //hInput0 = CreateWindowA("EDIT", "1", StaticTextStyle , 150, 80, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        //hInput1 = CreateWindowA("EDIT", "1", StaticTextStyle | ES_READONLY, 150, 115, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
-        //hInput2 = CreateWindowA("EDIT", "1", StaticTextStyle | ES_READONLY, 150, 150, 30, 30, hWnd, (HMENU)IDB_ONE, hInst, NULL);
 
-        //hButton2 = CreateWindow(L"Button", L"Ok", StaticTextStyle, 200, 150, 30, 30, hWnd, (HMENU)IDB_TWO, hInst, NULL);
+        
         hStaticText = CreateWindow(L"Static", L"下蹲按键", StaticTextStyle, 30, 55, 180, 20, hWnd, NULL, hInst, NULL);
         hComboBox1 = CreateWindow(L"ComboBox", L"", CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 30, 80, 180, 100, hWnd, (HMENU)IDB_COMBOBOX1, hInst, NULL);
-        //SendMessage(hComboBox1, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)"C");
         ComboBox_AddString(hComboBox1, L"C");
         ComboBox_SetItemData(hComboBox1, 0, 0x43);
         ComboBox_AddString(hComboBox1, L"左SHIFT");
@@ -286,12 +283,42 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         ComboBox_SetItemData(hComboBox2, 2, VK_LSHIFT);
         ComboBox_AddString(hComboBox2, L"左CTRL");
         ComboBox_SetItemData(hComboBox2, 3, VK_LCONTROL);
-        
 
-        /*for (auto& t : gameStart.lib.weaponNameList) {
-            SendMessageA(hList1, LB_ADDSTRING, 0, (LPARAM)t.c_str());
-        }*/
+        hStaticText3 = CreateWindow(L"Static", L"腰射按键", StaticTextStyle, 30, 165, 180, 20, hWnd, NULL, hInst, NULL);
+        hComboBox3 = CreateWindow(L"ComboBox", L"", CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 30, 190, 180, 100, hWnd, (HMENU)IDB_COMBOBOX3, hInst, NULL);
+        ComboBox_AddString(hComboBox3, L"左ALT");
+        ComboBox_SetItemData(hComboBox3, 0, 0x5A);
+        ComboBox_AddString(hComboBox3, L"CapsLock");
+        ComboBox_SetItemData(hComboBox3, 1, VK_CAPITAL);
+        ComboBox_AddString(hComboBox3, L"左SHIFT");
+        ComboBox_SetItemData(hComboBox3, 2, VK_LSHIFT);
+        ComboBox_AddString(hComboBox3, L"左CTRL");
+        ComboBox_SetItemData(hComboBox3, 3, VK_LCONTROL);
+
+        hStaticText4 = CreateWindow(L"Static", L"屏息按键", StaticTextStyle, 30, 220, 180, 20, hWnd, NULL, hInst, NULL);
+        hComboBox4 = CreateWindow(L"ComboBox", L"", CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 30, 245, 180, 100, hWnd, (HMENU)IDB_COMBOBOX4, hInst, NULL);
+        ComboBox_AddString(hComboBox4, L"左ALT");
+        ComboBox_SetItemData(hComboBox4, 0, 0x5A);
+        ComboBox_AddString(hComboBox4, L"CapsLock");
+        ComboBox_SetItemData(hComboBox4, 1, VK_CAPITAL);
+        ComboBox_AddString(hComboBox4, L"左SHIFT");
+        ComboBox_SetItemData(hComboBox4, 2, VK_LSHIFT);
+        ComboBox_AddString(hComboBox4, L"左CTRL");
+        ComboBox_SetItemData(hComboBox4, 3, VK_LCONTROL);
+
+        hStaticText5 = CreateWindow(L"Static", L"分辨率", StaticTextStyle, 30, 275, 180, 20, hWnd, NULL, hInst, NULL);
+        hComboBox5 = CreateWindow(L"ComboBox", L"", CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 30, 300, 180, 100, hWnd, (HMENU)IDB_COMBOBOX5, hInst, NULL);
+        ComboBox_AddString(hComboBox5, L"1440P 全屏模式");
+        ComboBox_SetItemData(hComboBox5, 0, 0);
+        ComboBox_AddString(hComboBox5, L"1440P 无边框 125%缩放");
+        ComboBox_SetItemData(hComboBox5, 1, 1);
+        ComboBox_AddString(hComboBox5, L"1080P 全屏模式");
+        ComboBox_SetItemData(hComboBox5, 2, 2);
+
+        hStaticText6 = CreateWindow(L"Static", L"开镜灵敏度", StaticTextStyle, 30, 330, 180, 20, hWnd, NULL, hInst, NULL);
+        hInput0 = CreateWindow(L"EDIT", L"50", ES_CENTER | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 30, 355, 180, 20, hWnd, (HMENU)IDB_COMBOBOX5, hInst, NULL);
         
+        hButton2 = CreateWindow(L"Button", L"应用", StaticTextStyle, 30, 380, 180, 40, hWnd, (HMENU)IDB_TWO, hInst, NULL);
     }
     case WM_COMMAND:
     {
@@ -326,38 +353,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             switch (HIWORD(wParam)) {
             case BN_CLICKED:
             {
-
-                /*int nSel = SendMessage(hList1, LB_GETCURSEL, 0, 0);
-                char tem[128] = { 0 };
-                SendMessageA(hList1, LB_GETTEXT, nSel, (LPARAM)tem);
-                std::string weaponName = std::string(tem);
-
                 wchar_t buff[1024];
                 Edit_GetText(hInput0, buff, 1024);
-                gameStart.lib.FindWeapon(weaponName)->SetParameter(_tstoi(buff));
-                Edit_SetText(hInput1, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->interval).c_str());
-                Edit_SetText(hInput2, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->moveY).c_str());*/
-                /*Edit_GetText(hInput1, buff, 1024);
-                gameStart.lib.FindWeapon(weaponName)->fullAttachmentRecoil = _tstoi(buff);*/
+                int sens = _wtoi(buff);
+                gameStart.SetSensitive(sens);
 
-
-                //gameStart.lib.FindWeapon(weaponName)->ChangeSetting(gameStart.p1440);
-            }
-            }
-            break;
-        case IDB_LIST1:
-            switch (HIWORD(wParam)) {
-            case LBN_DBLCLK:
-            {           
-                /*int nSel = SendMessage(hList1, LB_GETCURSEL, 0, 0);
-                char tem[128] = { 0 };
-                SendMessageA(hList1, LB_GETTEXT, nSel, (LPARAM)tem);
-                std::string weaponName = std::string(tem);
-
-                Edit_SetText(hInput0, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->recoil).c_str());
-                Edit_SetText(hInput1, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->interval).c_str());
-                Edit_SetText(hInput2, std::to_wstring(gameStart.lib.FindWeapon(weaponName)->moveY).c_str());*/
-
+                gameStart.InitWeapon();
             }
             }
             break;
@@ -378,6 +379,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 int index = ComboBox_GetCurSel(hComboBox2);
                 unsigned short key = ComboBox_GetItemData(hComboBox2, index);
                 gameStart.SetProneKey(key);
+            }
+            }
+            break;
+        case IDB_COMBOBOX3:
+            switch (HIWORD(wParam)) {
+            case CBN_SELCHANGE:
+            {
+                int index = ComboBox_GetCurSel(hComboBox3);
+                unsigned short key = ComboBox_GetItemData(hComboBox3, index);
+                gameStart.SetFocusKey(key);
+            }
+            }
+            break;
+        case IDB_COMBOBOX4:
+            switch (HIWORD(wParam)) {
+            case CBN_SELCHANGE:
+            {
+                int index = ComboBox_GetCurSel(hComboBox4);
+                unsigned short key = ComboBox_GetItemData(hComboBox4, index);
+                gameStart.SetHoldBreathKey(key);
+            }
+            }
+            break;
+        case IDB_COMBOBOX5:
+            switch (HIWORD(wParam)) {
+            case CBN_SELCHANGE:
+            {
+                int index = ComboBox_GetCurSel(hComboBox5);
+                int resolution = ComboBox_GetItemData(hComboBox5, index);
+                gameStart.SelectResolution(resolution);
             }
             }
             break;
@@ -539,11 +570,43 @@ void Init()
         ComboBox_SelectString(hComboBox2, -1, L"左CTRL");
     }
 
-    /*ListBox_SetCurSel(hList1, 0);
-    CWeapon* weapon = gameStart.lib.FindWeapon("Default");
-    Edit_SetText(hInput0, std::to_wstring(weapon->recoil).c_str());
-    Edit_SetText(hInput1, std::to_wstring(weapon->interval).c_str());
-    Edit_SetText(hInput2, std::to_wstring(weapon->moveY).c_str());*/
+    if (gameStart.focusKey == VK_LMENU) {
+        ComboBox_SelectString(hComboBox3, -1, L"左ALT");
+    }
+    else if (gameStart.focusKey == VK_CAPITAL) {
+        ComboBox_SelectString(hComboBox3, -1, L"CapsLock");
+    }
+    else if (gameStart.focusKey == VK_LSHIFT) {
+        ComboBox_SelectString(hComboBox3, -1, L"左SHIFT");
+    }
+    else if (gameStart.focusKey == VK_LCONTROL) {
+        ComboBox_SelectString(hComboBox3, -1, L"左CTRL");
+    }
+
+    if (gameStart.holdBreathKey == VK_LMENU) {
+        ComboBox_SelectString(hComboBox4, -1, L"左ALT");
+    }
+    else if (gameStart.holdBreathKey == VK_CAPITAL) {
+        ComboBox_SelectString(hComboBox4, -1, L"CapsLock");
+    }
+    else if (gameStart.holdBreathKey == VK_LSHIFT) {
+        ComboBox_SelectString(hComboBox4, -1, L"左SHIFT");
+    }
+    else if (gameStart.holdBreathKey == VK_LCONTROL) {
+        ComboBox_SelectString(hComboBox4, -1, L"左CTRL");
+    }
+
+    if (GameStart::RESOLUTION_TYPE == 0) {
+        ComboBox_SelectString(hComboBox5, -1, L"1440P 全屏模式");
+    }
+    else if (GameStart::RESOLUTION_TYPE == 1) {
+        ComboBox_SelectString(hComboBox5, -1, L"1440P 无边框 125%缩放");
+    }
+    else if (GameStart::RESOLUTION_TYPE == 2) {
+        ComboBox_SelectString(hComboBox5, -1, L"1080P 全屏模式");
+    }
+
+    Edit_SetText(hInput0, to_wstring(gameStart.sensitive).c_str());
 
     SetMessage();
 
@@ -1031,7 +1094,7 @@ void SetMessage() {
     sprintf_s(lmessage, 1024, "%d",  gameStart.CurrentWeapon->scope->scope);
     //SetWindowTextA(hStaticText2, lmessage);
     SetWindowTextA(hMessageText2, lmessage);
-    sprintf_s(lmessage, 1024, "%f", gameStart.CurrentWeapon->recoilBase);
+    sprintf_s(lmessage, 1024, "%.2f", gameStart.CurrentWeapon->recoilBase);
     //SetWindowTextA(hStaticText3, lmessage);
     SetWindowTextA(hMessageText3, lmessage);
     //sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->muzzle != NULL ? gameStart.CurrentWeapon->muzzle->name.c_str() : "");
@@ -1040,6 +1103,7 @@ void SetMessage() {
     //sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->grip != NULL ? gameStart.CurrentWeapon->grip->name.c_str() : "");
     sprintf_s(lmessage, 1024, "%d", gameStart.CurrentWeapon->currentShot);
     SetWindowTextA(hMessageText5, lmessage);
-    /*sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->stock != NULL ? gameStart.CurrentWeapon->stock->name.c_str() : "");
-    SetWindowTextA(hMessageText6, lmessage);*/
+    //sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->stock != NULL ? gameStart.CurrentWeapon->stock->name.c_str() : "");
+    sprintf_s(lmessage, 1024, "%.2f", gameStart.CurrentWeapon->attachmentEffect);
+    SetWindowTextA(hMessageText6, lmessage);
 }

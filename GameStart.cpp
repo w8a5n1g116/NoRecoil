@@ -9,43 +9,43 @@ extern void SetMessage();
 extern HWND hWnd;
 
 CWeaponLib GameStart::WEAPON_LIB = CWeaponLib();
-
-//默认数据
-vector<int> GameStart::DataMatrix = {
-		0,0,0,0,0,
-		142,124,110,100,91,
-		83,77,72,67,63,
-		60,56,53,50,48,
-		46,44,42,40,39,
-		38,36,35,34,33,
-		32,31,30,29,28,
-		28,27,26,26,25,
-		24,24,23,23,22,
-		22,21,21,21,20
-};
+int GameStart::RESOLUTION_TYPE = 0;
 
 GameStart::GameStart() {
+	
+	InitWeapon();
+	//初始化线程池
+	InitializeThreadpoolEnvironment(&callbackEnviron);
+
+	
+}
+
+void GameStart::InitWeapon() {
 	WEAPON_LIB.InitAttachment();
 	WEAPON_LIB.InitWeapon();
-
 
 	weaponList[0] = WEAPON_LIB.FindWeapon("Default");
 	weaponList[1] = WEAPON_LIB.FindWeapon("Default");
 	CurrentWeapon = weaponList[0];
 	currentPosition = 1;
+	currentIndexPosition = 0;
+	currentIndexPosition1 = 0;
+	currentIndexPosition2 = 0;
 
-	int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
-	if (screenWidth == 2560) {
-		p1440 = 1;
-	}
-	else if (screenWidth == 2048) {
-		p1440_zoom_1_25 = 1;
-	}
-	else if (screenWidth == 1920) {
-		p1080 = 1;
-	}
+	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
+}
 
-	if (p1440) {
+void GameStart::LoadResolution()
+{
+	RESOLUTION_TYPE = GetPrivateProfileIntA("General", "Resolution", VK_LSHIFT, INI_FILE_PATH.c_str());
+
+	SelectResolution(RESOLUTION_TYPE);
+}
+
+void GameStart::SelectResolution(int resolution)
+{
+	RESOLUTION_TYPE = resolution;
+	if (RESOLUTION_TYPE == 0) {
 		weaponRect1 = p1440WeaponRect1;
 		weaponRect2 = p1440WeaponRect2;
 		weaponNaceRect = p1440WeaponNameXY;
@@ -54,7 +54,7 @@ GameStart::GameStart() {
 		stockRect = p1440StockXY;
 		scopeRect = p1440ScopeXY;
 	}
-	else if (p1440_zoom_1_25) {
+	else if (RESOLUTION_TYPE == 1) {
 		weaponRect1 = p1440_125WeaponRect1;
 		weaponRect2 = p1440_125WeaponRect2;
 		weaponNaceRect = p1440_125WeaponNameXY;
@@ -63,7 +63,7 @@ GameStart::GameStart() {
 		stockRect = p1440_125StockXY;
 		scopeRect = p1440_125ScopeXY;
 	}
-	else if (p1080) {
+	else if (RESOLUTION_TYPE == 2) {
 		weaponRect1 = p1080WeaponRect1;
 		weaponRect2 = p1080WeaponRect2;
 		weaponNaceRect = p1080WeaponNameXY;
@@ -73,10 +73,17 @@ GameStart::GameStart() {
 		scopeRect = p1080ScopeXY;
 	}
 
-	//初始化线程池
-	InitializeThreadpoolEnvironment(&callbackEnviron);
+	WritePrivateProfileStringA("General", "Resolution", std::to_string(resolution).c_str(), INI_FILE_PATH.c_str());
+}
 
-	
+void GameStart::LoadSensitive() {
+	sensitive = GetPrivateProfileIntA("General", "Sensitive", 50, INI_FILE_PATH.c_str());
+}
+
+void GameStart::SetSensitive(int sens)
+{
+	sensitive = sens;
+	WritePrivateProfileStringA("General", "Sensitive", std::to_string(sensitive).c_str(), INI_FILE_PATH.c_str());
 }
 
 void GameStart::Move()
@@ -284,6 +291,8 @@ void GameStart::SwitchWeapon(int position)
 void GameStart::LoadSetting()
 {
 	LoadKeys();
+	LoadResolution();
+	LoadSensitive();
 	for (auto t : WEAPON_LIB.weaponList) {
 		t->LoadSetting();
 	}
@@ -470,10 +479,7 @@ void CALLBACK GameStart::TimerProc(void* gameStart, BOOLEAN TimerOrWaitFired) {
 }
 
 void CALLBACK GameStart::TimerProc2(void* key, BOOLEAN TimerOrWaitFired) {
-	/*mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-	Sleep(function2.interval);
-	mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-	mouseState.count++;*/
+	
 }
 
 void CALLBACK GameStart::MatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context) {

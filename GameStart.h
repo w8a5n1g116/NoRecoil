@@ -65,8 +65,7 @@ public:
 	//¼ÇÂ¼ÒÆ¶¯ÏñËØµã
 	int countPx = 0;
 
-	
-	static vector<int> DataMatrix;
+
 	
 	CWeapon* weaponList[2] = { 0 };
 	CWeapon* CurrentWeapon = nullptr;
@@ -89,8 +88,11 @@ public:
 
 	bool allowMatch = true;
 
+	static int RESOLUTION_TYPE;	//0->1440p,1->1440p*125%,2->1080p
+
+	int sensitive = 50;
+
 	
-	bool p1440 = 0;
 	Rect p1440WeaponRect1 = Rect(1769, 117, 657, 255);
 	Rect p1440WeaponRect2 = Rect(1769, 391, 657, 255);
 	Rect p1440WeaponNameXY = Rect(51, 59, 0, 7);
@@ -99,7 +101,6 @@ public:
 	Rect p1440StockXY = Rect(568, 576, 185, 193);
 	Rect p1440ScopeXY = Rect(365, 373, 34, 42);
 
-	bool p1440_zoom_1_25 = 0;
 	Rect p1440_125WeaponRect1 = Rect(1772, 120, 648, 255);
 	Rect p1440_125WeaponRect2 = Rect(1772, 394, 648, 255);
 	Rect p1440_125WeaponNameXY = Rect(40, 46, 0, 6);
@@ -108,7 +109,6 @@ public:
 	Rect p1440_125StockXY = Rect(562, 572, 182, 190);
 	Rect p1440_125ScopeXY = Rect(362, 372, 28, 42);
 
-	bool p1080 = 0;
 	Rect p1080WeaponRect1 = Rect(1322, 82, 485, 198);
 	Rect p1080WeaponRect2 = Rect(1322, 287, 485, 198);
 	Rect p1080WeaponNameXY = Rect(40, 48, 2, 10);
@@ -122,6 +122,7 @@ public:
 
 	GameStart();
 
+	void InitWeapon();
 	void Move();
 	void MoveTest(int y);
 	void PickWeapon(std::string weaponName);
@@ -154,6 +155,11 @@ public:
 	void SetProneKey(unsigned short key);
 	void SetFocusKey(unsigned short key);
 	void SetHoldBreathKey(unsigned short key);
+	void LoadResolution();
+	void SelectResolution(int resolution);
+	void LoadSensitive();
+	void SetSensitive(int sens);
+
 
 
 	static void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired);
