@@ -19,9 +19,12 @@ public:
 		37,36,35,33,32,
 		31,30,29,28,27
 	};*/
+	float recoilBase = 300;
+	vector<double> recoilRates = {};
 	string weaponName = "";
 	string weaponName2 = "";
 	int interval = 1;
+	int shotInterval = 100;
 	int intervalStand = 0;
 	int intervalCrouch = 0;
 	int intervalProne = 0;
@@ -35,7 +38,7 @@ public:
 	int scopeTemp = 1;
 	bool isHoldBreath = false;
 	int currentShot = 0;
-	int shotCount = 0;
+	int shotCount = 42;
 
 	float scope1X_Scale = 1.0;
 	float scope1_5X_Scale = 1.43;
@@ -98,19 +101,29 @@ public:
 	void AssembleStock(CStock* stock);
 
 	void AssembleScope(int scope, CScope* cscope);
-
+	void Reload();
 	void LoadSetting();
 	void ChangeSetting();
 	void Crouch(int isCrouch);
 	void Prone(int isProne);
-	std::vector<int> findMatch(int v);
+	static std::vector<int> findMatch(int v);
 	void SetParameter(int r);
 	void ResetWeapon();
 	void HoldBreath(bool b);
 
 	int CalculateRecoil(int sens);
 
-	void LoadWeaponImage();
+	void SetRecoilRates(vector<double> rates) {
+		recoilRates = rates;
+	}
+
+	void SetRecoilBase(float base) {
+		recoilBase = base;
+	}
+
+	void SetShotInterval(int intval) {
+		shotInterval = intval;
+	}
 
 	std::string GetUserProfilePath() {
 		std::string path = "";

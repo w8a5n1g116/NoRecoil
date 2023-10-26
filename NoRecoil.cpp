@@ -711,10 +711,13 @@ LRESULT CALLBACK LowLevelKeyboardProc(
                 CreateTimerQueueTimer(&m_timerHandle2, NULL, TimerProc2, (void*)VK_RSHIFT, 150, 0, WT_EXECUTEINTIMERTHREAD);
             }           
         }
-
-        //else if (kbhook->vkCode == 0x52) { //R
-        //    function.Reload();
-        //}
+        else if (kbhook->vkCode == VK_NUMPAD2) {
+            gameStart.MoveTest(5);
+            SetMessage();
+        }
+        else if (kbhook->vkCode == 0x52) { //R
+            gameStart.Reload();
+        }
         
     }
 
@@ -796,58 +799,55 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         
 
         if (kbhook->vkCode == VK_NUMPAD1) {
-            gameStart.AssembleMuzzle("AR_COMP");
+            gameStart.MoveTest(1);
             SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD2) {
-            gameStart.AssembleMuzzle("SMG_COMP");
+            
             SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD3) {
-            gameStart.AssembleMuzzle("SNIPER_COMP");
+            gameStart.countPx = 0;
             SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD4) {
-            gameStart.AssembleMuzzle("AR_LOWFIRE");
+            
             SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD5) {
-            gameStart.AssembleMuzzle("SMG_LOWFIRE");
+            
             SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD6) {
-            gameStart.AssembleMuzzle("SNIPER_LOWFIRE");
+            
             SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD7) {
-            gameStart.AssembleGrip("Half");
+            
             SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD8) {
-            gameStart.AssembleGrip("Thumb");
+            
             SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD9) {
-            gameStart.AssembleGrip("Vertical");
+            
             SetMessage();
         }
         else if (kbhook->vkCode == VK_DIVIDE) {
-            gameStart.AssembleStock("CheekPad");
+            
             SetMessage();
         }
         else if (kbhook->vkCode == VK_MULTIPLY) {
-            gameStart.AssembleStock("Folding");
+            
             SetMessage();
         }
         else if (kbhook->vkCode == VK_SUBTRACT) {
-            gameStart.AssembleStock("Heavy");
+            
             SetMessage();
         }
         else if (kbhook->vkCode == VK_ADD) {
-            gameStart.AssembleMuzzle("Muzzle_None");
-            gameStart.AssembleGrip("Grip_None");
-            gameStart.AssembleStock("Stock_None");
-            gameStart.AssembleScope(0);
+            
             SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD0) {
@@ -1027,9 +1027,11 @@ void SetMessage() {
     sprintf_s(lmessage, 1024, "%d:%d", gameStart.CurrentWeapon->recoil, gameStart.CurrentWeapon->interval);
     //SetWindowTextA(hStaticText3, lmessage);
     SetWindowTextA(hMessageText3, lmessage);
-    sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->muzzle != NULL ? gameStart.CurrentWeapon->muzzle->name.c_str() : "");
+    //sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->muzzle != NULL ? gameStart.CurrentWeapon->muzzle->name.c_str() : "");
+    sprintf_s(lmessage, 1024, "%d", gameStart.countPx);
     SetWindowTextA(hMessageText4, lmessage);
-    sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->grip != NULL ? gameStart.CurrentWeapon->grip->name.c_str() : "");
+    //sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->grip != NULL ? gameStart.CurrentWeapon->grip->name.c_str() : "");
+    sprintf_s(lmessage, 1024, "%d", gameStart.CurrentWeapon->currentShot);
     SetWindowTextA(hMessageText5, lmessage);
     sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->stock != NULL ? gameStart.CurrentWeapon->stock->name.c_str() : "");
     SetWindowTextA(hMessageText6, lmessage);

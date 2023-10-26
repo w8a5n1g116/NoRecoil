@@ -67,6 +67,11 @@ void CWeapon::AssembleScope(int scope,CScope* cscope)
 	this->cscope = cscope;
 }
 
+void CWeapon::Reload()
+{
+	currentShot = 0;
+}
+
 void CWeapon::LoadSetting()
 {
 	recoil = GetPrivateProfileIntA(weaponName.c_str(), "recoil", 400, iniFilePath.c_str());
@@ -158,6 +163,7 @@ std::vector<int> CWeapon::findMatch(int v)
 
 	return std::vector<int>{};
 }
+
 
 void CWeapon::SetParameter(int r)
 {

@@ -1,12 +1,15 @@
 #include "CFunction2.h"
-#include <chrono>
 #include "CWeapon.h"
+#include "NoRecoil.h"
+
+
+extern void SetMessage();
+extern HWND hWnd;
 
 
 void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress,int scrollLock)
 {
 
-    //CurrentWeapon->currentRecoil = capsLock ?  CurrentWeapon->fullAttachmentRecoil : CurrentWeapon->noAttachmentRecoil;
     CurrentWeapon->currentRecoil =  CurrentWeapon->moveY;
     CurrentWeapon->currentRecoil_2 = CurrentWeapon->currentRecoil;
 
@@ -50,11 +53,41 @@ void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress,int scrollLock)
 
 }
 
+void CFunction2::Move3(CWeapon* CurrentWeapon, int isLeftAltPress, int scrollLock)
+{
+    float shot_recoil = CurrentWeapon->recoilBase *  CurrentWeapon->recoilRates[CurrentWeapon->currentShot];
+
+    //std::vector<int> retVec = CWeapon::findMatch(shot_recoil);
+
+    //CurrentWeapon->currentRecoil = retVec[1];
+
+
+
+    int count = 3;
+    for (int i = 0; i < count; i++)
+    {
+        mouse_event(MOUSEEVENTF_MOVE, 0, shot_recoil / 3, 0, 0);
+        Delay(CurrentWeapon->shotInterval / 3);
+    }
+
+
+    CurrentWeapon->currentShot++;
+    if (CurrentWeapon->currentShot == CurrentWeapon->shotCount) {
+        CurrentWeapon->currentShot = 0;
+    } 
+    SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, 0, 0);
+}
+
 int CFunction2::MoveTest(int delay)
 {
     mouse_event(MOUSEEVENTF_MOVE, 0, 1, 0, 0);
     Delay(delay);
     return 1;
+}
+
+void CFunction2::MoveTest(int y,int x)
+{
+    mouse_event(MOUSEEVENTF_MOVE, 0, y, 0, 0);
 }
 
 void CFunction2::Move2(CWeapon* CurrentWeapon)
@@ -105,11 +138,11 @@ void CFunction2::FocusMove(CWeapon* CurrentWeapon)
 
 void CFunction2::Delay(int timeout_ms)
 {
-    auto start = std::chrono::system_clock::now();
+    auto start = chrono::system_clock::now();
     while (true)
     {
         auto duration =
-            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+            chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now() - start).count();
         if (duration > timeout_ms)
         {
             break;

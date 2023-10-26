@@ -27,10 +27,8 @@ void GameStart::Move()
 	if (mouseState.isRightButtonPress && mouseState.isLeftButtonPress) {
 		
 		if (CurrentWeapon->function == CWeapon::FUNCTION2) {
-			//CreateTimerQueueTimer(&m_timerHandle, NULL, this->TimerProc, (void*)this, 1000, 0, WT_EXECUTEINTIMERTHREAD);
-			//if (go) {
-				CFunction2::Move(CurrentWeapon, keyboardState.isLeftAltPress, keyboardState.scrollLock);
-			//}
+
+			CFunction2::Move3(CurrentWeapon, keyboardState.isLeftAltPress, keyboardState.scrollLock);
 			
 		}
 		else if (CurrentWeapon->function == CWeapon::FUNCTION1) {
@@ -59,29 +57,6 @@ void GameStart::PickWeapon(std::string weaponName)
 	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
 }
 
-void GameStart::PickMatchWeapon()
-{
-	//auto vec = matchWeapon.MatchWeaponName();
-	//std::string weaponName = vec[0];	
-	//weaponName.erase(weaponName.find_last_not_of("\n") + 1);	//去掉结尾\n	
-	//int index = lib.FindWeaponPosition(weaponName);
-	//if (index != -1) {
-	//	currentIndexPosition = index;
-	//	weaponList[0] = lib.FindWeapon(weaponName);
-	//	CurrentWeapon = weaponList[0];
-	//	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
-	//}
-
-	//std::string weaponName2 = vec[1];
-	//weaponName2.erase(weaponName.find_last_not_of("\n") + 1);	//去掉结尾\n
-	//int index2 = lib.FindWeaponPosition(weaponName2);
-	//if (index2 != -1) {
-	//	currentIndexPosition = index2;
-	//	weaponList[1] = lib.FindWeapon(weaponName2);
-	//	CurrentWeapon = weaponList[1];
-	//	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
-	//}
-}
 
 void GameStart::PickMatchImageWeapon()
 {
@@ -200,6 +175,7 @@ void GameStart::Match(Mat* src,int i)
 
 			}
 			weaponList[i]->ComputeYOffset();
+			SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
 			break;			
 		}
 	}
@@ -298,6 +274,12 @@ void GameStart::SaveScreenShot()
 		}
 		matchWeapon.SaveMask(t->name);
 	}
+}
+
+void GameStart::MoveTest(int y)
+{
+	CFunction2::MoveTest(y,0);
+	countPx+= y;
 }
 
 void GameStart::AssembleMuzzle(string name)
@@ -399,6 +381,11 @@ void GameStart::SetCrouchKey(unsigned short key)
 {
 	crouchKey = key;
 	WritePrivateProfileStringA("Key", "CrouchKey", std::to_string(key).c_str(), iniFilePath.c_str());
+}
+
+void GameStart::Reload()
+{
+	CurrentWeapon->Reload();
 }
 
 void GameStart::SetProneKey(unsigned short key)

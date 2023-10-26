@@ -59,6 +59,8 @@ public:
 	//¼üÅÌ×´Ì¬
 	KeyBoard_State keyboardState;
 
+	//¼ÇÂ¼ÒÆ¶¯ÏñËØµã
+	int countPx = 0;
 
 	CWeaponLib lib;
 	static vector<int> DataMatrix;
@@ -171,8 +173,8 @@ public:
 	}
 
 	void Move();
+	void MoveTest(int y);
 	void PickWeapon(std::string weaponName);
-	void PickMatchWeapon();
 	void PickMatchImageWeapon();
 	void Match(Mat* src, int index);
 	void PickPreviousWeapon();
@@ -183,6 +185,7 @@ public:
 	void LoadSetting();
 	void SaveSetting();
 	void SaveScreenShot();
+	void Reload();
 
 	void AssembleMuzzle(string name);
 
