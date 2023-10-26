@@ -26,15 +26,15 @@ CWeapon::CWeapon(string weaponName) :weaponName(weaponName), function(FUNCTION2)
 
 void CWeapon::ComputeYOffset()
 {
-	attachmentEffect = 0;
+	attachmentEffect = 1;
 	if (muzzle != nullptr) {
-		attachmentEffect += muzzle->y_effect;
+		attachmentEffect -= muzzle->y_effect;
 	}
 	if (grip != nullptr) {
-		attachmentEffect += grip->y_effect;
+		attachmentEffect -= grip->y_effect;
 	}
 	if (stock != nullptr) {
-		attachmentEffect += stock->y_effect;
+		attachmentEffect -= stock->y_effect;
 	}
 }
 
@@ -77,7 +77,8 @@ void CWeapon::Reload()
 void CWeapon::LoadSetting()
 {
 	recoilBase = GetPrivateProfileIntA(weaponName.c_str(), "recoilBase", 400, INI_FILE_PATH.c_str());
-	shotInterval = GetPrivateProfileIntA(weaponName.c_str(), "shotInterval", 400, INI_FILE_PATH.c_str());
+	SetRecoil();
+	shotInterval = GetPrivateProfileIntA(weaponName.c_str(), "shotInterval", 100, INI_FILE_PATH.c_str());
 	char buffer[1024] = {0};
 	GetPrivateProfileStringA(weaponName.c_str(), "recoilRates", "", buffer,1024, INI_FILE_PATH.c_str());
 	string ratesString = string(buffer);
@@ -89,10 +90,13 @@ void CWeapon::LoadSetting()
 		}
 	}
 	
-	shotCount = GetPrivateProfileIntA(weaponName.c_str(), "shotCount", 400, INI_FILE_PATH.c_str());
-	aimRecoil = GetPrivateProfileIntA(weaponName.c_str(), "aimRecoil", 400, INI_FILE_PATH.c_str());
-	crouchEffect = GetPrivateProfileIntA(weaponName.c_str(), "crouchEffect", 400, INI_FILE_PATH.c_str());
-	proneEffect = GetPrivateProfileIntA(weaponName.c_str(), "proneEffect", 400, INI_FILE_PATH.c_str());
+	shotCount = GetPrivateProfileIntA(weaponName.c_str(), "shotCount", 60, INI_FILE_PATH.c_str());
+	aimRecoil = GetPrivateProfileIntA(weaponName.c_str(), "aimRecoil", recoilBase, INI_FILE_PATH.c_str());
+
+	GetPrivateProfileStringA(weaponName.c_str(), "crouchEffect", "0.6", buffer,1024, INI_FILE_PATH.c_str());
+	crouchEffect = stod(string(buffer));
+	GetPrivateProfileStringA(weaponName.c_str(), "proneEffect", "0.2", buffer, 1024, INI_FILE_PATH.c_str());
+	proneEffect = stod(string(buffer));
 }
 
 void CWeapon::ChangeSetting()
@@ -116,10 +120,10 @@ void CWeapon::ChangeSetting()
 void CWeapon::Crouch(int isCrouch)
 {
 	if (isCrouch) {
-		
+		recoilBaseRunning *= crouchEffect;
 	}
 	else {
-		
+		recoilBaseRunning = recoilBase;
 	}
 	
 }
@@ -127,10 +131,10 @@ void CWeapon::Crouch(int isCrouch)
 void CWeapon::Prone(int isProne)
 {
 	if (isProne) {
-		
+		recoilBaseRunning *= proneEffect;
 	}
 	else {
-		
+		recoilBaseRunning = recoilBase;
 	}
 	
 }
@@ -211,4 +215,15 @@ vector<string> split(const string& s, const string& seperator) {
 		}
 	}
 	return result;
+}
+
+double CWeapon::SensitiveEffect() {
+	double x = (double)GameStart::SENSITIVE / 100;
+	return pow(0.01, x);
+}
+
+void CWeapon::SetRecoil() {
+	//灵敏度对基础后坐力的影响
+	double effect = SensitiveEffect();
+	recoilBaseRunning = recoilBase * effect;
 }

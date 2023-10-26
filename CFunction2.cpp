@@ -1,5 +1,4 @@
 #include "CFunction2.h"
-#include "CWeapon.h"
 #include "NoRecoil.h"
 
 
@@ -10,13 +9,13 @@ extern HWND hWnd;
 
 void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress, int scrollLock)
 {
-    double shot_recoil = CurrentWeapon->recoilBase *  CurrentWeapon->recoilRates[CurrentWeapon->currentShot];
+    double shot_recoil = CurrentWeapon->recoilBaseRunning * CurrentWeapon->attachmentEffect *  CurrentWeapon->recoilRates[CurrentWeapon->currentShot];
 
     int count = 3;
     for (int i = 0; i < count; i++)
     {
-        mouse_event(MOUSEEVENTF_MOVE, 0, shot_recoil / 3, 0, 0);
-        Delay(CurrentWeapon->shotInterval / 3);
+        mouse_event(MOUSEEVENTF_MOVE, 0, round(shot_recoil / 3), 0, 0);
+        Delay(round(CurrentWeapon->shotInterval / 3));
     }
 
 

@@ -353,12 +353,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             switch (HIWORD(wParam)) {
             case BN_CLICKED:
             {
+                gameStart.InitWeapon();
+
                 wchar_t buff[1024];
                 Edit_GetText(hInput0, buff, 1024);
                 int sens = _wtoi(buff);
                 gameStart.SetSensitive(sens);
-
-                gameStart.InitWeapon();
+              
             }
             }
             break;
@@ -544,8 +545,7 @@ void Init()
     key = GetKeyState(VK_SCROLL);
     gameStart.keyboardState.scrollLock = key & 0x0001;
 
-    gameStart.LoadSetting();
-
+    gameStart.InitWeapon();
     
     if (gameStart.crouchKey == 0x43) { //C
         ComboBox_SelectString(hComboBox1, -1,L"C");
@@ -606,13 +606,13 @@ void Init()
         ComboBox_SelectString(hComboBox5, -1, L"1080P 全屏模式");
     }
 
-    Edit_SetText(hInput0, to_wstring(gameStart.sensitive).c_str());
+    Edit_SetText(hInput0, to_wstring(GameStart::SENSITIVE).c_str());
 
     SetMessage();
 
 
     //设置鼠标钩子`
-    //mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), 0);
+    mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), 0);
     //设置键盘钩子
     keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
     StartProcessThread();
@@ -1094,7 +1094,7 @@ void SetMessage() {
     sprintf_s(lmessage, 1024, "%d",  gameStart.CurrentWeapon->scope->scope);
     //SetWindowTextA(hStaticText2, lmessage);
     SetWindowTextA(hMessageText2, lmessage);
-    sprintf_s(lmessage, 1024, "%.2f", gameStart.CurrentWeapon->recoilBase);
+    sprintf_s(lmessage, 1024, "%.2f", gameStart.CurrentWeapon->recoilBaseRunning);
     //SetWindowTextA(hStaticText3, lmessage);
     SetWindowTextA(hMessageText3, lmessage);
     //sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->muzzle != NULL ? gameStart.CurrentWeapon->muzzle->name.c_str() : "");

@@ -90,7 +90,7 @@ public:
 
 	static int RESOLUTION_TYPE;	//0->1440p,1->1440p*125%,2->1080p
 
-	int sensitive = 50;
+	static int SENSITIVE;
 
 	
 	Rect p1440WeaponRect1 = Rect(1769, 117, 657, 255);

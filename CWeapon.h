@@ -21,6 +21,7 @@ public:
 
 	bool isHoldBreath = false;
 	double recoilBase = 300;
+	double recoilBaseRunning = 300;
 	vector<double> recoilRates = {
 		1,1,1,1,1,
 		1,1,1,1,1,
@@ -34,7 +35,7 @@ public:
 	int shotInterval = 100;
 	int currentShot = 0;
 	int shotCount = 42;
-	double attachmentEffect = 0.0f;
+	double attachmentEffect = 1.0f;
 
 	double scope1_5X_Scale = 1.43;
 
@@ -72,6 +73,10 @@ public:
 	void SetRecoilBase(double base);
 
 	void SetShotInterval(int intval);
+
+	double SensitiveEffect();
+
+	void SetRecoil();
 
 	
 };

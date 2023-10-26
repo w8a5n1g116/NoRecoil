@@ -10,6 +10,7 @@ extern HWND hWnd;
 
 CWeaponLib GameStart::WEAPON_LIB = CWeaponLib();
 int GameStart::RESOLUTION_TYPE = 0;
+int GameStart::SENSITIVE = 50;
 
 GameStart::GameStart() {
 	
@@ -31,6 +32,8 @@ void GameStart::InitWeapon() {
 	currentIndexPosition = 0;
 	currentIndexPosition1 = 0;
 	currentIndexPosition2 = 0;
+
+	LoadSetting();
 
 	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
 }
@@ -77,13 +80,15 @@ void GameStart::SelectResolution(int resolution)
 }
 
 void GameStart::LoadSensitive() {
-	sensitive = GetPrivateProfileIntA("General", "Sensitive", 50, INI_FILE_PATH.c_str());
+	SENSITIVE = GetPrivateProfileIntA("General", "Sensitive", 50, INI_FILE_PATH.c_str());
 }
 
 void GameStart::SetSensitive(int sens)
 {
-	sensitive = sens;
-	WritePrivateProfileStringA("General", "Sensitive", std::to_string(sensitive).c_str(), INI_FILE_PATH.c_str());
+	SENSITIVE = sens;
+	WritePrivateProfileStringA("General", "Sensitive", std::to_string(SENSITIVE).c_str(), INI_FILE_PATH.c_str());
+	CurrentWeapon->SetRecoil();
+	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
 }
 
 void GameStart::Move()
@@ -258,12 +263,14 @@ void GameStart::PickNextWeapon()
 void GameStart::IncrementRecoil()
 {
 	CurrentWeapon->recoilBase += 1;
+	CurrentWeapon->SetRecoil();
 	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
 }
 
 void GameStart::DecrementRecoil()
 {
 	CurrentWeapon->recoilBase -= 1;
+	CurrentWeapon->SetRecoil();
 	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
 }
 
