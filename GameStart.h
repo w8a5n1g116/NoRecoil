@@ -1,11 +1,14 @@
 #pragma once
 #include "framework.h"
-#include "CWeaponLib.h"
 #include "MatchWeapon.hpp"
+#include "CWeaponLib.h"
 
 class GameStart
 {
 public:
+
+	static CWeaponLib WEAPON_LIB;
+
 	struct KeyBoard_State {
 		int isLeftContrlPress = 0;
 		int isLeftShiftPress = 0;
@@ -62,7 +65,7 @@ public:
 	//记录移动像素点
 	int countPx = 0;
 
-	CWeaponLib lib;
+	
 	static vector<int> DataMatrix;
 	
 	CWeapon* weaponList[2] = { 0 };
@@ -74,7 +77,6 @@ public:
 	int currentIndexPosition = 0;
 	int currentIndexPosition1 = 0;
 	int currentIndexPosition2 = 0;
-	int maxIndex = lib.weaponNameList.size();
 
 	unsigned short crouchKey = VK_LSHIFT;
 	bool isCrouch = false;
@@ -86,10 +88,6 @@ public:
 	bool isHoldBreath = false;
 
 	bool allowMatch = true;
-	bool tested = false;
-	bool isTesting = false;
-
-	std::string iniFilePath = ".\\config.ini";
 
 	
 	bool p1440 = 0;
@@ -122,55 +120,7 @@ public:
 
 	MatchWeapon matchWeapon;
 
-	GameStart() {
-
-		weaponList[0] = lib.FindWeapon("Default");
-		weaponList[1] = lib.FindWeapon("Default");
-		CurrentWeapon = weaponList[0];
-		currentPosition = 1;
-
-		int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
-		if (screenWidth == 2560) {
-			p1440 = 1;		
-		}
-		else if (screenWidth == 2048) {
-			p1440_zoom_1_25 = 1;			
-		}
-		else if (screenWidth == 1920) {
-			p1080 = 1;
-		}
-
-		if (p1440) {
-			weaponRect1 = p1440WeaponRect1;
-			weaponRect2 = p1440WeaponRect2;
-			weaponNaceRect = p1440WeaponNameXY;
-			muzzleRect = p1440MuzzleXY;
-			gripRect = p1440GripXY;
-			stockRect = p1440StockXY;
-			scopeRect = p1440ScopeXY;
-		}
-		else if (p1440_zoom_1_25) {
-			weaponRect1 = p1440_125WeaponRect1;
-			weaponRect2 = p1440_125WeaponRect2;
-			weaponNaceRect = p1440_125WeaponNameXY;
-			muzzleRect = p1440_125MuzzleXY;
-			gripRect = p1440_125GripXY;
-			stockRect = p1440_125StockXY;
-			scopeRect = p1440_125ScopeXY;
-		}
-		else if (p1080) {
-			weaponRect1 = p1080WeaponRect1;
-			weaponRect2 = p1080WeaponRect2;
-			weaponNaceRect = p1080WeaponNameXY;
-			muzzleRect = p1080MuzzleXY;
-			gripRect = p1080GripXY;
-			stockRect = p1080StockXY;
-			scopeRect = p1080ScopeXY;
-		}
-
-		//初始化线程池
-		InitializeThreadpoolEnvironment(&callbackEnviron);
-	}
+	GameStart();
 
 	void Move();
 	void MoveTest(int y);
@@ -205,9 +155,6 @@ public:
 	void SetFocusKey(unsigned short key);
 	void SetHoldBreathKey(unsigned short key);
 
-	void TestDataMatrix();
-	void SaveDataMatrix();
-	void LoadDataMatrix();
 
 	static void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired);
 

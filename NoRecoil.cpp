@@ -549,7 +549,7 @@ void Init()
 
 
     //设置鼠标钩子`
-    mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), 0);
+    //mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), 0);
     //设置键盘钩子
     keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
     StartProcessThread();
@@ -854,6 +854,18 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             gameStart.CurrentWeapon->ResetWeapon();
             gameStart.PickWeapon("Default");            
         }
+        else if (kbhook->vkCode == VK_UP) {
+            gameStart.PickPreviousWeapon();
+        }
+        else if (kbhook->vkCode == VK_DOWN) {
+            gameStart.PickNextWeapon();
+        }
+        else if (kbhook->vkCode == VK_LEFT) {
+            gameStart.DecrementRecoil();
+        }
+        else if (kbhook->vkCode == VK_RIGHT) {
+            gameStart.IncrementRecoil();
+        }
 
     }
 
@@ -945,11 +957,6 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         SetMessage();
     }
     if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isT_Press) {
-        if (gameStart.isTesting == false) {
-            gameStart.isTesting = true;
-            gameStart.TestDataMatrix();
-            gameStart.isTesting = false;
-        }
         
     }
 
@@ -1021,10 +1028,10 @@ void SetMessage() {
     sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->weaponName.c_str());
     //SetWindowTextA(hStaticText, lmessage);
     SetWindowTextA(hMessageText, lmessage);
-    sprintf_s(lmessage, 1024, "%d",  gameStart.CurrentWeapon->scope);
+    sprintf_s(lmessage, 1024, "%d",  gameStart.CurrentWeapon->scope->scope);
     //SetWindowTextA(hStaticText2, lmessage);
     SetWindowTextA(hMessageText2, lmessage);
-    sprintf_s(lmessage, 1024, "%d:%d", gameStart.CurrentWeapon->recoil, gameStart.CurrentWeapon->interval);
+    sprintf_s(lmessage, 1024, "%f", gameStart.CurrentWeapon->recoilBase);
     //SetWindowTextA(hStaticText3, lmessage);
     SetWindowTextA(hMessageText3, lmessage);
     //sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->muzzle != NULL ? gameStart.CurrentWeapon->muzzle->name.c_str() : "");
@@ -1033,6 +1040,6 @@ void SetMessage() {
     //sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->grip != NULL ? gameStart.CurrentWeapon->grip->name.c_str() : "");
     sprintf_s(lmessage, 1024, "%d", gameStart.CurrentWeapon->currentShot);
     SetWindowTextA(hMessageText5, lmessage);
-    sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->stock != NULL ? gameStart.CurrentWeapon->stock->name.c_str() : "");
-    SetWindowTextA(hMessageText6, lmessage);
+    /*sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->stock != NULL ? gameStart.CurrentWeapon->stock->name.c_str() : "");
+    SetWindowTextA(hMessageText6, lmessage);*/
 }

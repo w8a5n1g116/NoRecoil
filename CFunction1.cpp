@@ -8,19 +8,7 @@ CFunction1::CFunction1()
 void CFunction1::Move(CWeapon* CurrentWeapon)
 {
 
-	int y = CurrentWeapon->currentRecoil;
-	int count = 10;
-	for (int i = 0; i < count; i++)
-	{
-		mouse_event(MOUSEEVENTF_MOVE, 0,  y/ count, 0, 0);
-		Delay(CurrentWeapon->interval / count);
-	}
 	
-	
-	/*CurrentWeapon->currentShot++;
-	if (CurrentWeapon->currentShot == CurrentWeapon->shotCount) {
-		CurrentWeapon->currentShot = 0;
-	}*/
 }
 
 void CFunction1::Reload(CWeapon* CurrentWeapon)

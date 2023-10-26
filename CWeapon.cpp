@@ -1,51 +1,54 @@
 #include "CWeapon.h"
 #include "GameStart.h"
 
-CWeapon::CWeapon()
-{
-}
+vector<string> split(const string& s, const string& seperator);
 
-CWeapon::CWeapon(string weaponName, int interval, vector<int> offset, int shotCount)
-{
-	this->weaponName = weaponName;
-	this->interval = interval;
-	this->offset = offset;
-	this->muzzle = nullptr;
-	this->grip = nullptr;
-	this->magazine = nullptr;
-	this->stock = nullptr;
-	this->currentShot = 0;
-	this->shotCount = shotCount;
-	this->scope = 0;
-}
+CWeapon::CWeapon(string weaponName) :weaponName(weaponName), function(FUNCTION2) {
+
+	int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
+	string imageSuffix = "";
+	if (screenWidth == 2560) {
+		imageSuffix = "_1440";
+	}
+	else if (screenWidth == 2048) {
+		imageSuffix = "";
+	}
+	else if (screenWidth == 1920) {
+		imageSuffix = "_1080";
+	}
+
+	templateImage = imread("image/template/" + weaponName + imageSuffix + ".png", IMREAD_COLOR);
+	maskImage = imread("image/mask/" + weaponName + imageSuffix + ".png", IMREAD_GRAYSCALE);
+
+
+	//
+	scope = GameStart::WEAPON_LIB.FindCScope(0);
+};
 
 void CWeapon::ComputeYOffset()
 {
-	float countEeffect = 0;
+	attachmentEffect = 0;
 	if (muzzle != nullptr) {
-		countEeffect += muzzle->y_effect;
+		attachmentEffect += muzzle->y_effect;
 	}
 	if (grip != nullptr) {
-		countEeffect += grip->y_effect;
+		attachmentEffect += grip->y_effect;
 	}
 	if (stock != nullptr) {
-		countEeffect += stock->y_effect;
+		attachmentEffect += stock->y_effect;
 	}
-
-	LoadSetting();
-
-	float r = (1 - countEeffect) * recoilStand;
-	SetParameter(r);
 }
 
 void CWeapon::AssembleMuzzle(CMuzzle* muzzle)
 {
 	this->muzzle = muzzle;
+	ComputeYOffset();
 }
 
 void CWeapon::AssembleGrip(CGrip* grip)
 {
 	this->grip = grip;
+	ComputeYOffset();
 }
 
 void CWeapon::AssembleMagazine(CMagazine* magazine)
@@ -59,12 +62,12 @@ void CWeapon::AssembleMagazine(CMagazine* magazine)
 void CWeapon::AssembleStock(CStock* stock)
 {
 	this->stock = stock;
+	ComputeYOffset();
 }
 
-void CWeapon::AssembleScope(int scope,CScope* cscope)
+void CWeapon::AssembleScope(CScope* scope)
 {
 	this->scope = scope;
-	this->cscope = cscope;
 }
 
 void CWeapon::Reload()
@@ -74,28 +77,50 @@ void CWeapon::Reload()
 
 void CWeapon::LoadSetting()
 {
-	recoil = GetPrivateProfileIntA(weaponName.c_str(), "recoil", 400, iniFilePath.c_str());
-	SetParameter(recoil);
+	recoilBase = GetPrivateProfileIntA(weaponName.c_str(), "recoilBase", 400, INI_FILE_PATH.c_str());
+	shotInterval = GetPrivateProfileIntA(weaponName.c_str(), "shotInterval", 400, INI_FILE_PATH.c_str());
+	char buffer[1024] = {0};
+	GetPrivateProfileStringA(weaponName.c_str(), "recoilRates", "", buffer,1024, INI_FILE_PATH.c_str());
+	string ratesString = string(buffer);
+	vector<string> rateVec = split(ratesString,",");
+	if (rateVec.size() > 0) {
+		recoilRates.clear();
+		for (auto rs : rateVec) {
+			recoilRates.push_back(atof(rs.c_str()));
+		}
+	}
 	
+	shotCount = GetPrivateProfileIntA(weaponName.c_str(), "shotCount", 400, INI_FILE_PATH.c_str());
+	aimRecoil = GetPrivateProfileIntA(weaponName.c_str(), "aimRecoil", 400, INI_FILE_PATH.c_str());
+	crouchEffect = GetPrivateProfileIntA(weaponName.c_str(), "crouchEffect", 400, INI_FILE_PATH.c_str());
+	proneEffect = GetPrivateProfileIntA(weaponName.c_str(), "proneEffect", 400, INI_FILE_PATH.c_str());
 }
 
 void CWeapon::ChangeSetting()
 {
-	WritePrivateProfileStringA(weaponName.c_str(), "recoil", std::to_string(recoilStand).c_str(), iniFilePath.c_str());
+	WritePrivateProfileStringA(weaponName.c_str(), "recoilBase", std::to_string(recoilBase).c_str(), INI_FILE_PATH.c_str());
+	WritePrivateProfileStringA(weaponName.c_str(), "shotInterval", std::to_string(shotInterval).c_str(), INI_FILE_PATH.c_str());
+	string strData;
+
+	for (auto data : recoilRates)
+	{
+		strData += to_string(data) + ",";
+	}
+	WritePrivateProfileStringA(weaponName.c_str(), "recoilRates", strData.c_str(), INI_FILE_PATH.c_str());
+	WritePrivateProfileStringA(weaponName.c_str(), "shotCount", std::to_string(shotCount).c_str(), INI_FILE_PATH.c_str());
+	WritePrivateProfileStringA(weaponName.c_str(), "aimRecoil", std::to_string(aimRecoil).c_str(), INI_FILE_PATH.c_str());
+	WritePrivateProfileStringA(weaponName.c_str(), "crouchEffect", std::to_string(crouchEffect).c_str(), INI_FILE_PATH.c_str());
+	WritePrivateProfileStringA(weaponName.c_str(), "proneEffect", std::to_string(proneEffect).c_str(), INI_FILE_PATH.c_str());
 }
 
 
 void CWeapon::Crouch(int isCrouch)
 {
 	if (isCrouch) {
-		recoil = recoilCrouch;
-		interval = intervalCrouch;
-		moveY = moveYCrouch;
+		
 	}
 	else {
-		recoil = recoilStand;
-		interval = intervalStand;
-		moveY = moveYStand;
+		
 	}
 	
 }
@@ -103,99 +128,18 @@ void CWeapon::Crouch(int isCrouch)
 void CWeapon::Prone(int isProne)
 {
 	if (isProne) {
-		recoil = recoilProne;
-		interval = intervalProne;
-		moveY = moveYProne;
+		
 	}
 	else {
-		recoil = recoilStand;
-		interval = intervalStand;
-		moveY = moveYStand;
+		
 	}
 	
 }
 
-std::vector<int> CWeapon::findMatch(int v)
-{	
-	std::vector<int> candidateInterval;
-	std::vector<int> candidateY;
-	std::vector<int> candidateResult;
-	int maxMultiple = 50;
-	for (int i = 1; i <= maxMultiple; i++) {
-		for (int j = 0; j < 50; j++) {
-			int r = 0;
-			if (GameStart::DataMatrix.size() == 50) {
-				r= v - (GameStart::DataMatrix[j] * i);
-			}						
-			if (r <= 5 && r >= -5) {
-				candidateInterval.push_back(j);
-				candidateY.push_back(i);
-				candidateResult.push_back(r);
-			}
-		}
-	}
 
-	if (candidateResult.size() > 0) {
-		int temp = candidateResult[0];
-		int position = 0;
-		for (int i = 0; i < candidateResult.size(); i++) {
-			if (candidateResult[i] < 0) {
-				candidateResult[i] *= -1;
-			}
-		}
-		for (int i = 1; i < candidateResult.size(); i++) {
-			if (temp > candidateResult[i]) {
-				temp = candidateResult[i];
-				position = i;
-			}
-		}
-
-		std::vector<int> findResult;
-		findResult.push_back(candidateInterval[position]);
-		findResult.push_back(candidateY[position]);
-
-		int _interval = candidateInterval[position];
-		int _moveY = candidateY[position];
-
-		return std::vector<int>{_interval, _moveY};
-
-	}
-
-	return std::vector<int>{};
-}
-
-
-void CWeapon::SetParameter(int r)
-{
-	recoilStand = r;
-	auto vecStand = findMatch(recoilStand);
-	if (vecStand.size() != 0) {
-		intervalStand = vecStand[0];
-		moveYStand = vecStand[1];
-	}
-
-	recoilCrouch = recoilStand * crouchEffect;
-	auto vecCrouch = findMatch(recoilCrouch);
-	if (vecCrouch.size() != 0) {
-		intervalCrouch = vecCrouch[0];
-		moveYCrouch = vecCrouch[1];
-	}
-
-	recoilProne = recoilStand * proneEffect;
-	auto vecProne = findMatch(recoilProne);
-	if (vecProne.size() != 0) {
-		intervalProne = vecProne[0];
-		moveYProne = vecProne[1];
-	}
-	
-	recoil = recoilStand;
-	interval = intervalStand;
-	moveY = moveYStand;
-}
 
 void CWeapon::ResetWeapon()
 {
-	scope = 0;
 	muzzle = nullptr;
 	grip = nullptr;
 	stock = nullptr;
@@ -206,13 +150,12 @@ void CWeapon::HoldBreath(bool b)
 	if (b) {
 		if (!isHoldBreath) {
 			isHoldBreath = true;
-			scopeTemp = scope;
-			scope = 5;
+
 		}	
 	}
 	else {
 		if (isHoldBreath) {
-			scope = scopeTemp;
+
 			isHoldBreath = false;
 		}
 		
@@ -220,9 +163,53 @@ void CWeapon::HoldBreath(bool b)
 	
 }
 
-int CWeapon::CalculateRecoil(int sens)
-{
-	float t = exp(-0.05 * sens);
-	float r = t * 1936.31;
-	return (int)r;
+void CWeapon::SetRecoilRates(vector<double> rates) {
+	recoilRates = rates;
+}
+
+void CWeapon::SetRecoilBase(double base) {
+	recoilBase = base;
+}
+
+void CWeapon::SetShotInterval(int intval) {
+	shotInterval = intval;
+}
+
+
+vector<string> split(const string& s, const string& seperator) {
+	vector<string> result;
+	typedef string::size_type string_size;
+	string_size i = 0;
+
+	while (i != s.size()) {
+		//找到字符串中首个不等于分隔符的字母；
+		int flag = 0;
+		while (i != s.size() && flag == 0) {
+			flag = 1;
+			for (string_size x = 0; x < seperator.size(); ++x)
+				if (s[i] == seperator[x]) {
+					++i;
+					flag = 0;
+					break;
+				}
+		}
+
+		//找到又一个分隔符，将两个分隔符之间的字符串取出；
+		flag = 0;
+		string_size j = i;
+		while (j != s.size() && flag == 0) {
+			for (string_size x = 0; x < seperator.size(); ++x)
+				if (s[j] == seperator[x]) {
+					flag = 1;
+					break;
+				}
+			if (flag == 0)
+				++j;
+		}
+		if (i != j) {
+			result.push_back(s.substr(i, j - i));
+			i = j;
+		}
+	}
+	return result;
 }

@@ -6,6 +6,7 @@ public:
 	Mat templateImage;
 	Mat maskImage;
 	int scope = 1;
+	CScope() {};
 	CScope(string name,int scope ,float y_effect) {
 		this->name = name;
 		this->scope = scope;

@@ -5,13 +5,11 @@
 using namespace cv;
 class MatchWeapon {
 	
-
-	//tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
 	Screenshot screenShot;
 public:
 
 	MatchWeapon() {
-		//api->Init(NULL, "eng");
+		
 	}
 
 
@@ -32,24 +30,6 @@ public:
 		return maxLoc;
 	}
 
-	Point MatchNoMask(Mat img, Mat templ) {
-
-		cvtColor(img, img, COLOR_RGBA2RGB);
-
-		Mat result;
-		int result_cols = img.cols - templ.cols + 1;
-		int result_rows = img.rows - templ.rows + 1;
-		result.create(result_rows, result_cols, CV_8UC3);
-		matchTemplate(img, templ, result, TM_SQDIFF_NORMED);
-		normalize(result, result, 0, 1, NORM_MINMAX, -1, Mat());
-		double minVal; double maxVal; Point minLoc; Point maxLoc;
-		//Point matchLoc;
-
-		minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
-		//matchLoc = maxLoc;
-
-		return maxLoc;
-	}
 
 
 	bool MatchWeaponNameImage(Mat* src,Mat* temp,Mat* mask,Rect weaponNameRect) {
@@ -114,14 +94,5 @@ public:
 		imwrite("image/mask/" + name + "_1440.png", binary);
 	}
 
-	std::string OCR(Mat* im) {
-		//std::string ret;
-
-		//api->SetImage(im->data, im->cols, im->rows, 1, im->step);
-		//ret = api->GetUTF8Text();
-		////pixDestroy(&image);
-
-		return "ret";
-	}
 private:
 };

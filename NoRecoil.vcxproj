@@ -150,6 +150,7 @@
     <ClCompile Include="CFunction1.cpp" />
     <ClCompile Include="CFunction2.cpp" />
     <ClCompile Include="CWeapon.cpp" />
+    <ClCompile Include="CWeaponLib.cpp" />
     <ClCompile Include="GameStart.cpp" />
     <ClCompile Include="NoRecoil.cpp" />
   </ItemGroup>

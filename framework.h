@@ -28,3 +28,5 @@
 
 using namespace std;
 using namespace cv;
+
+static const string INI_FILE_PATH = ".\\config.ini";
