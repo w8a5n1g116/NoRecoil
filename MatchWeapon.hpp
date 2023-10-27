@@ -45,6 +45,37 @@ public:
 		}
 	}
 
+	bool MatchTabOpenImage(Mat* src, Mat* temp, Mat* mask, Rect rect) {
+		if (temp->empty() || mask->empty()) {
+			return false;
+		}
+		Point ret = Match(src, temp, mask);
+		if (ret.x >= rect.x && ret.x <= rect.y && ret.y >= rect.width && ret.y <= rect.height) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	int MatchStanceImage(Mat* src, Mat* temp, Mat* mask, Mat* temp2, Mat* mask2, Rect rect) {
+		if (temp->empty() || mask->empty()) {
+			return false;
+		}
+		Point ret = Match(src, temp, mask);
+		if (ret.x >= rect.x && ret.x <= rect.y && ret.y >= rect.width && ret.y <= rect.height) {
+			return 1;
+		}
+
+		Point ret2 = Match(src, temp2, mask2);
+		if (ret.x >= rect.x && ret.x <= rect.y && ret.y >= rect.width && ret.y <= rect.height) {
+			return 2;
+		}
+
+		return 0;
+		
+	}
+
 	int MatchAttachmentImage(Mat* src, Mat* temp, Mat* mask,Rect muzzleRect,Rect gripRect,Rect stockRect,Rect scopeRect) {
 		if (temp->empty() || mask->empty()) {
 			return false;

@@ -9,7 +9,12 @@ extern HWND hWnd;
 
 void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress, int scrollLock)
 {
-    double shot_recoil = CurrentWeapon->recoilBaseRunning * CurrentWeapon->attachmentEffect *  CurrentWeapon->recoilRates[CurrentWeapon->currentShot];
+    double shot_recoil = 0;
+    if (CurrentWeapon->currentShot != CurrentWeapon->shotCount -1) {
+        CurrentWeapon->currentShot++;
+        shot_recoil = CurrentWeapon->recoilBaseRunning * CurrentWeapon->attachmentEffect * CurrentWeapon->recoilRates[CurrentWeapon->currentShot];
+    }
+    
 
     int count = 3;
     for (int i = 0; i < count; i++)
@@ -19,10 +24,8 @@ void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress, int scrollLock
     }
 
 
-    CurrentWeapon->currentShot++;
-    if (CurrentWeapon->currentShot == CurrentWeapon->shotCount) {
-        CurrentWeapon->currentShot = 0;
-    } 
+    
+     
     SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, 0, 0);
 }
 

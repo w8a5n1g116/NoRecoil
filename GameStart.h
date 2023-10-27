@@ -43,6 +43,18 @@ public:
 	Mat weapon1Src;
 	Mat weapon2Src;
 
+	Mat tabOpenSrc;
+	Mat stanceSrc;
+
+	Mat tabOpenMatchImage;
+	Mat tabOpenMatchImageMask;
+
+	Mat stanceMatchCrouchImage;
+	Mat stanceMatchCrouchImageMask;
+
+	Mat stanceMatchProneImage;
+	Mat stanceMatchProneImageMask;
+
 	struct ThisAndIndex {
 		GameStart* _this;
 		Mat* image;
@@ -51,8 +63,10 @@ public:
 
 	ThisAndIndex ti1;
 	ThisAndIndex ti2;
+	ThisAndIndex tiTabOpen;
+	ThisAndIndex tiStance;
 
-	Rect weaponRect1, weaponRect2, weaponNaceRect, muzzleRect, gripRect, stockRect, scopeRect;
+	Rect weaponRect1, weaponRect2, weaponNaceRect, muzzleRect, gripRect, stockRect, scopeRect,tabOpenRect,stanceRect,tabOpenBGRect,stanceBGRect;
 
 
 	TP_CALLBACK_ENVIRON callbackEnviron;
@@ -85,13 +99,14 @@ public:
 	bool isFocus = false;
 	unsigned short holdBreathKey = VK_LMENU;
 	bool isHoldBreath = false;
-
+	                
 	bool allowMatch = true;
 
 	static int RESOLUTION_TYPE;	//0->1440p,1->1440p*125%,2->1080p
 
 	static int SENSITIVE;
-
+	//背包是否打开                                                                        
+	bool packageOpened = false;
 	
 	Rect p1440WeaponRect1 = Rect(1769, 117, 657, 255);
 	Rect p1440WeaponRect2 = Rect(1769, 391, 657, 255);
@@ -100,6 +115,10 @@ public:
 	Rect p1440GripXY = Rect(138, 146, 185, 193);
 	Rect p1440StockXY = Rect(568, 576, 185, 193);
 	Rect p1440ScopeXY = Rect(365, 373, 34, 42);
+	Rect p1440TabOpenRect = Rect(0, 0, 0, 0);
+	Rect p1440StanceRect = Rect(0, 0, 0, 0);
+	Rect p1440TabOpenXY = Rect(0, 0, 0, 0);
+	Rect p1440StanceXY = Rect(0, 0, 0, 0);
 
 	Rect p1440_125WeaponRect1 = Rect(1772, 120, 648, 255);
 	Rect p1440_125WeaponRect2 = Rect(1772, 394, 648, 255);
@@ -108,6 +127,10 @@ public:
 	Rect p1440_125GripXY = Rect(132, 140, 182, 190);
 	Rect p1440_125StockXY = Rect(562, 572, 182, 190);
 	Rect p1440_125ScopeXY = Rect(362, 372, 28, 42);
+	Rect p1440_125TabOpenRect = Rect(0, 0, 0, 0);
+	Rect p1440_125StanceRect = Rect(0, 0, 0, 0);
+	Rect p1440_125TabOpenXY = Rect(0, 0, 0, 0);
+	Rect p1440_125StanceXY = Rect(0, 0, 0, 0);
 
 	Rect p1080WeaponRect1 = Rect(1322, 82, 485, 198);
 	Rect p1080WeaponRect2 = Rect(1322, 287, 485, 198);
@@ -116,6 +139,10 @@ public:
 	Rect p1080GripXY = Rect(109, 117, 144, 152);
 	Rect p1080StockXY = Rect(430, 438, 144, 152);
 	Rect p1080ScopeXY = Rect(278, 286, 31, 39);
+	Rect p1080TabOpenRect = Rect(0, 0, 0, 0);
+	Rect p1080StanceRect = Rect(0, 0, 0, 0);
+	Rect p1080TabOpenXY = Rect(0, 0, 0, 0);
+	Rect p1080StanceXY = Rect(0, 0, 0, 0);
 	
 
 	MatchWeapon matchWeapon;
@@ -127,7 +154,11 @@ public:
 	void MoveTest(int y);
 	void PickWeapon(std::string weaponName);
 	void PickMatchImageWeapon();
+	void CanDoMatchWeapon();
+	void DoMatchStance();
 	void Match(Mat* src, int index);
+	void MatchTabOpen(Mat* src);
+	void MatchStance(Mat* src);
 	void PickPreviousWeapon();
 	void PickNextWeapon();
 	void IncrementRecoil();
@@ -166,7 +197,11 @@ public:
 
 	static void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired);
 
-	static void CALLBACK MatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance,_Inout_opt_ PVOID Context);
+	static void CALLBACK WeaponMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance,_Inout_opt_ PVOID Context);
+
+	static void CALLBACK CanMatchWeaponThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context);
+
+	static void CALLBACK StanceMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context);
 	
 };
 

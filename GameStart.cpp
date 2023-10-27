@@ -56,6 +56,10 @@ void GameStart::SelectResolution(int resolution)
 		gripRect = p1440GripXY;
 		stockRect = p1440StockXY;
 		scopeRect = p1440ScopeXY;
+		tabOpenBGRect = p1440TabOpenRect;
+		stanceBGRect = p1440StanceRect;
+		tabOpenRect = p1440TabOpenXY;
+		stanceRect = p1440StanceXY;
 	}
 	else if (RESOLUTION_TYPE == 1) {
 		weaponRect1 = p1440_125WeaponRect1;
@@ -65,6 +69,10 @@ void GameStart::SelectResolution(int resolution)
 		gripRect = p1440_125GripXY;
 		stockRect = p1440_125StockXY;
 		scopeRect = p1440_125ScopeXY;
+		tabOpenBGRect = p1440_125TabOpenRect;
+		stanceBGRect = p1440_125StanceRect;
+		tabOpenRect = p1440_125TabOpenXY;
+		stanceRect = p1440_125StanceXY;
 	}
 	else if (RESOLUTION_TYPE == 2) {
 		weaponRect1 = p1080WeaponRect1;
@@ -74,10 +82,16 @@ void GameStart::SelectResolution(int resolution)
 		gripRect = p1080GripXY;
 		stockRect = p1080StockXY;
 		scopeRect = p1080ScopeXY;
+		tabOpenBGRect = p1080TabOpenRect;
+		stanceBGRect = p1080StanceRect;
+		tabOpenRect = p1080TabOpenXY;
+		stanceRect = p1080StanceXY;
 	}
 
 	WritePrivateProfileStringA("General", "Resolution", std::to_string(resolution).c_str(), INI_FILE_PATH.c_str());
 }
+
+
 
 void GameStart::LoadSensitive() {
 	SENSITIVE = GetPrivateProfileIntA("General", "Sensitive", 50, INI_FILE_PATH.c_str());
@@ -127,6 +141,31 @@ void GameStart::PickWeapon(std::string weaponName)
 }
 
 
+void GameStart::CanDoMatchWeapon() {
+	screenShot = matchWeapon.GetScreenShot();
+	tabOpenSrc = screenShot(tabOpenBGRect);
+
+	cvtColor(tabOpenSrc, tabOpenSrc, COLOR_RGBA2RGB);
+
+	tiTabOpen.image = &tabOpenSrc;
+	tiTabOpen._this = this;
+
+	 bool ret = TrySubmitThreadpoolCallback(CanMatchWeaponThreadProc, &tiTabOpen, &callbackEnviron);
+}
+
+void GameStart::DoMatchStance()
+{
+	screenShot = matchWeapon.GetScreenShot();
+	stanceSrc = screenShot(stanceBGRect);
+
+	cvtColor(stanceSrc, stanceSrc, COLOR_RGBA2RGB);
+
+	tiStance.image = &stanceSrc;
+	tiStance._this = this;
+
+	bool ret = TrySubmitThreadpoolCallback(StanceMatchThreadProc, &tiStance, &callbackEnviron);
+}
+
 void GameStart::PickMatchImageWeapon()
 {
 	screenShot = matchWeapon.GetScreenShot();
@@ -144,8 +183,8 @@ void GameStart::PickMatchImageWeapon()
 	ti2._this = this;
 
 	//提交线程池
-	TrySubmitThreadpoolCallback(MatchThreadProc, &ti1, &callbackEnviron);
-	TrySubmitThreadpoolCallback(MatchThreadProc, &ti2, &callbackEnviron);
+	bool ret1 = TrySubmitThreadpoolCallback(WeaponMatchThreadProc, &ti1, &callbackEnviron);
+	bool ret2 = TrySubmitThreadpoolCallback(WeaponMatchThreadProc, &ti2, &callbackEnviron);
 	
 	CurrentWeapon = weaponList[0];
 	SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
@@ -247,6 +286,29 @@ void GameStart::Match(Mat* src,int i)
 			SendMessageA(hWnd, WM_CUSTOM_MESSAGE_PICK_WEAPON, currentIndexPosition, 0);
 			break;			
 		}
+	}
+}
+
+void GameStart::MatchTabOpen(Mat* src)
+{
+	packageOpened = matchWeapon.MatchTabOpenImage(src, &tabOpenMatchImage, &tabOpenMatchImageMask,tabOpenRect);
+	if (packageOpened) {
+		PickMatchImageWeapon();
+	}	
+}
+
+void GameStart::MatchStance(Mat* src)
+{
+	int stance = matchWeapon.MatchStanceImage(src, &stanceMatchCrouchImage, &stanceMatchCrouchImageMask, &stanceMatchProneImage, &stanceMatchProneImageMask, stanceRect);
+	if (stance == 0) {
+		CurrentWeapon->Crouch(false);
+		CurrentWeapon->Prone(false);
+	}
+	else if (stance == 1) {
+		CurrentWeapon->Crouch(true);
+	}
+	else if (stance == 2) {
+		CurrentWeapon->Prone(true);
 	}
 }
 
@@ -489,7 +551,17 @@ void CALLBACK GameStart::TimerProc2(void* key, BOOLEAN TimerOrWaitFired) {
 	
 }
 
-void CALLBACK GameStart::MatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context) {
+void CALLBACK GameStart::WeaponMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context) {
 	ThisAndIndex* ti = (ThisAndIndex*)Context;
 	ti->_this->Match(ti->image,ti->index);
+}
+
+void CALLBACK GameStart::CanMatchWeaponThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context) {
+	ThisAndIndex* ti = (ThisAndIndex*)Context;
+	ti->_this->MatchTabOpen(ti->image);
+}
+
+void CALLBACK GameStart::StanceMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context) {
+	ThisAndIndex* ti = (ThisAndIndex*)Context;
+	ti->_this->MatchStance(ti->image);
 }
