@@ -11,6 +11,9 @@ extern HWND hWnd;
 CWeaponLib GameStart::WEAPON_LIB = CWeaponLib();
 int GameStart::RESOLUTION_TYPE = 0;
 int GameStart::SENSITIVE = 50;
+int GameStart::SWITCH_ADS = 0;
+int GameStart::SWITCH_CROUCH = 0;
+int GameStart::SWITCH_PRONE = 0;
 
 GameStart::GameStart() {
 	
@@ -60,6 +63,20 @@ void GameStart::SelectResolution(int resolution)
 		stanceBGRect = p1440StanceRect;
 		tabOpenRect = p1440TabOpenXY;
 		stanceRect = p1440StanceXY;
+		adsRect = p1440adsXY;
+		adsBGRect = p1440adsRect;
+
+		stanceMatchCrouchImage = imread("image/template/crouch_1440.png", IMREAD_COLOR);
+		stanceMatchCrouchImageMask = imread("image/mask/crouch_1440.png", IMREAD_GRAYSCALE);
+
+		stanceMatchProneImage = imread("image/template/prone_1440.png", IMREAD_COLOR);
+		stanceMatchProneImageMask = imread("image/mask/prone_1440.png", IMREAD_GRAYSCALE);
+
+		tabOpenMatchImage = imread("image/template/tab_open_1440.png", IMREAD_COLOR);
+		tabOpenMatchImageMask = imread("image/mask/tab_open_1440.png", IMREAD_GRAYSCALE);
+
+		adsMatchImage = imread("image/template/ads_1440.png", IMREAD_COLOR);
+		adsMatchImageMask = imread("image/mask/ads_1440.png", IMREAD_GRAYSCALE);
 	}
 	else if (RESOLUTION_TYPE == 1) {
 		weaponRect1 = p1440_125WeaponRect1;
@@ -73,6 +90,20 @@ void GameStart::SelectResolution(int resolution)
 		stanceBGRect = p1440_125StanceRect;
 		tabOpenRect = p1440_125TabOpenXY;
 		stanceRect = p1440_125StanceXY;
+		adsRect = p1440_125adsXY;
+		adsBGRect = p1440_125adsRect;
+
+		stanceMatchCrouchImage = imread("image/template/crouch.png", IMREAD_COLOR);
+		stanceMatchCrouchImageMask = imread("image/mask/crouch.png", IMREAD_GRAYSCALE);
+
+		stanceMatchProneImage = imread("image/template/prone.png", IMREAD_COLOR);
+		stanceMatchProneImageMask = imread("image/mask/prone.png", IMREAD_GRAYSCALE);
+
+		tabOpenMatchImage = imread("image/template/tab_open.png", IMREAD_COLOR);
+		tabOpenMatchImageMask = imread("image/mask/tab_open.png", IMREAD_GRAYSCALE);
+
+		adsMatchImage = imread("image/template/ads.png", IMREAD_COLOR);
+		adsMatchImageMask = imread("image/mask/ads.png", IMREAD_GRAYSCALE);
 	}
 	else if (RESOLUTION_TYPE == 2) {
 		weaponRect1 = p1080WeaponRect1;
@@ -86,6 +117,20 @@ void GameStart::SelectResolution(int resolution)
 		stanceBGRect = p1080StanceRect;
 		tabOpenRect = p1080TabOpenXY;
 		stanceRect = p1080StanceXY;
+		adsRect = p1080adsXY;
+		adsBGRect = p1080adsRect;
+
+		stanceMatchCrouchImage = imread("image/template/crouch_1080.png", IMREAD_COLOR);
+		stanceMatchCrouchImageMask = imread("image/mask/crouch_1080.png", IMREAD_GRAYSCALE);
+
+		stanceMatchProneImage = imread("image/template/prone_1080.png", IMREAD_COLOR);
+		stanceMatchProneImageMask = imread("image/mask/prone_1080.png", IMREAD_GRAYSCALE);
+
+		tabOpenMatchImage = imread("image/template/tab_open_1080.png", IMREAD_COLOR);
+		tabOpenMatchImageMask = imread("image/mask/tab_open_1080.png", IMREAD_GRAYSCALE);
+
+		adsMatchImage = imread("image/template/ads_1080.png", IMREAD_COLOR);
+		adsMatchImageMask = imread("image/mask/ads_1080.png", IMREAD_GRAYSCALE);
 	}
 
 	WritePrivateProfileStringA("General", "Resolution", std::to_string(resolution).c_str(), INI_FILE_PATH.c_str());
@@ -107,28 +152,58 @@ void GameStart::SetSensitive(int sens)
 
 void GameStart::Move()
 {
-	if (mouseState.isRightButtonPress && mouseState.isLeftButtonPress) {
-		
-		if (CurrentWeapon->function == CWeapon::FUNCTION2) {
+	if (SWITCH_ADS == 0) {
+		if (mouseState.isRightButtonPress && mouseState.isLeftButtonPress) {
 
-			CFunction2::Move(CurrentWeapon, keyboardState.isLeftAltPress, keyboardState.scrollLock);
-			
+			if (CurrentWeapon->function == CWeapon::FUNCTION2) {
+
+				CFunction2::Move(CurrentWeapon, keyboardState.isLeftAltPress, keyboardState.scrollLock);
+
+			}
+			else if (CurrentWeapon->function == CWeapon::FUNCTION1) {
+				if (enableTrigger) {
+					CFunction2::Move(CurrentWeapon, 0, 0);
+					enableTrigger = false;
+				}
+			}
 		}
-		else if (CurrentWeapon->function == CWeapon::FUNCTION1) {
-			if (enableTrigger) {
-				CFunction2::Move(CurrentWeapon,0,0);
-				enableTrigger = false;
+		else if (keyboardState.isLeftContrlPress && mouseState.isLeftButtonPress) {
+			CFunction2::FocusMove(CurrentWeapon);
+		}
+
+		if (mouseState.isLeftButtonPress == 0) {
+			enableTrigger = true;
+			//松开鼠标左键后座index自动归零，保证下次开枪后坐力后坐力正常
+			CurrentWeapon->currentShot = 0;
+		}
+	}
+	else {	//切换开镜
+		if (adsOpened) {
+			if (mouseState.isRightButtonPress) {
+
+				if (CurrentWeapon->function == CWeapon::FUNCTION2) {
+
+					CFunction2::Move(CurrentWeapon, keyboardState.isLeftAltPress, keyboardState.scrollLock);
+
+				}
+				else if (CurrentWeapon->function == CWeapon::FUNCTION1) {
+					if (enableTrigger) {
+						CFunction2::Move(CurrentWeapon, 0, 0);
+						enableTrigger = false;
+					}
+				}
+			}
+			else if (keyboardState.isLeftContrlPress && mouseState.isLeftButtonPress) {
+				CFunction2::FocusMove(CurrentWeapon);
+			}
+			if (mouseState.isLeftButtonPress == 0) {
+				enableTrigger = true;
+				//松开鼠标左键后座index自动归零，保证下次开枪后坐力后坐力正常
+				CurrentWeapon->currentShot = 0;
 			}
 		}
 	}
-	else if (keyboardState.isLeftContrlPress && mouseState.isLeftButtonPress) {
-		CFunction2::FocusMove(CurrentWeapon);
-	}
-
-	if (mouseState.isLeftButtonPress == 0) {
-		enableTrigger = true;
-		//go = true;
-	}
+	
 }
 
 void GameStart::PickWeapon(std::string weaponName)
@@ -164,6 +239,20 @@ void GameStart::DoMatchStance()
 	tiStance._this = this;
 
 	bool ret = TrySubmitThreadpoolCallback(StanceMatchThreadProc, &tiStance, &callbackEnviron);
+}
+
+void GameStart::DoMatchAdsOpen()
+{
+	screenShot = matchWeapon.GetScreenShot();
+
+	adsSrc = screenShot(adsBGRect);
+
+	cvtColor(adsSrc, adsSrc, COLOR_RGBA2RGB);
+	
+	tiAds.image = &adsSrc;
+	tiAds._this = this;
+
+	bool ret = TrySubmitThreadpoolCallback(AdsMatchThreadProc, &tiAds, &callbackEnviron);
 }
 
 void GameStart::PickMatchImageWeapon()
@@ -301,15 +390,39 @@ void GameStart::MatchStance(Mat* src)
 {
 	int stance = matchWeapon.MatchStanceImage(src, &stanceMatchCrouchImage, &stanceMatchCrouchImageMask, &stanceMatchProneImage, &stanceMatchProneImageMask, stanceRect);
 	if (stance == 0) {
+		isCrouch = false;
+		isProne = false;
 		CurrentWeapon->Crouch(false);
 		CurrentWeapon->Prone(false);
 	}
 	else if (stance == 1) {
+		isCrouch = true;
+		isProne = false;
 		CurrentWeapon->Crouch(true);
 	}
 	else if (stance == 2) {
+		isProne = true;
+		isCrouch = false;
 		CurrentWeapon->Prone(true);
 	}
+
+	SetMessage();
+}
+
+void GameStart::IsAds()
+{
+	if (adsOpened) {
+		adsOpened = false;
+	}
+	else {
+		DoMatchAdsOpen();
+	}
+	
+}
+
+void GameStart::MatchAds(Mat* src)
+{
+	adsOpened = matchWeapon.MatchAdsOpenImage(src, &adsMatchImage, &adsMatchImageMask, adsRect);
 }
 
 void GameStart::PickNextWeapon()
@@ -362,6 +475,9 @@ void GameStart::LoadSetting()
 	LoadKeys();
 	LoadResolution();
 	LoadSensitive();
+	LoadSwitchCrouch();
+	LoadSwitchProne();
+	LoadSwitchADS();
 	for (auto t : WEAPON_LIB.weaponList) {
 		t->LoadSetting();
 	}
@@ -378,12 +494,14 @@ void GameStart::SaveScreenShot()
 {
 	//matchWeapon.SaveScreenShot(weaponList[0], weaponList[1]);
 
+	//matchWeapon.SaveMask("");
+
 	/*for (auto t : WEAPON_LIB.weaponList) {
 		if(t->weaponName != "Default")
 		matchWeapon.SaveMask(t->weaponName);
 	}*/
 
-	for (auto t : WEAPON_LIB.muzzleList) {
+	/*for (auto t : WEAPON_LIB.muzzleList) {
 		if (t->name == "Muzzle_None") {
 			continue;
 		}
@@ -409,7 +527,7 @@ void GameStart::SaveScreenShot()
 			continue;
 		}
 		matchWeapon.SaveMask(t->name);
-	}
+	}*/
 }
 
 void GameStart::MoveTest(int y)
@@ -425,6 +543,8 @@ void GameStart::AssembleMuzzle(string name)
 		CurrentWeapon->AssembleMuzzle(muzzle);
 	}
 }
+
+
 
 void GameStart::AssembleGrip(string name)
 {
@@ -457,32 +577,66 @@ void GameStart::AssembleScope(int scope_type)
 void GameStart::DoKeyBoardEvent(unsigned short key, int keyDownOrUp)
 {
 	if (key == crouchKey) {
-		if (keyDownOrUp == 1) {
-			isCrouch = true;			
-			if (!isProne) {
-				CurrentWeapon->Crouch(isCrouch);
+		if (keyDownOrUp == 1) {		
+			if (SWITCH_CROUCH == 1) {
+
 			}
+			else {
+				if (!isProne && !isCrouch) {
+					CurrentWeapon->Crouch(true);
+				}
+				isCrouch = true;
+			}		
 		}
-		else {
-			isCrouch = false;
-			if (!isProne) {
-				CurrentWeapon->Crouch(isCrouch);
+		else {		
+			if (SWITCH_CROUCH == 1) {
+				if (isCrouch) {
+					isCrouch = false;
+					CurrentWeapon->Crouch(false);
+				}
+				else {
+					
+				}
 			}
+			else {
+				if (!isProne && isCrouch) {
+					CurrentWeapon->Crouch(false);
+				}
+				isCrouch = false;
+			}
+			
 		}
 	}
 	else if (key == proneKey) {
-		if (keyDownOrUp == 1) {
-			isProne = true;
-			if (!isCrouch) {
-				CurrentWeapon->Prone(isProne);
+		if (keyDownOrUp == 1) {		
+			if (SWITCH_PRONE == 1) {
+				
 			}
-
+			else {
+				if (!isCrouch && !isProne) {
+					CurrentWeapon->Prone(true);
+				}
+				isProne = true;
+			}
+			
 		}
-		else {			
-			isProne = false;
-			if (!isCrouch) {
-				CurrentWeapon->Prone(isProne);
+		else {	
+			if (SWITCH_PRONE == 1) {
+				if (isProne) {
+					isProne = false;
+					CurrentWeapon->Prone(false);
+				}
+				else {
+					
+				}
 			}
+			else {
+				if (!isCrouch && isProne) {
+					CurrentWeapon->Prone(false);
+				}
+				isProne = false;
+			}
+			
 		}
 	}
 	else if (key == focusKey) {
@@ -500,6 +654,31 @@ void GameStart::DoKeyBoardEvent(unsigned short key, int keyDownOrUp)
 		else {
 
 		}
+	}
+
+	SetMessage();
+}
+
+void GameStart::DoMouseEvent(unsigned short key)
+{
+	if (key == WM_RBUTTONDOWN) {
+		if (SWITCH_PRONE == 1 || SWITCH_CROUCH == 1) {
+			DoMatchStance();
+		}
+	}
+	else if (key == WM_RBUTTONUP) {
+		if (SWITCH_ADS == 1) {
+			IsAds();
+		}					
+	}
+	else if (key == WM_LBUTTONDOWN) {
+		
+	}
+	else if (key == WM_LBUTTONUP) {
+		
+	}
+	else if (key == WM_MOUSEWHEEL) {
+
 	}
 
 	SetMessage();
@@ -542,9 +721,43 @@ void GameStart::SetHoldBreathKey(unsigned short key)
 	WritePrivateProfileStringA("Key", "HoldBreathKey", std::to_string(key).c_str(), INI_FILE_PATH.c_str());
 }
 
+void GameStart::LoadSwitchCrouch()
+{
+	SWITCH_CROUCH = GetPrivateProfileIntA("General", "SwitchCrouch", 50, INI_FILE_PATH.c_str());
+}
+
+void GameStart::SetSwitchCrouch(int sc)
+{
+	SWITCH_CROUCH = sc;
+	WritePrivateProfileStringA("General", "SwitchCrouch", std::to_string(SWITCH_CROUCH).c_str(), INI_FILE_PATH.c_str());
+}
+
+void GameStart::LoadSwitchProne()
+{
+	SWITCH_PRONE = GetPrivateProfileIntA("General", "SwitchProne", 50, INI_FILE_PATH.c_str());
+}
+
+void GameStart::SetSwitcProne(int sp)
+{
+	SWITCH_PRONE = sp;
+	WritePrivateProfileStringA("General", "SwitchProne", std::to_string(SWITCH_PRONE).c_str(), INI_FILE_PATH.c_str());
+}
+
+
+
+void GameStart::LoadSwitchADS()
+{
+	SWITCH_ADS = GetPrivateProfileIntA("General", "SwitchADS", 50, INI_FILE_PATH.c_str());
+}
+
+void GameStart::SetSwitcADS(int sp)
+{
+	SWITCH_ADS = sp;
+	WritePrivateProfileStringA("General", "SwitchADS", std::to_string(SWITCH_ADS).c_str(), INI_FILE_PATH.c_str());
+}
 
 void CALLBACK GameStart::TimerProc(void* gameStart, BOOLEAN TimerOrWaitFired) {
-	((GameStart*)gameStart)->go = false;
+	
 }
 
 void CALLBACK GameStart::TimerProc2(void* key, BOOLEAN TimerOrWaitFired) {
@@ -565,3 +778,13 @@ void CALLBACK GameStart::StanceMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Ins
 	ThisAndIndex* ti = (ThisAndIndex*)Context;
 	ti->_this->MatchStance(ti->image);
 }
+
+void CALLBACK GameStart::AdsMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context) {
+	ThisAndIndex* ti = (ThisAndIndex*)Context;
+	ti->_this->MatchAds(ti->image);
+}
+
+
+
+
+

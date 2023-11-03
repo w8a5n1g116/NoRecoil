@@ -10,5 +10,8 @@
 #define IDB_COMBOBOX3     3306
 #define IDB_COMBOBOX4     3307
 #define IDB_COMBOBOX5     3308
+#define IDB_COMBOBOX6     3309
+#define IDB_COMBOBOX7     3310
+#define IDB_COMBOBOX8     3311
 #define WM_CUSTOM_MESSAGE_PICK_WEAPON       (WM_APP + 0x0001)
 #define WM_CUSTOM_MESSAGE                   (WM_APP + 0x0002)

@@ -16,11 +16,18 @@ void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress, int scrollLock
     }
     
 
-    int count = 3;
+    int count = 4;
     for (int i = 0; i < count; i++)
     {
-        mouse_event(MOUSEEVENTF_MOVE, 0, round(shot_recoil / 3), 0, 0);
-        Delay(round(CurrentWeapon->shotInterval / 3));
+        int offset = 0;
+        if (i % 2 == 0) {
+            offset = 1;
+        }
+        else {
+            offset = -1;
+        }
+        mouse_event(MOUSEEVENTF_MOVE, 70, round(shot_recoil / 4), 0, 0);
+        Delay(round(CurrentWeapon->shotInterval / 4));
     }
 
 

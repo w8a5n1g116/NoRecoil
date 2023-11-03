@@ -37,14 +37,18 @@ public:
 		int isStartContinuousTap = FALSE;
 		int count = 0;
 	};
-
+	//屏幕截图
 	Mat screenShot;
-
+	//一号枪位 截图
 	Mat weapon1Src;
+	//二号枪位 截图
 	Mat weapon2Src;
-
+	//判断背包打开位置 截图
 	Mat tabOpenSrc;
+	//判断姿态位置截图
 	Mat stanceSrc;
+	//判断Ads是否打开的截图
+	Mat adsSrc;
 
 	Mat tabOpenMatchImage;
 	Mat tabOpenMatchImageMask;
@@ -55,6 +59,9 @@ public:
 	Mat stanceMatchProneImage;
 	Mat stanceMatchProneImageMask;
 
+	Mat adsMatchImage;
+	Mat adsMatchImageMask;
+	//多线程执行传递参数
 	struct ThisAndIndex {
 		GameStart* _this;
 		Mat* image;
@@ -65,8 +72,9 @@ public:
 	ThisAndIndex ti2;
 	ThisAndIndex tiTabOpen;
 	ThisAndIndex tiStance;
+	ThisAndIndex tiAds;
 
-	Rect weaponRect1, weaponRect2, weaponNaceRect, muzzleRect, gripRect, stockRect, scopeRect,tabOpenRect,stanceRect,tabOpenBGRect,stanceBGRect;
+	Rect weaponRect1, weaponRect2, weaponNaceRect, muzzleRect, gripRect, stockRect, scopeRect,tabOpenRect,stanceRect,tabOpenBGRect,stanceBGRect,adsRect,adsBGRect;
 
 
 	TP_CALLBACK_ENVIRON callbackEnviron;
@@ -79,18 +87,18 @@ public:
 	//记录移动像素点
 	int countPx = 0;
 
-
+	HANDLE m_timerHandle = NULL;
 	
 	CWeapon* weaponList[2] = { 0 };
 	CWeapon* CurrentWeapon = nullptr;
 	int currentPosition = 1;
+	//用于控制单发枪是否可以下一发
 	bool enableTrigger = true;
-	HANDLE m_timerHandle = NULL;
-	bool go = true;
+	//记录枪在小窗口显示的位置
 	int currentIndexPosition = 0;
 	int currentIndexPosition1 = 0;
 	int currentIndexPosition2 = 0;
-
+	//默认键位
 	unsigned short crouchKey = VK_LSHIFT;
 	bool isCrouch = false;
 	unsigned short proneKey = VK_CAPITAL;
@@ -99,14 +107,23 @@ public:
 	bool isFocus = false;
 	unsigned short holdBreathKey = VK_LMENU;
 	bool isHoldBreath = false;
-	                
+	//控制是否需要识别枪    
 	bool allowMatch = true;
-
+	//分辨率
 	static int RESOLUTION_TYPE;	//0->1440p,1->1440p*125%,2->1080p
-
+	//开镜灵敏度
 	static int SENSITIVE;
+	//是否右键切换开镜
+	static int SWITCH_ADS;
+	//是否切换蹲
+	static int SWITCH_CROUCH;
+	//是否切换趴
+	static int SWITCH_PRONE;
 	//背包是否打开                                                                        
 	bool packageOpened = false;
+
+	//是否已右键开镜
+	bool adsOpened = false;
 	
 	Rect p1440WeaponRect1 = Rect(1769, 117, 657, 255);
 	Rect p1440WeaponRect2 = Rect(1769, 391, 657, 255);
@@ -115,10 +132,12 @@ public:
 	Rect p1440GripXY = Rect(138, 146, 185, 193);
 	Rect p1440StockXY = Rect(568, 576, 185, 193);
 	Rect p1440ScopeXY = Rect(365, 373, 34, 42);
-	Rect p1440TabOpenRect = Rect(0, 0, 0, 0);
-	Rect p1440StanceRect = Rect(0, 0, 0, 0);
-	Rect p1440TabOpenXY = Rect(0, 0, 0, 0);
-	Rect p1440StanceXY = Rect(0, 0, 0, 0);
+	Rect p1440TabOpenRect = Rect(460, 55, 160, 65);	//460,55,620,120
+	Rect p1440StanceRect = Rect(900, 1290, 100, 110);	//900,1290,1000,1400
+	Rect p1440adsRect = Rect(1200, 1150, 170, 80);
+	Rect p1440TabOpenXY = Rect(34, 40, 20, 26);	//37,23,114,59
+	Rect p1440StanceXY = Rect(32,38, 25, 31);	//35,28,91,76	
+	Rect p1440adsXY = Rect(50, 56, 23, 29);	//53,26,104,39
 
 	Rect p1440_125WeaponRect1 = Rect(1772, 120, 648, 255);
 	Rect p1440_125WeaponRect2 = Rect(1772, 394, 648, 255);
@@ -129,8 +148,10 @@ public:
 	Rect p1440_125ScopeXY = Rect(362, 372, 28, 42);
 	Rect p1440_125TabOpenRect = Rect(0, 0, 0, 0);
 	Rect p1440_125StanceRect = Rect(0, 0, 0, 0);
+	Rect p1440_125adsRect = Rect(0, 0, 0, 0);
 	Rect p1440_125TabOpenXY = Rect(0, 0, 0, 0);
 	Rect p1440_125StanceXY = Rect(0, 0, 0, 0);
+	Rect p1440_125adsXY = Rect(0, 0, 0, 0);
 
 	Rect p1080WeaponRect1 = Rect(1322, 82, 485, 198);
 	Rect p1080WeaponRect2 = Rect(1322, 287, 485, 198);
@@ -139,10 +160,12 @@ public:
 	Rect p1080GripXY = Rect(109, 117, 144, 152);
 	Rect p1080StockXY = Rect(430, 438, 144, 152);
 	Rect p1080ScopeXY = Rect(278, 286, 31, 39);
-	Rect p1080TabOpenRect = Rect(0, 0, 0, 0);
-	Rect p1080StanceRect = Rect(0, 0, 0, 0);
-	Rect p1080TabOpenXY = Rect(0, 0, 0, 0);
-	Rect p1080StanceXY = Rect(0, 0, 0, 0);
+	Rect p1080TabOpenRect = Rect(340, 40, 150, 50);	//340,40,490,90
+	Rect p1080StanceRect = Rect(670, 970, 90, 70);	//670,970, 760,1040
+	Rect p1080adsRect = Rect(900, 860, 120, 70);
+	Rect p1080TabOpenXY = Rect(29, 35, 14, 20);	//32,17,90,46
+	Rect p1080StanceXY = Rect(21, 27, 5, 13);	//24,8,82,55	
+	Rect p1080adsXY = Rect(37, 43, 17, 23);	//40, 20, 49, 11
 	
 
 	MatchWeapon matchWeapon;
@@ -156,9 +179,12 @@ public:
 	void PickMatchImageWeapon();
 	void CanDoMatchWeapon();
 	void DoMatchStance();
+	void DoMatchAdsOpen();
+	void IsAds();
 	void Match(Mat* src, int index);
 	void MatchTabOpen(Mat* src);
 	void MatchStance(Mat* src);
+	void MatchAds(Mat* src);
 	void PickPreviousWeapon();
 	void PickNextWeapon();
 	void IncrementRecoil();
@@ -181,6 +207,8 @@ public:
 
 	void DoKeyBoardEvent(unsigned short key,int keyDownOrUp);
 
+	void DoMouseEvent(unsigned short key);
+
 	void LoadKeys();
 	void SetCrouchKey(unsigned short key);
 	void SetProneKey(unsigned short key);
@@ -190,6 +218,12 @@ public:
 	void SelectResolution(int resolution);
 	void LoadSensitive();
 	void SetSensitive(int sens);
+	void LoadSwitchCrouch();
+	void SetSwitchCrouch(int sc);
+	void LoadSwitchProne();
+	void SetSwitcProne(int sp);
+	void LoadSwitchADS();
+	void SetSwitcADS(int sa);
 
 
 
@@ -202,6 +236,8 @@ public:
 	static void CALLBACK CanMatchWeaponThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context);
 
 	static void CALLBACK StanceMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context);
+
+	static void CALLBACK AdsMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context);
 	
 };
 

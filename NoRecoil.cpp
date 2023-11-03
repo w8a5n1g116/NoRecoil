@@ -41,7 +41,10 @@ HWND hStaticText3;
 HWND hStaticText4;
 HWND hStaticText5;
 HWND hStaticText6;
-//HWND hStaticText3;
+HWND hStaticText7;
+HWND hStaticText8;
+HWND hStaticText9;
+HWND hStaticText10;
 HWND hMessageText;
 HWND hMessageText2;
 HWND hMessageText3;
@@ -55,7 +58,11 @@ HWND hComboBox2;
 HWND hComboBox3;
 HWND hComboBox4;
 HWND hComboBox5;
+HWND hComboBox6;
+HWND hComboBox7;
+HWND hComboBox8;
 HWND hInput0;
+HWND hInput1;
 
 HANDLE m_hThread;
 UINT m_ThreadId;
@@ -210,7 +217,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     hInst = hInstance; // 将实例句柄存储在全局变量中
 
     hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, 0, 250, 465, nullptr, nullptr, hInstance, nullptr);
+        CW_USEDEFAULT, 0, 460, 365, nullptr, nullptr, hInstance, nullptr);
 
     int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
 
@@ -263,6 +270,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         
         hButton = CreateWindow(L"Button", L"STOP", StaticTextStyle, 30, 10, 180, 40, hWnd, (HMENU)IDB_ONE, hInst, NULL);
 
+        hButton2 = CreateWindow(L"Button", L"应用", StaticTextStyle, 240, 10, 180, 40, hWnd, (HMENU)IDB_TWO, hInst, NULL);
+
         
         hStaticText = CreateWindow(L"Static", L"下蹲按键", StaticTextStyle, 30, 55, 180, 20, hWnd, NULL, hInst, NULL);
         hComboBox1 = CreateWindow(L"ComboBox", L"", CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 30, 80, 180, 100, hWnd, (HMENU)IDB_COMBOBOX1, hInst, NULL);
@@ -306,8 +315,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         ComboBox_AddString(hComboBox4, L"左CTRL");
         ComboBox_SetItemData(hComboBox4, 3, VK_LCONTROL);
 
-        hStaticText5 = CreateWindow(L"Static", L"分辨率", StaticTextStyle, 30, 275, 180, 20, hWnd, NULL, hInst, NULL);
-        hComboBox5 = CreateWindow(L"ComboBox", L"", CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 30, 300, 180, 100, hWnd, (HMENU)IDB_COMBOBOX5, hInst, NULL);
+        
+
+        hStaticText7 = CreateWindow(L"Static", L"切换下蹲", StaticTextStyle, 240, 55, 180, 20, hWnd, NULL, hInst, NULL);
+        hComboBox6 = CreateWindow(L"ComboBox", L"", CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 240, 80, 180, 100, hWnd, (HMENU)IDB_COMBOBOX6, hInst, NULL);
+        ComboBox_AddString(hComboBox6, L"否");
+        ComboBox_SetItemData(hComboBox6, 0, 0);
+        ComboBox_AddString(hComboBox6, L"是");
+        ComboBox_SetItemData(hComboBox6, 1, 1);
+
+        hStaticText8 = CreateWindow(L"Static", L"切换卧倒", StaticTextStyle, 240, 110, 180, 20, hWnd, NULL, hInst, NULL);
+        hComboBox7 = CreateWindow(L"ComboBox", L"", CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 240, 135, 180, 100, hWnd, (HMENU)IDB_COMBOBOX7, hInst, NULL);
+        ComboBox_AddString(hComboBox7, L"否");
+        ComboBox_SetItemData(hComboBox7, 0, 0);
+        ComboBox_AddString(hComboBox7, L"是");
+        ComboBox_SetItemData(hComboBox7, 1, 1);
+
+        hStaticText9 = CreateWindow(L"Static", L"切换开镜", StaticTextStyle, 240, 165, 180, 20, hWnd, NULL, hInst, NULL);
+        hComboBox8 = CreateWindow(L"ComboBox", L"", CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 240, 190, 180, 100, hWnd, (HMENU)IDB_COMBOBOX8, hInst, NULL);
+        ComboBox_AddString(hComboBox8, L"否");
+        ComboBox_SetItemData(hComboBox8, 0, 0);
+        ComboBox_AddString(hComboBox8, L"是");
+        ComboBox_SetItemData(hComboBox8, 1, 1);
+
+
+        hStaticText5 = CreateWindow(L"Static", L"分辨率", StaticTextStyle, 240, 220, 180, 20, hWnd, NULL, hInst, NULL);
+        hComboBox5 = CreateWindow(L"ComboBox", L"", CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 240, 245, 180, 100, hWnd, (HMENU)IDB_COMBOBOX5, hInst, NULL);
         ComboBox_AddString(hComboBox5, L"1440P 全屏模式");
         ComboBox_SetItemData(hComboBox5, 0, 0);
         ComboBox_AddString(hComboBox5, L"1440P 无边框 125%缩放");
@@ -315,10 +348,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         ComboBox_AddString(hComboBox5, L"1080P 全屏模式");
         ComboBox_SetItemData(hComboBox5, 2, 2);
 
-        hStaticText6 = CreateWindow(L"Static", L"开镜灵敏度", StaticTextStyle, 30, 330, 180, 20, hWnd, NULL, hInst, NULL);
-        hInput0 = CreateWindow(L"EDIT", L"50", ES_CENTER | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 30, 355, 180, 20, hWnd, (HMENU)IDB_COMBOBOX5, hInst, NULL);
+        hStaticText6 = CreateWindow(L"Static", L"开镜灵敏度", StaticTextStyle, 30, 275, 180, 20, hWnd, NULL, hInst, NULL);
+        hInput0 = CreateWindow(L"EDIT", L"50", ES_CENTER | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 30, 300, 180, 20, hWnd, (HMENU)NULL, hInst, NULL);
+
+        hStaticText10 = CreateWindow(L"Static", L"腰射灵敏度", StaticTextStyle, 240, 275, 180, 20, hWnd, NULL, hInst, NULL);
+        hInput1 = CreateWindow(L"EDIT", L"50", ES_CENTER | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, 240, 300, 180, 20, hWnd, (HMENU)NULL, hInst, NULL);
         
-        hButton2 = CreateWindow(L"Button", L"应用", StaticTextStyle, 30, 380, 180, 40, hWnd, (HMENU)IDB_TWO, hInst, NULL);
+        
     }
     case WM_COMMAND:
     {
@@ -410,6 +446,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 int index = ComboBox_GetCurSel(hComboBox5);
                 int resolution = ComboBox_GetItemData(hComboBox5, index);
                 gameStart.SelectResolution(resolution);
+            }
+            }
+            break;
+        case IDB_COMBOBOX6:
+            switch (HIWORD(wParam)) {
+            case CBN_SELCHANGE:
+            {
+                int index = ComboBox_GetCurSel(hComboBox6);
+                int value = ComboBox_GetItemData(hComboBox6, index);
+                gameStart.SetSwitchCrouch(value);
+            }
+            }
+            break;
+        case IDB_COMBOBOX7:
+            switch (HIWORD(wParam)) {
+            case CBN_SELCHANGE:
+            {
+                int index = ComboBox_GetCurSel(hComboBox7);
+                int value = ComboBox_GetItemData(hComboBox7, index);
+                gameStart.SetSwitcProne(value);
+            }
+            }
+            break;
+        case IDB_COMBOBOX8:
+            switch (HIWORD(wParam)) {
+            case CBN_SELCHANGE:
+            {
+                int index = ComboBox_GetCurSel(hComboBox8);
+                int value = ComboBox_GetItemData(hComboBox8, index);
+                gameStart.SetSwitcADS(value);
             }
             }
             break;
@@ -606,13 +672,34 @@ void Init()
         ComboBox_SelectString(hComboBox5, -1, L"1080P 全屏模式");
     }
 
+    if (GameStart::SWITCH_CROUCH == 0) {
+        ComboBox_SelectString(hComboBox6, -1, L"否");
+    }
+    else if (GameStart::SWITCH_CROUCH == 1) {
+        ComboBox_SelectString(hComboBox6, -1, L"是");
+    }
+
+    if (GameStart::SWITCH_PRONE == 0) {
+        ComboBox_SelectString(hComboBox7, -1, L"否");
+    }
+    else if (GameStart::SWITCH_PRONE == 1) {
+        ComboBox_SelectString(hComboBox7, -1, L"是");
+    }
+
+    if (GameStart::SWITCH_ADS == 0) {
+        ComboBox_SelectString(hComboBox8, -1, L"否");
+    }
+    else if (GameStart::SWITCH_ADS == 1) {
+        ComboBox_SelectString(hComboBox8, -1, L"是");
+    }
+
     Edit_SetText(hInput0, to_wstring(GameStart::SENSITIVE).c_str());
 
     SetMessage();
 
 
     //设置鼠标钩子`
-    mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), 0);
+    //mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), 0);
     //设置键盘钩子
     keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
     StartProcessThread();
@@ -711,7 +798,7 @@ LRESULT CALLBACK LowLevelMouseProc(
     gameStart.keyboardState.scrollLock = key & 0x0001;
 
 
-    
+    gameStart.DoMouseEvent(wParam);
 
     return 0;
 }
@@ -775,7 +862,11 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             }           
         }
         else if (kbhook->vkCode == VK_NUMPAD2) {
-            gameStart.MoveTest(5);
+            gameStart.MoveTest(100);
+            SetMessage();
+        }
+        else if (kbhook->vkCode == VK_NUMPAD5) {
+            gameStart.MoveTest(-100);
             SetMessage();
         }
         else if (kbhook->vkCode == 0x52) { //R
@@ -849,8 +940,8 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             gameStart.keyboardState.scrollLock = key & 0x0001;
         }
         else if (kbhook->vkCode == 0xC0) {  // `~键
-            gameStart.PickMatchImageWeapon();
-            //MatchProcessThread();
+            //gameStart.PickMatchImageWeapon();
+            //gameStart.SaveScreenShot();
         }
         else if (kbhook->vkCode == VK_TAB) {
             if (gameStart.keyboardState.isTabPress == 1) {
@@ -862,7 +953,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         
 
         if (kbhook->vkCode == VK_NUMPAD1) {
-            gameStart.MoveTest(1);
+            gameStart.MoveTest(5);
             SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD2) {
@@ -874,7 +965,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD4) {
-            
+            gameStart.MoveTest(-5);
             SetMessage();
         }
         else if (kbhook->vkCode == VK_NUMPAD5) {
@@ -1074,8 +1165,9 @@ void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired) {
 void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired) {
     if (gameStart.allowMatch) {
         gameStart.allowMatch = false;
-        CreateTimerQueueTimer(&m_timerHandle3, NULL, TimerProc3, NULL, 3000, 0, WT_EXECUTEINTIMERTHREAD);
-        gameStart.PickMatchImageWeapon();
+        CreateTimerQueueTimer(&m_timerHandle3, NULL, TimerProc3, NULL, 1000, 0, WT_EXECUTEINTIMERTHREAD);
+        //gameStart.PickMatchImageWeapon();
+        gameStart.CanDoMatchWeapon();
     }
     
 }

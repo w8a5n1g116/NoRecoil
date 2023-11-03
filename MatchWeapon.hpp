@@ -58,6 +58,19 @@ public:
 		}
 	}
 
+	bool MatchAdsOpenImage(Mat* src, Mat* temp, Mat* mask, Rect rect) {
+		if (temp->empty() || mask->empty()) {
+			return false;
+		}
+		Point ret = Match(src, temp, mask);
+		if (ret.x >= rect.x && ret.x <= rect.y && ret.y >= rect.width && ret.y <= rect.height) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
 	int MatchStanceImage(Mat* src, Mat* temp, Mat* mask, Mat* temp2, Mat* mask2, Rect rect) {
 		if (temp->empty() || mask->empty()) {
 			return false;
@@ -104,9 +117,9 @@ public:
 
 	void SaveScreenShot(CWeapon* weapon1, CWeapon* weapon2) {
 		Mat screenshot = screenShot.getScreenshot();
-		Mat img = screenshot(Rect(1769, 117,657 , 255));
-		/*Mat weapon1Name = img(Rect(52, 3, 140, 46));
-		imwrite("image/template/" + weapon1->weaponName + ".png", weapon1Name);*/
+		Mat img = screenshot(Rect(460, 55, 160, 65));
+		Mat weapon1Name = img(Rect(37, 23, 77, 36));
+		imwrite("image/template/tab_open_1440.png", weapon1Name);
 
 		/*Mat weapon1Scope = img(Rect(369, 38, 59, 35));
 		imwrite("image/template/" + weapon1->cscope->name + "_1440.png", weapon1Scope);
@@ -119,10 +132,10 @@ public:
 	}
 
 	void SaveMask(string name) {
-		Mat grey = imread("image/template/" + name + "_1440.png", IMREAD_GRAYSCALE);
+		Mat grey = imread("image/template/tab_open_1440.png", IMREAD_GRAYSCALE);
 		Mat binary;
-		threshold(grey, binary, 80, 255, THRESH_BINARY_INV);
-		imwrite("image/mask/" + name + "_1440.png", binary);
+		threshold(grey, binary, 150, 255, THRESH_BINARY);
+		imwrite("image/mask/tab_open_1440.png", binary);
 	}
 
 private:
