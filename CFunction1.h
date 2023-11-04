@@ -6,7 +6,7 @@ class CFunction1
 {
 public:
 	CFunction1();
-	static void Move(CWeapon* CurrentWeapon);
+	static void Move(CWeapon* CurrentWeapon, int isLeftAltPress, int scrollLock);
 
 	static void Reload(CWeapon* CurrentWeapon);
 	static void Delay(int timeout_ms);

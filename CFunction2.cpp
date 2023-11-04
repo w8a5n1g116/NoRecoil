@@ -9,10 +9,18 @@ extern HWND hWnd;
 
 void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress, int scrollLock)
 {
+
+    double scope_scale = 1;
+    if (CurrentWeapon->scope == nullptr) {
+        scope_scale = 1;
+    }
+    else {
+        scope_scale = CurrentWeapon->scope->y_effect;
+    }
     double shot_recoil = 0;
     if (CurrentWeapon->currentShot != CurrentWeapon->shotCount -1) {
         CurrentWeapon->currentShot++;
-        shot_recoil = CurrentWeapon->recoilBaseRunning * CurrentWeapon->attachmentEffect * CurrentWeapon->recoilRates[CurrentWeapon->currentShot];
+        shot_recoil = CurrentWeapon->recoilBaseRunning  * CurrentWeapon->recoilRates[CurrentWeapon->currentShot] * CurrentWeapon->attachmentEffect * scope_scale;
     }
     
 
@@ -26,7 +34,7 @@ void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress, int scrollLock
         else {
             offset = -1;
         }
-        mouse_event(MOUSEEVENTF_MOVE, 70, round(shot_recoil / 4), 0, 0);
+        mouse_event(MOUSEEVENTF_MOVE, 0, round(shot_recoil / 4), 0, 0);
         Delay(round(CurrentWeapon->shotInterval / 4));
     }
 

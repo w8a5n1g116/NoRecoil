@@ -14,18 +14,18 @@ CWeapon* CWeaponLib::FindWeapon(std::string weaponName) {
 
 void CWeaponLib::InitAttachment()
 {
-	Muzzle_None = CMuzzle("Muzzle_None", 0.0f);
-	AR_COMP = CMuzzle("AR_COMP", 0.2f);
+	//Muzzle_None = CMuzzle("Muzzle_None", 0.0f);
+	AR_COMP = CMuzzle("AR_COMP", 0.15f);
 	AR_LOWFIRE = CMuzzle("AR_LOWFIRE", 0.1f);
 	AR_LOWSOUND = CMuzzle("AR_LOWSOUND", 0);
-	SMG_COMP = CMuzzle("SMG_COMP", 0.2f);
+	SMG_COMP = CMuzzle("SMG_COMP", 0.25f);
 	SMG_LOWFIRE = CMuzzle("SMG_LOWFIRE", 0.1f);
 	SMG_LOWSOUND = CMuzzle("SMG_LOWSOUND", 0);
 	SNIPER_COMP = CMuzzle("SNIPER_COMP", 0.2f);
 	SNIPER_LOWFIRE = CMuzzle("SNIPER_LOWFIRE", 0.1f);
 	SNIPER_LOWSOUND = CMuzzle("SNIPER_LOWSOUND", 0);
 
-	Grip_None = CGrip("Grip_None", 0.0f);
+	//Grip_None = CGrip("Grip_None", 0.0f);
 	Angled = CGrip("Angled", 0);
 	Half = CGrip("Half", 0.08f);
 	Laser = CGrip("Laser", 0);
@@ -33,7 +33,7 @@ void CWeaponLib::InitAttachment()
 	Thumb = CGrip("Thumb", 0.08f);
 	Vertical = CGrip("Vertical", 0.15f);
 
-	Magazine_None = CMagazine("Magazine_None", 37);
+	//Magazine_None = CMagazine("Magazine_None", 37);
 	SMG = CMagazine("SMG", 37);
 	SMG_QUICK = CMagazine("SMG_QUICK", 35);
 	AR = CMagazine("AR", 42);
@@ -41,20 +41,20 @@ void CWeaponLib::InitAttachment()
 	SNIPER = CMagazine("SNIPER", 8);
 	SNIPER_QUICK = CMagazine("SNIPER_QUICK", 7);
 
-	Stock_None = CStock("Stock_None", 0.0f);
+	//Stock_None = CStock("Stock_None", 0.0f);
 	Tactical = CStock("Tactical", 0);
 	BulletLoop = CStock("BulletLoop", 0);
 	CheekPad = CStock("CheekPad", 0.2f);
 	Folding = CStock("Folding", 0.2f);
 	Heavy = CStock("Heavy", 0.05f);
 
-	Scope_None = CScope("Scope_None", 0, 1.0f);
-	Scope_1 = CScope("Scope_1", 1, 1.0f);
-	Scope_2 = CScope("Scope_2", 2, 2.0f);
-	Scope_3 = CScope("Scope_3", 3, 3.0f);
-	Scope_4 = CScope("Scope_4", 4, 4.0f);
-	Scope_6 = CScope("Scope_6", 6, 6.0f);
-	Scope_8 = CScope("Scope_8", 8, 8.0f);
+	//Scope_None = CScope("Scope_None", 0, 1.0f);
+	Scope_1 = CScope("Scope_1", 1, 1.0f);	//38600
+	Scope_2 = CScope("Scope_2", 2, 1.74870f);	//67500		1.74870f
+	Scope_3 = CScope("Scope_3", 3, 2.62435f);	//101300	2.62435f
+	Scope_4 = CScope("Scope_4", 4, 3.68134f);	//142100	3.68134f
+	Scope_6 = CScope("Scope_6", 6, 5.24870f);	//202600	5.24870f
+	Scope_8 = CScope("Scope_8", 8, 6.99740f);	//270100	6.99740f
 
 	muzzleList.clear();
 	muzzleList.push_back(&Muzzle_None);
@@ -90,58 +90,59 @@ void CWeaponLib::InitAttachment()
 void CWeaponLib::InitWeapon()
 {
 
-	None = CWeapon("WNone");
-	Default = CWeapon("Default");
-	Mk47_Mutant = CWeapon("Mk47 Mutant");
-	AKM = CWeapon("AKM");
-	Groza = CWeapon("Groza");
-	Beryl_M762 = CWeapon("Beryl M762");
-	ACE32 = CWeapon("ACE32");
-	M16A4 = CWeapon("M16A4");
-	QBZ = CWeapon("QBZ");
-	SCAR_L = CWeapon("SCAR-L");
-	AUG = CWeapon("AUG");
-	G36C = CWeapon("G36C");
-	K2 = CWeapon("K2");
-	M416 = CWeapon("M416");
-	FAMAS = CWeapon("FAMAS");
-	DP_28 = CWeapon("DP-28");
-	M249 = CWeapon("M249");
-	Mk14 = CWeapon("Mk14");
-	SLR = CWeapon("SLR");
-	SKS = CWeapon("SKS");
-	Mk12 = CWeapon("Mk12");
-	Mini14 = CWeapon("Mini14");
-	QBU = CWeapon("QBU");
-	VSS = CWeapon("VSS");
-	Lynx_AMR = CWeapon("Lynx AMR");
-	AWM = CWeapon("AWM");
-	Kar98k = CWeapon("Kar98k");
-	Mosin_Nagant = CWeapon("Mosin Nagant");
-	M24 = CWeapon("M24");
-	Win94 = CWeapon("Win94");
-	UMP45 = CWeapon("UMP45");
-	Tommy_Gun = CWeapon("Tommy Gun");
-	PP_19_Bizon = CWeapon("PP-19 Bizon");
-	P90 = CWeapon("P90");
-	MP5K = CWeapon("MP5K");
-	MP9 = CWeapon("MP9");
-	Vector = CWeapon("Vector");
-	Micro_UZI = CWeapon("Micro UZI");
-	DBS = CWeapon("DBS");
-	S1897 = CWeapon("S1897");
-	S686 = CWeapon("S686");
-	S12K = CWeapon("S12K");
-	Sawed_Off = CWeapon("Sawed Off");
-	O1R452 = CWeapon("O1R452");
-	R1895 = CWeapon("R1895");
-	Deagle = CWeapon("Deagle");
-	P1911 = CWeapon("P1911");
-	P92 = CWeapon("P92");
-	P18C = CWeapon("P18C");
-	Skorpion = CWeapon("Skorpion");
-	MG3_660_RPM = CWeapon("MG3");
-	Dragunov = CWeapon("Dragunov");
+	None = CWeapon("WNone",CWeapon::FUNCTION2);
+	Default = CWeapon("Default", CWeapon::FUNCTION2);
+	Mk47_Mutant = CWeapon("Mk47 Mutant", CWeapon::FUNCTION2);
+	AKM = CWeapon("AKM", CWeapon::FUNCTION2);
+	Groza = CWeapon("Groza", CWeapon::FUNCTION2);
+	Beryl_M762 = CWeapon("Beryl M762", CWeapon::FUNCTION2);
+	ACE32 = CWeapon("ACE32", CWeapon::FUNCTION2);
+	M16A4 = CWeapon("M16A4", CWeapon::FUNCTION2);
+	QBZ = CWeapon("QBZ", CWeapon::FUNCTION2);
+	SCAR_L = CWeapon("SCAR-L", CWeapon::FUNCTION2);
+	AUG = CWeapon("AUG", CWeapon::FUNCTION2);
+	G36C = CWeapon("G36C", CWeapon::FUNCTION2);
+	K2 = CWeapon("K2", CWeapon::FUNCTION2);
+	M416 = CWeapon("M416", CWeapon::FUNCTION2);
+	FAMAS = CWeapon("FAMAS", CWeapon::FUNCTION2);
+	DP_28 = CWeapon("DP-28", CWeapon::FUNCTION2);
+	M249 = CWeapon("M249", CWeapon::FUNCTION2);
+	Mk14 = CWeapon("Mk14", CWeapon::FUNCTION2);
+	SLR = CWeapon("SLR", CWeapon::FUNCTION1);
+	SKS = CWeapon("SKS", CWeapon::FUNCTION1);
+	Mk12 = CWeapon("Mk12", CWeapon::FUNCTION1);
+	Mini14 = CWeapon("Mini14", CWeapon::FUNCTION1);
+	QBU = CWeapon("QBU", CWeapon::FUNCTION1);
+	Dragunov = CWeapon("Dragunov", CWeapon::FUNCTION1);
+	VSS = CWeapon("VSS", CWeapon::FUNCTION2);
+	Lynx_AMR = CWeapon("Lynx AMR", CWeapon::FUNCTION1);
+	AWM = CWeapon("AWM", CWeapon::FUNCTION1);
+	Kar98k = CWeapon("Kar98k", CWeapon::FUNCTION1);
+	Mosin_Nagant = CWeapon("Mosin Nagant", CWeapon::FUNCTION1);
+	M24 = CWeapon("M24", CWeapon::FUNCTION1);
+	Win94 = CWeapon("Win94", CWeapon::FUNCTION1);
+	UMP45 = CWeapon("UMP45", CWeapon::FUNCTION2);
+	Tommy_Gun = CWeapon("Tommy Gun", CWeapon::FUNCTION2);
+	PP_19_Bizon = CWeapon("PP-19 Bizon", CWeapon::FUNCTION2);
+	P90 = CWeapon("P90", CWeapon::FUNCTION2);
+	MP5K = CWeapon("MP5K", CWeapon::FUNCTION2);
+	MP9 = CWeapon("MP9", CWeapon::FUNCTION2);
+	Vector = CWeapon("Vector", CWeapon::FUNCTION2);
+	Micro_UZI = CWeapon("Micro UZI", CWeapon::FUNCTION2);
+	DBS = CWeapon("DBS", CWeapon::FUNCTION1);
+	S1897 = CWeapon("S1897", CWeapon::FUNCTION1);
+	S686 = CWeapon("S686", CWeapon::FUNCTION1);
+	S12K = CWeapon("S12K", CWeapon::FUNCTION1);
+	Sawed_Off = CWeapon("Sawed Off", CWeapon::FUNCTION1);
+	O1R452 = CWeapon("O1R452", CWeapon::FUNCTION1);
+	R1895 = CWeapon("R1895", CWeapon::FUNCTION1);
+	Deagle = CWeapon("Deagle", CWeapon::FUNCTION1);
+	P1911 = CWeapon("P1911", CWeapon::FUNCTION1);
+	P92 = CWeapon("P92", CWeapon::FUNCTION1);
+	P18C = CWeapon("P18C", CWeapon::FUNCTION1);
+	Skorpion = CWeapon("Skorpion", CWeapon::FUNCTION2);
+	MG3_660_RPM = CWeapon("MG3", CWeapon::FUNCTION2);
+	
 
 	weaponList.clear();
 	weaponList.push_back(&Default);

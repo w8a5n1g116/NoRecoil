@@ -81,7 +81,7 @@ public:
 		}
 
 		Point ret2 = Match(src, temp2, mask2);
-		if (ret.x >= rect.x && ret.x <= rect.y && ret.y >= rect.width && ret.y <= rect.height) {
+		if (ret2.x >= rect.x && ret2.x <= rect.y && ret2.y >= rect.width && ret2.y <= rect.height) {
 			return 2;
 		}
 

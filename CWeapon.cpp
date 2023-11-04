@@ -3,7 +3,8 @@
 
 vector<string> split(const string& s, const string& seperator);
 
-CWeapon::CWeapon(string weaponName) :weaponName(weaponName), function(FUNCTION2) {
+CWeapon::CWeapon(string weaponName, WEAPON_FUNCTION function) :weaponName(weaponName), function(function) {
+
 
 	string imageSuffix = "";
 	if (GameStart::RESOLUTION_TYPE == 0) {
@@ -35,6 +36,10 @@ void CWeapon::ComputeYOffset()
 	}
 	if (stock != nullptr) {
 		attachmentEffect -= stock->y_effect;
+	}
+	//没有影响后坐力的配件 后坐力为原来的1.1
+	if ((muzzle == nullptr && grip == nullptr && stock == nullptr) ) { //|| (muzzle->name == "Muzzle_None" && grip->name == "Grip_None" && stock->name == "Stock_None")
+		attachmentEffect = 1.1;
 	}
 }
 
@@ -93,9 +98,9 @@ void CWeapon::LoadSetting()
 	shotCount = GetPrivateProfileIntA(weaponName.c_str(), "shotCount", 60, INI_FILE_PATH.c_str());
 	aimRecoil = GetPrivateProfileIntA(weaponName.c_str(), "aimRecoil", recoilBase, INI_FILE_PATH.c_str());
 
-	GetPrivateProfileStringA(weaponName.c_str(), "crouchEffect", "0.6", buffer,1024, INI_FILE_PATH.c_str());
+	GetPrivateProfileStringA(weaponName.c_str(), "crouchEffect", "0.8", buffer,1024, INI_FILE_PATH.c_str());
 	crouchEffect = stod(string(buffer));
-	GetPrivateProfileStringA(weaponName.c_str(), "proneEffect", "0.2", buffer, 1024, INI_FILE_PATH.c_str());
+	GetPrivateProfileStringA(weaponName.c_str(), "proneEffect", "0.6", buffer, 1024, INI_FILE_PATH.c_str());
 	proneEffect = stod(string(buffer));
 }
 
@@ -119,22 +124,18 @@ void CWeapon::ChangeSetting()
 
 void CWeapon::Crouch(int isCrouch)
 {
+	SetRecoil();
 	if (isCrouch) {
 		recoilBaseRunning *= crouchEffect;
-	}
-	else {
-		recoilBaseRunning = recoilBase;
 	}
 	
 }
 
 void CWeapon::Prone(int isProne)
 {
+	SetRecoil();
 	if (isProne) {
 		recoilBaseRunning *= proneEffect;
-	}
-	else {
-		recoilBaseRunning = recoilBase;
 	}
 	
 }

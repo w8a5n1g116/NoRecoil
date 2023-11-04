@@ -51,6 +51,10 @@ HWND hMessageText3;
 HWND hMessageText4;
 HWND hMessageText5;
 HWND hMessageText6;
+HWND hMessageText7;
+HWND hMessageText8;
+HWND hMessageText9;
+HWND hMessageText10;
 HWND hButton;
 HWND hButton2;
 HWND hComboBox1;
@@ -222,7 +226,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     int screenWidth = GetSystemMetrics(SM_CXFULLSCREEN);
 
     hMessageWnd = CreateWindowEx(WS_EX_LAYERED,L"Message", L"", WS_BORDER,//WS_POPUP,WS_BORDER | WS_SIZEBOX
-        screenWidth - 300, 10, 200, 110, nullptr, nullptr, hInstance, nullptr);
+        screenWidth - 300, 10, 200, 180, nullptr, nullptr, hInstance, nullptr);
 
     if (!hWnd)
     {
@@ -529,6 +533,10 @@ LRESULT CALLBACK WndProc2(HWND hMWnd, UINT message, WPARAM wParam, LPARAM lParam
         hMessageText4 = CreateWindow(L"Static", L"", StaticTextStyle, 0, 50, 60, 25, hMWnd, NULL, hInst, NULL);
         hMessageText5 = CreateWindow(L"Static", L"", StaticTextStyle, 60, 50, 60, 25, hMWnd, NULL, hInst, NULL);
         hMessageText6 = CreateWindow(L"Static", L"", StaticTextStyle, 120, 50, 60, 25, hMWnd, NULL, hInst, NULL);
+        hMessageText7 = CreateWindow(L"Static", L"1", StaticTextStyle, 0, 80, 95, 25, hMWnd, NULL, hInst, NULL);
+        hMessageText8 = CreateWindow(L"Static", L"2", StaticTextStyle, 95, 80, 95, 25, hMWnd, NULL, hInst, NULL);
+        hMessageText9 = CreateWindow(L"Static", L"3", StaticTextStyle, 0, 110, 95, 25, hMWnd, NULL, hInst, NULL);
+        //hMessageText10 = CreateWindow(L"Static", L"4", StaticTextStyle, 95, 110, 95, 25, hMWnd, NULL, hInst, NULL);
 
         LOGFONT font;
         font.lfHeight = 32;
@@ -699,7 +707,7 @@ void Init()
 
 
     //设置鼠标钩子`
-    //mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), 0);
+    mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), 0);
     //设置键盘钩子
     keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
     StartProcessThread();
@@ -942,6 +950,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == 0xC0) {  // `~键
             //gameStart.PickMatchImageWeapon();
             //gameStart.SaveScreenShot();
+            //gameStart.DoMatchStance();
         }
         else if (kbhook->vkCode == VK_TAB) {
             if (gameStart.keyboardState.isTabPress == 1) {
@@ -1181,21 +1190,32 @@ void CALLBACK TimerProc3(void* key, BOOLEAN TimerOrWaitFired) {
 void SetMessage() {
     char lmessage[1024];
     sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->weaponName.c_str());
-    //SetWindowTextA(hStaticText, lmessage);
     SetWindowTextA(hMessageText, lmessage);
-    sprintf_s(lmessage, 1024, "%d",  gameStart.CurrentWeapon->scope->scope);
-    //SetWindowTextA(hStaticText2, lmessage);
+    sprintf_s(lmessage, 1024, "%d",  gameStart.CurrentWeapon->scope != NULL ? gameStart.CurrentWeapon->scope->scope : 0);
     SetWindowTextA(hMessageText2, lmessage);
     sprintf_s(lmessage, 1024, "%.2f", gameStart.CurrentWeapon->recoilBaseRunning);
-    //SetWindowTextA(hStaticText3, lmessage);
     SetWindowTextA(hMessageText3, lmessage);
-    //sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->muzzle != NULL ? gameStart.CurrentWeapon->muzzle->name.c_str() : "");
     sprintf_s(lmessage, 1024, "%d", gameStart.countPx);
     SetWindowTextA(hMessageText4, lmessage);
-    //sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->grip != NULL ? gameStart.CurrentWeapon->grip->name.c_str() : "");
+    
     sprintf_s(lmessage, 1024, "%d", gameStart.CurrentWeapon->currentShot);
     SetWindowTextA(hMessageText5, lmessage);
-    //sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->stock != NULL ? gameStart.CurrentWeapon->stock->name.c_str() : "");
-    sprintf_s(lmessage, 1024, "%.2f", gameStart.CurrentWeapon->attachmentEffect);
+    
+    int stance = 0;
+    if (gameStart.isCrouch) {
+        stance = 1;
+    }
+    if (gameStart.isProne) {
+        stance = 2;
+    }
+    //sprintf_s(lmessage, 1024, "%d", stance);
+    sprintf_s(lmessage, 1024, "%.2f-%d", gameStart.CurrentWeapon->attachmentEffect, stance);
     SetWindowTextA(hMessageText6, lmessage);
+
+    sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->muzzle != NULL ? gameStart.CurrentWeapon->muzzle->name.c_str() : "");
+    SetWindowTextA(hMessageText7, lmessage);
+    sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->grip != NULL ? gameStart.CurrentWeapon->grip->name.c_str() : "");
+    SetWindowTextA(hMessageText8, lmessage);
+    sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->stock != NULL ? gameStart.CurrentWeapon->stock->name.c_str() : "");
+    SetWindowTextA(hMessageText9, lmessage);
 }

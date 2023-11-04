@@ -88,6 +88,7 @@ public:
 	int countPx = 0;
 
 	HANDLE m_timerHandle = NULL;
+	HANDLE m_timerHandle2 = NULL;
 	
 	CWeapon* weaponList[2] = { 0 };
 	CWeapon* CurrentWeapon = nullptr;

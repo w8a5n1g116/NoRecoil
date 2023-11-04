@@ -35,13 +35,13 @@ public:
 	int shotInterval = 100;
 	int currentShot = 0;
 	int shotCount = 42;
-	double attachmentEffect = 1.0f;
+	double attachmentEffect = 1.1f;
 
 	double scope1_5X_Scale = 1.43;
 
 	int aimRecoil = 4;
 	double crouchEffect = 0.8;
-	double proneEffect = 0.6;
+	double proneEffect = 0.55;
 
 	Mat templateImage;
 	Mat maskImage;
@@ -49,7 +49,7 @@ public:
 
 	CWeapon() {};
 
-	CWeapon(string weaponName);
+	CWeapon(string weaponName, WEAPON_FUNCTION function);
 
 	void ComputeYOffset();
 

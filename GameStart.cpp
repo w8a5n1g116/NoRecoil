@@ -179,7 +179,7 @@ void GameStart::Move()
 	}
 	else {	//ÇÐ»»¿ª¾µ
 		if (adsOpened) {
-			if (mouseState.isRightButtonPress) {
+			if (mouseState.isLeftButtonPress) {
 
 				if (CurrentWeapon->function == CWeapon::FUNCTION2) {
 
@@ -579,7 +579,7 @@ void GameStart::DoKeyBoardEvent(unsigned short key, int keyDownOrUp)
 	if (key == crouchKey) {
 		if (keyDownOrUp == 1) {		
 			if (SWITCH_CROUCH == 1) {
-
+				
 			}
 			else {
 				if (!isProne && !isCrouch) {
@@ -595,7 +595,7 @@ void GameStart::DoKeyBoardEvent(unsigned short key, int keyDownOrUp)
 					CurrentWeapon->Crouch(false);
 				}
 				else {
-					
+					DoMatchStance();
 				}
 			}
 			else {
@@ -627,7 +627,7 @@ void GameStart::DoKeyBoardEvent(unsigned short key, int keyDownOrUp)
 					CurrentWeapon->Prone(false);
 				}
 				else {
-					
+					DoMatchStance();
 				}
 			}
 			else {
@@ -662,13 +662,13 @@ void GameStart::DoKeyBoardEvent(unsigned short key, int keyDownOrUp)
 void GameStart::DoMouseEvent(unsigned short key)
 {
 	if (key == WM_RBUTTONDOWN) {
-		if (SWITCH_PRONE == 1 || SWITCH_CROUCH == 1) {
-			DoMatchStance();
+		if (SWITCH_PRONE == 1 || SWITCH_CROUCH == 1) {			
+			CreateTimerQueueTimer(&m_timerHandle2, NULL, TimerProc2, this, 100, 0, WT_EXECUTEINTIMERTHREAD);
 		}
 	}
 	else if (key == WM_RBUTTONUP) {
 		if (SWITCH_ADS == 1) {
-			IsAds();
+			CreateTimerQueueTimer(&m_timerHandle, NULL, TimerProc, this, 100, 0, WT_EXECUTEINTIMERTHREAD);
 		}					
 	}
 	else if (key == WM_LBUTTONDOWN) {
@@ -757,11 +757,11 @@ void GameStart::SetSwitcADS(int sp)
 }
 
 void CALLBACK GameStart::TimerProc(void* gameStart, BOOLEAN TimerOrWaitFired) {
-	
+	((GameStart*)gameStart)->IsAds();
 }
 
-void CALLBACK GameStart::TimerProc2(void* key, BOOLEAN TimerOrWaitFired) {
-	
+void CALLBACK GameStart::TimerProc2(void* gameStart, BOOLEAN TimerOrWaitFired) {
+	((GameStart*)gameStart)->DoMatchStance();
 }
 
 void CALLBACK GameStart::WeaponMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context) {
