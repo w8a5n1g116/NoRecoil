@@ -4,6 +4,7 @@
 
 #define IDB_ONE     3301
 #define IDB_TWO     3302
+#define IDB_THREE     33012
 #define IDB_LIST1     3303
 #define IDB_COMBOBOX1     3304
 #define IDB_COMBOBOX2     3305
@@ -15,3 +16,4 @@
 #define IDB_COMBOBOX8     3311
 #define WM_CUSTOM_MESSAGE_PICK_WEAPON       (WM_APP + 0x0001)
 #define WM_CUSTOM_MESSAGE                   (WM_APP + 0x0002)
+#define WM_TO_TRAY							(WM_APP + 0x0003)

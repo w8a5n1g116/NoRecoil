@@ -86,10 +86,13 @@ public:
 
 	//记录移动像素点
 	int countPx = 0;
-
+	//两个图像识别计时器句柄
 	HANDLE m_timerHandle = NULL;
 	HANDLE m_timerHandle2 = NULL;
-	
+	//调试模式开关
+	bool debug = false;
+
+	//枪list
 	CWeapon* weaponList[2] = { 0 };
 	CWeapon* CurrentWeapon = nullptr;
 	int currentPosition = 1;
@@ -122,7 +125,6 @@ public:
 	static int SWITCH_PRONE;
 	//背包是否打开                                                                        
 	bool packageOpened = false;
-
 	//是否已右键开镜
 	bool adsOpened = false;
 	
@@ -181,6 +183,7 @@ public:
 	void CanDoMatchWeapon();
 	void DoMatchStance();
 	void DoMatchAdsOpen();
+	void CancelAds();
 	void IsAds();
 	void Match(Mat* src, int index);
 	void MatchTabOpen(Mat* src);

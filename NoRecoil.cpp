@@ -57,6 +57,7 @@ HWND hMessageText9;
 HWND hMessageText10;
 HWND hButton;
 HWND hButton2;
+HWND hButton3;
 HWND hComboBox1;
 HWND hComboBox2;
 HWND hComboBox3;
@@ -236,12 +237,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
-
     //窗口置顶
     SetWindowPos(hMessageWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
     SetLayeredWindowAttributes(hMessageWnd, 0, 60, LWA_ALPHA);
-    ShowWindow(hMessageWnd, SW_SHOW);
-    //UpdateWindow(hMessageWnd);
+    UpdateWindow(hMessageWnd);
     
 
     //SetWindowLong(hMessageWnd, GWL_EXSTYLE, GetWindowLong(hMessageWnd, GWL_EXSTYLE) | WS_EX_LAYERED | WS_EX_TRANSPARENT);
@@ -252,6 +251,34 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     Init();
 
     return TRUE;
+}
+
+//最小化到托盘
+void ToTray(HWND hWnd)
+{
+    NOTIFYICONDATA nid;
+    nid.cbSize = (DWORD)sizeof(NOTIFYICONDATA);
+    nid.hWnd = hWnd;
+    nid.uID = IDR_MAINFRAME;
+    nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+    nid.uCallbackMessage = WM_TO_TRAY;//自定义的消息 处理托盘图标事件
+    nid.hIcon = LoadIcon(GetModuleHandle(0), MAKEINTRESOURCE(IDI_SMALL));
+    wcscpy_s(nid.szTip, _T("NoRecoil"));//鼠标放在托盘图标上时显示的文字
+    Shell_NotifyIcon(NIM_ADD, &nid);//在托盘区添加图标
+}
+
+//关闭时删除托盘图标
+void DeleteTray(HWND hWnd)
+{
+    NOTIFYICONDATA nid;
+    nid.cbSize = (DWORD)sizeof(NOTIFYICONDATA);
+    nid.hWnd = hWnd;
+    nid.uID = IDR_MAINFRAME;
+    nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+    nid.uCallbackMessage = WM_TO_TRAY;//自定义的消息名称 处理托盘图标事件
+    nid.hIcon = LoadIcon(GetModuleHandle(0), MAKEINTRESOURCE(IDI_SMALL));
+    wcscpy_s(nid.szTip, _T("NoRecoil"));//鼠标放在托盘图标上时显示的文字
+    Shell_NotifyIcon(NIM_DELETE, &nid);//在托盘中删除图标
 }
 
 //
@@ -274,7 +301,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         
         hButton = CreateWindow(L"Button", L"STOP", StaticTextStyle, 30, 10, 180, 40, hWnd, (HMENU)IDB_ONE, hInst, NULL);
 
-        hButton2 = CreateWindow(L"Button", L"应用", StaticTextStyle, 240, 10, 180, 40, hWnd, (HMENU)IDB_TWO, hInst, NULL);
+        hButton2 = CreateWindow(L"Button", L"应用", StaticTextStyle, 240, 10, 80, 40, hWnd, (HMENU)IDB_TWO, hInst, NULL);
+
+        hButton3 = CreateWindow(L"Button", L"调试", StaticTextStyle, 340, 10, 80, 40, hWnd, (HMENU)IDB_THREE, hInst, NULL);
 
         
         hStaticText = CreateWindow(L"Static", L"下蹲按键", StaticTextStyle, 30, 55, 180, 20, hWnd, NULL, hInst, NULL);
@@ -403,6 +432,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             }
             break;
+        case IDB_THREE:
+            switch (HIWORD(wParam)) {
+            case BN_CLICKED:
+            {
+                if (!gameStart.debug) {
+                    ShowWindow(hMessageWnd, SW_SHOW);
+                    gameStart.debug = true;
+                }
+                else {
+                    ShowWindow(hMessageWnd, SW_HIDE);
+                    gameStart.debug = false;
+                }
+
+            }
+            }
+            break;
         case IDB_COMBOBOX1:
             switch (HIWORD(wParam)) {
             case CBN_SELCHANGE:
@@ -496,15 +541,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         EndPaint(hWnd, &ps);
     }
     break;
+    case WM_SIZE:
+    {
+        if (wParam == SIZE_MINIMIZED) {
+            ToTray(hWnd);
+            ShowWindow(hWnd, SW_HIDE);
+        }
+    }
+    break;
     case WM_DESTROY:
         m_IsShouldThreadFinish = TRUE;
+        DeleteTray(hWnd);
         PostQuitMessage(0);
-        break;
+        break;    
     case WM_CUSTOM_MESSAGE_PICK_WEAPON:
         //ListBox_SetCurSel(hList1, wParam);
         
         SetMessage();
         break;
+    case WM_TO_TRAY: 
+    {
+        if (lParam == WM_LBUTTONDBLCLK) {
+            SetForegroundWindow(hWnd);
+            ShowWindow(hWnd, SW_SHOWNORMAL);
+        }       
+    }     
+    break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
@@ -533,10 +595,10 @@ LRESULT CALLBACK WndProc2(HWND hMWnd, UINT message, WPARAM wParam, LPARAM lParam
         hMessageText4 = CreateWindow(L"Static", L"", StaticTextStyle, 0, 50, 60, 25, hMWnd, NULL, hInst, NULL);
         hMessageText5 = CreateWindow(L"Static", L"", StaticTextStyle, 60, 50, 60, 25, hMWnd, NULL, hInst, NULL);
         hMessageText6 = CreateWindow(L"Static", L"", StaticTextStyle, 120, 50, 60, 25, hMWnd, NULL, hInst, NULL);
-        hMessageText7 = CreateWindow(L"Static", L"1", StaticTextStyle, 0, 80, 95, 25, hMWnd, NULL, hInst, NULL);
-        hMessageText8 = CreateWindow(L"Static", L"2", StaticTextStyle, 95, 80, 95, 25, hMWnd, NULL, hInst, NULL);
-        hMessageText9 = CreateWindow(L"Static", L"3", StaticTextStyle, 0, 110, 95, 25, hMWnd, NULL, hInst, NULL);
-        //hMessageText10 = CreateWindow(L"Static", L"4", StaticTextStyle, 95, 110, 95, 25, hMWnd, NULL, hInst, NULL);
+        hMessageText7 = CreateWindow(L"Static", L"", StaticTextStyle, 0, 80, 95, 25, hMWnd, NULL, hInst, NULL);
+        hMessageText8 = CreateWindow(L"Static", L"", StaticTextStyle, 95, 80, 95, 25, hMWnd, NULL, hInst, NULL);
+        hMessageText9 = CreateWindow(L"Static", L"", StaticTextStyle, 0, 110, 95, 25, hMWnd, NULL, hInst, NULL);
+        hMessageText10 = CreateWindow(L"Static", L"", StaticTextStyle, 95, 110, 95, 25, hMWnd, NULL, hInst, NULL);
 
         LOGFONT font;
         font.lfHeight = 32;
@@ -835,21 +897,33 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         }
         else if (kbhook->vkCode == 0x31) { //1
             gameStart.keyboardState.isNum1Press = 1;
+            //取消ads
+            gameStart.CancelAds();
         }
         else if (kbhook->vkCode == 0x32) { //2
             gameStart.keyboardState.isNum2Press = 1;
+            //取消ads
+            gameStart.CancelAds();
         }
         else if (kbhook->vkCode == 0x33) { //3
             gameStart.keyboardState.isNum3Press = 1;
+            //取消ads
+            gameStart.CancelAds();
         }
         else if (kbhook->vkCode == 0x34) { //4
             gameStart.keyboardState.isNum4Press = 1;
+            //取消ads
+            gameStart.CancelAds();
         }
         else if (kbhook->vkCode == 0x35) { //5
             gameStart.keyboardState.isNum5Press = 1;
+            //取消ads
+            gameStart.CancelAds();
         }
         else if (kbhook->vkCode == 0x36) { //6
             gameStart.keyboardState.isNum6Press = 1;
+            //取消ads
+            gameStart.CancelAds();
         }
         else if (kbhook->vkCode == 0x43) { //C
             gameStart.keyboardState.isC_Press = 1;
@@ -866,8 +940,11 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == VK_TAB) {
             if (gameStart.keyboardState.isTabPress == 0) {
                 gameStart.keyboardState.isTabPress = 1;
-                CreateTimerQueueTimer(&m_timerHandle2, NULL, TimerProc2, (void*)VK_RSHIFT, 150, 0, WT_EXECUTEINTIMERTHREAD);
-            }           
+                CreateTimerQueueTimer(&m_timerHandle2, NULL, TimerProc2, (void*)VK_RSHIFT, 150, 0, WT_EXECUTEINTIMERTHREAD);               
+            } 
+
+            //取消ads
+            gameStart.CancelAds();
         }
         else if (kbhook->vkCode == VK_NUMPAD2) {
             gameStart.MoveTest(100);
@@ -879,6 +956,17 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         }
         else if (kbhook->vkCode == 0x52) { //R
             gameStart.Reload();
+            //取消ads
+            gameStart.CancelAds();
+        }
+        else if (kbhook->vkCode == 0x58) { //x
+            gameStart.keyboardState.canFocus = FALSE;
+            //取消ads
+            gameStart.CancelAds();
+        }
+        else if (kbhook->vkCode == 0x47) { //G
+            //取消ads
+            gameStart.CancelAds();
         }
         
     }
@@ -903,12 +991,14 @@ LRESULT CALLBACK LowLevelKeyboardProc(
             gameStart.keyboardState.isNum1Press = 0;
             gameStart.keyboardState.canFocus = FALSE;
             gameStart.SwitchWeapon(1);
+
             SetMessage();
         }
         else if (kbhook->vkCode == 0x32) {
             gameStart.keyboardState.isNum2Press = 0;
             gameStart.keyboardState.canFocus = TRUE;
             gameStart.SwitchWeapon(2);
+
             SetMessage();
         }
         else if (kbhook->vkCode == 0x33) {
@@ -933,6 +1023,10 @@ LRESULT CALLBACK LowLevelKeyboardProc(
         else if (kbhook->vkCode == 0x5A) { //Z
             gameStart.keyboardState.isZ_Press = 0;
             gameStart.DoKeyBoardEvent(0x5A, 0);
+        }
+        else if (kbhook->vkCode == 0x52) { //R
+        }
+        else if (kbhook->vkCode == 0x47) { //G
         }
         else if (kbhook->vkCode == VK_RSHIFT) {
             gameStart.keyboardState.isRightShiftPress = 0;
@@ -1218,4 +1312,6 @@ void SetMessage() {
     SetWindowTextA(hMessageText8, lmessage);
     sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->stock != NULL ? gameStart.CurrentWeapon->stock->name.c_str() : "");
     SetWindowTextA(hMessageText9, lmessage);
+    sprintf_s(lmessage, 1024, "%s", gameStart.adsOpened? "ADS" : "");
+    SetWindowTextA(hMessageText10, lmessage);
 }

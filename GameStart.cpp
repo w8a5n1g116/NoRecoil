@@ -411,12 +411,10 @@ void GameStart::MatchStance(Mat* src)
 
 void GameStart::IsAds()
 {
-	if (adsOpened) {
-		adsOpened = false;
-	}
-	else {
-		DoMatchAdsOpen();
-	}
+	//先默认是ADS模式，然后再根据图像识别判断正确情况
+	adsOpened = true;
+	DoMatchAdsOpen();
+
 	
 }
 
@@ -659,16 +657,22 @@ void GameStart::DoKeyBoardEvent(unsigned short key, int keyDownOrUp)
 	SetMessage();
 }
 
+void GameStart::CancelAds()
+{
+	adsOpened = false;
+}
+
 void GameStart::DoMouseEvent(unsigned short key)
 {
 	if (key == WM_RBUTTONDOWN) {
 		if (SWITCH_PRONE == 1 || SWITCH_CROUCH == 1) {			
-			CreateTimerQueueTimer(&m_timerHandle2, NULL, TimerProc2, this, 100, 0, WT_EXECUTEINTIMERTHREAD);
+			CreateTimerQueueTimer(&m_timerHandle2, NULL, TimerProc2, this, 50, 0, WT_EXECUTEINTIMERTHREAD);
 		}
 	}
 	else if (key == WM_RBUTTONUP) {
 		if (SWITCH_ADS == 1) {
-			CreateTimerQueueTimer(&m_timerHandle, NULL, TimerProc, this, 100, 0, WT_EXECUTEINTIMERTHREAD);
+			//CreateTimerQueueTimer(&m_timerHandle, NULL, TimerProc, this, 50, 0, WT_EXECUTEINTIMERTHREAD);
+			IsAds();
 		}					
 	}
 	else if (key == WM_LBUTTONDOWN) {
