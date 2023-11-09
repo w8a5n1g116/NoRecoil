@@ -71,13 +71,10 @@ HWND hInput1;
 
 HANDLE m_hThread;
 UINT m_ThreadId;
-HANDLE m_hMatchThread;
-UINT m_matchThreadId;
 
 LONG volatile m_IsShouldThreadFinish{ FALSE };
 LONG volatile startFalg{ TRUE };
 unsigned __stdcall ThreadProc(void* mouseState);
-unsigned __stdcall MatchThreadProc(void* o);
 
 
 
@@ -95,22 +92,115 @@ LRESULT CALLBACK LowLevelKeyboardProc(
 );
 
 HANDLE StartProcessThread();
-HANDLE MatchProcessThread();
 void SetMessage();
 
-HANDLE m_timerHandle = NULL;
-HANDLE m_timerHandle2 = NULL;
-HANDLE m_timerHandle3 = NULL;
-HANDLE m_timerHandle4 = NULL;
-
-void KeyboardInput(UINT key, BOOL isKeyDown);
-void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired);
-void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired);
-void CALLBACK TimerProc3(void* key, BOOLEAN TimerOrWaitFired);
 
 /////////////////////////////////
 GameStart gameStart;
 
+
+void Init()
+{
+
+    short key = GetKeyState(VK_CAPITAL);
+    gameStart.keyboardState.capsLock = key & 0x0001;
+
+    key = GetKeyState(VK_SCROLL);
+    gameStart.keyboardState.scrollLock = key & 0x0001;
+
+    gameStart.InitWeapon();
+
+    if (gameStart.crouchKey == 0x43) { //C
+        ComboBox_SelectString(hComboBox1, -1, L"C");
+    }
+    else if (gameStart.crouchKey == VK_LSHIFT) {
+        ComboBox_SelectString(hComboBox1, -1, L"左SHIFT");
+    }
+    else if (gameStart.crouchKey == VK_LCONTROL) {
+        ComboBox_SelectString(hComboBox1, -1, L"左CTRL");
+    }
+
+    if (gameStart.proneKey == 0x5A) { //Z
+        ComboBox_SelectString(hComboBox2, -1, L"Z");
+    }
+    else if (gameStart.proneKey == VK_CAPITAL) {
+        ComboBox_SelectString(hComboBox2, -1, L"CapsLock");
+    }
+    else if (gameStart.proneKey == VK_LSHIFT) {
+        ComboBox_SelectString(hComboBox2, -1, L"左SHIFT");
+    }
+    else if (gameStart.proneKey == VK_LCONTROL) {
+        ComboBox_SelectString(hComboBox2, -1, L"左CTRL");
+    }
+
+    if (gameStart.focusKey == VK_LMENU) {
+        ComboBox_SelectString(hComboBox3, -1, L"左ALT");
+    }
+    else if (gameStart.focusKey == VK_CAPITAL) {
+        ComboBox_SelectString(hComboBox3, -1, L"CapsLock");
+    }
+    else if (gameStart.focusKey == VK_LSHIFT) {
+        ComboBox_SelectString(hComboBox3, -1, L"左SHIFT");
+    }
+    else if (gameStart.focusKey == VK_LCONTROL) {
+        ComboBox_SelectString(hComboBox3, -1, L"左CTRL");
+    }
+
+    if (gameStart.holdBreathKey == VK_LMENU) {
+        ComboBox_SelectString(hComboBox4, -1, L"左ALT");
+    }
+    else if (gameStart.holdBreathKey == VK_CAPITAL) {
+        ComboBox_SelectString(hComboBox4, -1, L"CapsLock");
+    }
+    else if (gameStart.holdBreathKey == VK_LSHIFT) {
+        ComboBox_SelectString(hComboBox4, -1, L"左SHIFT");
+    }
+    else if (gameStart.holdBreathKey == VK_LCONTROL) {
+        ComboBox_SelectString(hComboBox4, -1, L"左CTRL");
+    }
+
+    if (GameStart::RESOLUTION_TYPE == 0) {
+        ComboBox_SelectString(hComboBox5, -1, L"1440P 全屏模式");
+    }
+    else if (GameStart::RESOLUTION_TYPE == 1) {
+        ComboBox_SelectString(hComboBox5, -1, L"1440P 无边框 125%缩放");
+    }
+    else if (GameStart::RESOLUTION_TYPE == 2) {
+        ComboBox_SelectString(hComboBox5, -1, L"1080P 全屏模式");
+    }
+
+    if (GameStart::SWITCH_CROUCH == 0) {
+        ComboBox_SelectString(hComboBox6, -1, L"否");
+    }
+    else if (GameStart::SWITCH_CROUCH == 1) {
+        ComboBox_SelectString(hComboBox6, -1, L"是");
+    }
+
+    if (GameStart::SWITCH_PRONE == 0) {
+        ComboBox_SelectString(hComboBox7, -1, L"否");
+    }
+    else if (GameStart::SWITCH_PRONE == 1) {
+        ComboBox_SelectString(hComboBox7, -1, L"是");
+    }
+
+    if (GameStart::SWITCH_ADS == 0) {
+        ComboBox_SelectString(hComboBox8, -1, L"否");
+    }
+    else if (GameStart::SWITCH_ADS == 1) {
+        ComboBox_SelectString(hComboBox8, -1, L"是");
+    }
+
+    Edit_SetText(hInput0, to_wstring(GameStart::SENSITIVE).c_str());
+
+    SetMessage();
+
+
+    //设置鼠标钩子`
+    mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), 0);
+    //设置键盘钩子
+    keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
+    StartProcessThread();
+}
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
@@ -672,108 +762,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return (INT_PTR)FALSE;
 }
 
-void Init()
-{
 
-    short key = GetKeyState(VK_CAPITAL);
-    gameStart.keyboardState.capsLock = key & 0x0001;
-
-    key = GetKeyState(VK_SCROLL);
-    gameStart.keyboardState.scrollLock = key & 0x0001;
-
-    gameStart.InitWeapon();
-    
-    if (gameStart.crouchKey == 0x43) { //C
-        ComboBox_SelectString(hComboBox1, -1,L"C");
-    }
-    else if (gameStart.crouchKey == VK_LSHIFT) {
-        ComboBox_SelectString(hComboBox1, -1, L"左SHIFT");
-    }
-    else if (gameStart.crouchKey == VK_LCONTROL) {
-        ComboBox_SelectString(hComboBox1, -1, L"左CTRL");
-    }
-
-    if (gameStart.proneKey == 0x5A) { //Z
-        ComboBox_SelectString(hComboBox2, -1, L"Z");
-    }
-    else if (gameStart.proneKey == VK_CAPITAL) {
-        ComboBox_SelectString(hComboBox2, -1, L"CapsLock");
-    }
-    else if (gameStart.proneKey == VK_LSHIFT) {
-        ComboBox_SelectString(hComboBox2, -1, L"左SHIFT");
-    }
-    else if (gameStart.proneKey == VK_LCONTROL) {
-        ComboBox_SelectString(hComboBox2, -1, L"左CTRL");
-    }
-
-    if (gameStart.focusKey == VK_LMENU) {
-        ComboBox_SelectString(hComboBox3, -1, L"左ALT");
-    }
-    else if (gameStart.focusKey == VK_CAPITAL) {
-        ComboBox_SelectString(hComboBox3, -1, L"CapsLock");
-    }
-    else if (gameStart.focusKey == VK_LSHIFT) {
-        ComboBox_SelectString(hComboBox3, -1, L"左SHIFT");
-    }
-    else if (gameStart.focusKey == VK_LCONTROL) {
-        ComboBox_SelectString(hComboBox3, -1, L"左CTRL");
-    }
-
-    if (gameStart.holdBreathKey == VK_LMENU) {
-        ComboBox_SelectString(hComboBox4, -1, L"左ALT");
-    }
-    else if (gameStart.holdBreathKey == VK_CAPITAL) {
-        ComboBox_SelectString(hComboBox4, -1, L"CapsLock");
-    }
-    else if (gameStart.holdBreathKey == VK_LSHIFT) {
-        ComboBox_SelectString(hComboBox4, -1, L"左SHIFT");
-    }
-    else if (gameStart.holdBreathKey == VK_LCONTROL) {
-        ComboBox_SelectString(hComboBox4, -1, L"左CTRL");
-    }
-
-    if (GameStart::RESOLUTION_TYPE == 0) {
-        ComboBox_SelectString(hComboBox5, -1, L"1440P 全屏模式");
-    }
-    else if (GameStart::RESOLUTION_TYPE == 1) {
-        ComboBox_SelectString(hComboBox5, -1, L"1440P 无边框 125%缩放");
-    }
-    else if (GameStart::RESOLUTION_TYPE == 2) {
-        ComboBox_SelectString(hComboBox5, -1, L"1080P 全屏模式");
-    }
-
-    if (GameStart::SWITCH_CROUCH == 0) {
-        ComboBox_SelectString(hComboBox6, -1, L"否");
-    }
-    else if (GameStart::SWITCH_CROUCH == 1) {
-        ComboBox_SelectString(hComboBox6, -1, L"是");
-    }
-
-    if (GameStart::SWITCH_PRONE == 0) {
-        ComboBox_SelectString(hComboBox7, -1, L"否");
-    }
-    else if (GameStart::SWITCH_PRONE == 1) {
-        ComboBox_SelectString(hComboBox7, -1, L"是");
-    }
-
-    if (GameStart::SWITCH_ADS == 0) {
-        ComboBox_SelectString(hComboBox8, -1, L"否");
-    }
-    else if (GameStart::SWITCH_ADS == 1) {
-        ComboBox_SelectString(hComboBox8, -1, L"是");
-    }
-
-    Edit_SetText(hInput0, to_wstring(GameStart::SENSITIVE).c_str());
-
-    SetMessage();
-
-
-    //设置鼠标钩子`
-    mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, GetModuleHandle(NULL), 0);
-    //设置键盘钩子
-    keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
-    StartProcessThread();
-}
 
 LRESULT CALLBACK LowLevelMouseProc(
     _In_ int    nCode,
@@ -786,89 +775,7 @@ LRESULT CALLBACK LowLevelMouseProc(
     }
     MSLLHOOKSTRUCT* msllhook = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
 
-    switch (wParam)
-    {
-    case WM_LBUTTONDOWN:
-        gameStart.mouseState.isLeftButtonPress = 1;
-        break;
-    case WM_LBUTTONUP:
-        gameStart.mouseState.isLeftButtonPress = 0;
-        break;
-    case WM_RBUTTONDOWN:
-        gameStart.mouseState.isRightButtonPress = 1;
-        break;
-    case WM_RBUTTONUP:
-        gameStart.mouseState.isRightButtonPress = 0;
-        break;
-    }
-
-    if (gameStart.keyboardState.isLeftContrlPress && wParam == WM_MBUTTONDOWN && !gameStart.mouseState.isLeftButtonPress) {
-        KeyboardInput(VK_SCROLL, TRUE);
-        KeyboardInput(VK_SCROLL, FALSE);
-    }
-
-    if (gameStart.keyboardState.isLeftAltPress && wParam == WM_MBUTTONDOWN) {
-        gameStart.CurrentWeapon->ChangeSetting();
-    }
-
-    if (gameStart.keyboardState.isLeftAltPress && gameStart.mouseState.isRightButtonPress) {
-        gameStart.CurrentWeapon->HoldBreath(true);
-        SetMessage();
-    }
-    else {
-        gameStart.CurrentWeapon->HoldBreath(false);
-        SetMessage();
-    }
-    
-
-    if (wParam == WM_RBUTTONDOWN) {
-        if (gameStart.keyboardState.canFocus) {
-            CreateTimerQueueTimer(&m_timerHandle, NULL, TimerProc, (void*)VK_RSHIFT, 300, 0, WT_EXECUTEINTIMERTHREAD);
-        }
-
-    }
-
-    if (wParam == WM_RBUTTONUP) {
-        if (gameStart.keyboardState.canFocus) {
-            DeleteTimerQueueTimer(NULL, m_timerHandle, NULL);
-            KeyboardInput(VK_RSHIFT, FALSE);
-        }
-    }
-
-    if (wParam == WM_MOUSEWHEEL) {
-        if (gameStart.keyboardState.isLeftAltPress) {
-            short delta = (short)HIWORD(msllhook->mouseData);
-            if (delta > 0) {    //滚轮上
-                gameStart.PickPreviousWeapon();
-                SetMessage();
-            }
-            else if (delta < 0) {   //滚轮下
-                gameStart.PickNextWeapon();
-                SetMessage();
-            }
-        }
-
-        if (gameStart.keyboardState.isLeftContrlPress) {
-            short delta = (short)HIWORD(msllhook->mouseData);
-            if (delta > 0) {    //滚轮上
-                gameStart.DecrementRecoil();
-                SetMessage();
-            }
-            else if (delta < 0) {   //滚轮下
-                gameStart.IncrementRecoil();
-                SetMessage();
-            }
-        }
-
-        
-    }
-
-
-    short key = GetKeyState(VK_SCROLL);
-    gameStart.keyboardState.scrollLock = key & 0x0001;
-
-
-    gameStart.DoMouseEvent(wParam);
+    gameStart.DoMouseEvent(wParam,HIWORD(msllhook->mouseData));
 
     return 0;
 }
@@ -884,339 +791,15 @@ LRESULT CALLBACK LowLevelKeyboardProc(
     }
     tagKBDLLHOOKSTRUCT* kbhook = reinterpret_cast<tagKBDLLHOOKSTRUCT*>(lParam);
     if (wParam == WM_KEYDOWN) {
-        if (kbhook->vkCode == VK_LCONTROL) {
-            gameStart.keyboardState.isLeftContrlPress = 1;
-            gameStart.DoKeyBoardEvent(VK_LCONTROL,1);
-        }
-        else if (kbhook->vkCode == VK_LSHIFT) {
-            gameStart.keyboardState.isLeftShiftPress = 1;
-            gameStart.DoKeyBoardEvent(VK_LSHIFT,1); 
-        }
-        else if (kbhook->vkCode == VK_RSHIFT) {
-            gameStart.keyboardState.isRightShiftPress = 1;
-        }
-        else if (kbhook->vkCode == 0x31) { //1
-            gameStart.keyboardState.isNum1Press = 1;
-            //取消ads
-            gameStart.CancelAds();
-        }
-        else if (kbhook->vkCode == 0x32) { //2
-            gameStart.keyboardState.isNum2Press = 1;
-            //取消ads
-            gameStart.CancelAds();
-        }
-        else if (kbhook->vkCode == 0x33) { //3
-            gameStart.keyboardState.isNum3Press = 1;
-            //取消ads
-            gameStart.CancelAds();
-        }
-        else if (kbhook->vkCode == 0x34) { //4
-            gameStart.keyboardState.isNum4Press = 1;
-            //取消ads
-            gameStart.CancelAds();
-        }
-        else if (kbhook->vkCode == 0x35) { //5
-            gameStart.keyboardState.isNum5Press = 1;
-            //取消ads
-            gameStart.CancelAds();
-        }
-        else if (kbhook->vkCode == 0x36) { //6
-            gameStart.keyboardState.isNum6Press = 1;
-            //取消ads
-            gameStart.CancelAds();
-        }
-        else if (kbhook->vkCode == 0x43) { //C
-            gameStart.keyboardState.isC_Press = 1;
-            gameStart.DoKeyBoardEvent(0x43, 1);
-        }
-        else if (kbhook->vkCode == 0x5A) { //Z
-            gameStart.keyboardState.isZ_Press = 1;
-            gameStart.DoKeyBoardEvent(0x5A, 1);
-        }
-        else if (kbhook->vkCode == VK_CAPITAL) {
-            gameStart.keyboardState.isCapsLockPress = 1;
-            gameStart.DoKeyBoardEvent(VK_CAPITAL,1);          
-        }
-        else if (kbhook->vkCode == VK_TAB) {
-            if (gameStart.keyboardState.isTabPress == 0) {
-                gameStart.keyboardState.isTabPress = 1;
-                CreateTimerQueueTimer(&m_timerHandle2, NULL, TimerProc2, (void*)VK_RSHIFT, 150, 0, WT_EXECUTEINTIMERTHREAD);               
-            } 
-
-            //取消ads
-            gameStart.CancelAds();
-        }
-        else if (kbhook->vkCode == VK_NUMPAD2) {
-            gameStart.MoveTest(100);
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_NUMPAD5) {
-            gameStart.MoveTest(-100);
-            SetMessage();
-        }
-        else if (kbhook->vkCode == 0x52) { //R
-            gameStart.Reload();
-            //取消ads
-            gameStart.CancelAds();
-        }
-        else if (kbhook->vkCode == 0x58) { //x
-            gameStart.keyboardState.canFocus = FALSE;
-            //取消ads
-            gameStart.CancelAds();
-        }
-        else if (kbhook->vkCode == 0x47) { //G
-            //取消ads
-            gameStart.CancelAds();
-        }
+        gameStart.DoKeyBoardEvent(kbhook->vkCode,1);
         
+    }else if (wParam == WM_KEYUP) {
+        gameStart.DoKeyBoardEvent(kbhook->vkCode, 0);
+    }else if (wParam == WM_SYSKEYDOWN) {
+        gameStart.DoKeyBoardEvent(kbhook->vkCode, 1);       
+    }else if (wParam == WM_SYSKEYUP) {
+        gameStart.DoKeyBoardEvent(kbhook->vkCode, 0);      
     }
-
-    
-
-    if (wParam == WM_KEYUP) {
-
-
-        if (kbhook->vkCode == VK_LCONTROL) {
-            gameStart.keyboardState.isLeftContrlPress = 0;
-            gameStart.DoKeyBoardEvent(VK_LCONTROL,0);
-        }
-        else if (kbhook->vkCode == VK_LSHIFT) {
-            gameStart.keyboardState.isLeftShiftPress = 0;
-            gameStart.DoKeyBoardEvent(VK_LSHIFT,0);
-        }
-        else if (kbhook->vkCode == VK_LMENU) {
-            gameStart.keyboardState.isLeftAltPress = 0;
-        }
-        else if (kbhook->vkCode == 0x31) {
-            gameStart.keyboardState.isNum1Press = 0;
-            gameStart.keyboardState.canFocus = FALSE;
-            gameStart.SwitchWeapon(1);
-
-            SetMessage();
-        }
-        else if (kbhook->vkCode == 0x32) {
-            gameStart.keyboardState.isNum2Press = 0;
-            gameStart.keyboardState.canFocus = TRUE;
-            gameStart.SwitchWeapon(2);
-
-            SetMessage();
-        }
-        else if (kbhook->vkCode == 0x33) {
-            gameStart.keyboardState.isNum3Press = 0;
-        }
-        else if (kbhook->vkCode == 0x34) {
-            gameStart.keyboardState.isNum4Press = 0;
-        }
-        else if (kbhook->vkCode == 0x35) {
-            gameStart.keyboardState.isNum5Press = 0;
-        }
-        else if (kbhook->vkCode == 0x36) {
-            gameStart.keyboardState.isNum6Press = 0;
-        }
-        else if (kbhook->vkCode == 0x58) { //x
-            gameStart.keyboardState.canFocus = FALSE;
-        }
-        else if (kbhook->vkCode == 0x43) { //C
-            gameStart.keyboardState.isC_Press = 0;
-            gameStart.DoKeyBoardEvent(0x43, 0);
-        }
-        else if (kbhook->vkCode == 0x5A) { //Z
-            gameStart.keyboardState.isZ_Press = 0;
-            gameStart.DoKeyBoardEvent(0x5A, 0);
-        }
-        else if (kbhook->vkCode == 0x52) { //R
-        }
-        else if (kbhook->vkCode == 0x47) { //G
-        }
-        else if (kbhook->vkCode == VK_RSHIFT) {
-            gameStart.keyboardState.isRightShiftPress = 0;
-        }
-        else if (kbhook->vkCode == VK_CAPITAL) {
-            short key = GetKeyState(VK_CAPITAL);
-            gameStart.keyboardState.capsLock = key & 0x0001;  
-            gameStart.keyboardState.isCapsLockPress = 0;
-            gameStart.DoKeyBoardEvent(VK_CAPITAL,0);     
-        }
-        else if (kbhook->vkCode == VK_SCROLL) {
-            short key = GetKeyState(VK_SCROLL);
-            gameStart.keyboardState.scrollLock = key & 0x0001;
-        }
-        else if (kbhook->vkCode == 0xC0) {  // `~键
-            //gameStart.PickMatchImageWeapon();
-            //gameStart.SaveScreenShot();
-            //gameStart.DoMatchStance();
-        }
-        else if (kbhook->vkCode == VK_TAB) {
-            if (gameStart.keyboardState.isTabPress == 1) {
-                gameStart.keyboardState.isTabPress = 0;
-                //DeleteTimerQueueTimer(NULL, m_timerHandle2, NULL);
-            }
-        }
-
-        
-
-        if (kbhook->vkCode == VK_NUMPAD1) {
-            gameStart.MoveTest(5);
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_NUMPAD2) {
-            
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_NUMPAD3) {
-            gameStart.countPx = 0;
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_NUMPAD4) {
-            gameStart.MoveTest(-5);
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_NUMPAD5) {
-            
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_NUMPAD6) {
-            
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_NUMPAD7) {
-            
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_NUMPAD8) {
-            
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_NUMPAD9) {
-            
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_DIVIDE) {
-            
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_MULTIPLY) {
-            
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_SUBTRACT) {
-            
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_ADD) {
-            
-            SetMessage();
-        }
-        else if (kbhook->vkCode == VK_NUMPAD0) {
-            gameStart.CurrentWeapon->ResetWeapon();
-            gameStart.PickWeapon("Default");            
-        }
-        else if (kbhook->vkCode == VK_UP) {
-            gameStart.PickPreviousWeapon();
-        }
-        else if (kbhook->vkCode == VK_DOWN) {
-            gameStart.PickNextWeapon();
-        }
-        else if (kbhook->vkCode == VK_LEFT) {
-            gameStart.DecrementRecoil();
-        }
-        else if (kbhook->vkCode == VK_RIGHT) {
-            gameStart.IncrementRecoil();
-        }
-
-    }
-
-    if (wParam == WM_SYSKEYDOWN) {
-        if (kbhook->vkCode == VK_LMENU) {
-            gameStart.keyboardState.isLeftAltPress = 1;
-            gameStart.DoKeyBoardEvent(VK_LMENU,1);
-        }
-        else if (kbhook->vkCode == 0x31) {
-            gameStart.keyboardState.isNum1Press = 1;
-        }
-        else if (kbhook->vkCode == 0x32) {
-            gameStart.keyboardState.isNum2Press = 1;
-        }
-        else if (kbhook->vkCode == 0x33) {
-            gameStart.keyboardState.isNum3Press = 1;
-        }
-        else if (kbhook->vkCode == 0x34) {
-            gameStart.keyboardState.isNum4Press = 1;
-        }
-        else if (kbhook->vkCode == 0x35) {
-            gameStart.keyboardState.isNum5Press = 1;
-        }
-        else if (kbhook->vkCode == 0x36) {
-            gameStart.keyboardState.isNum6Press = 1;
-        }
-        else if (kbhook->vkCode == 0x54) {
-            gameStart.keyboardState.isT_Press = 1;
-        }
-        else if (kbhook->vkCode == VK_XBUTTON1) {
-            
-        }
-        else if (kbhook->vkCode == VK_XBUTTON2) {
-            
-        }
-    }
-
-    if (wParam == WM_SYSKEYUP) {
-         if (kbhook->vkCode == VK_LMENU) {
-             gameStart.keyboardState.isLeftAltPress = 0;
-            gameStart.DoKeyBoardEvent(VK_LMENU,0);
-         }
-         else if (kbhook->vkCode == 0x31) {
-             gameStart.keyboardState.isNum1Press = 0;
-         }
-         else if (kbhook->vkCode == 0x32) {
-             gameStart.keyboardState.isNum2Press = 0;
-         }
-         else if (kbhook->vkCode == 0x33) {
-             gameStart.keyboardState.isNum3Press = 0;
-         }
-         else if (kbhook->vkCode == 0x34) {
-             gameStart.keyboardState.isNum4Press = 0;
-         }
-         else if (kbhook->vkCode == 0x35) {
-             gameStart.keyboardState.isNum5Press = 0;
-         }
-         else if (kbhook->vkCode == 0x36) {
-             gameStart.keyboardState.isNum6Press = 0;
-         }
-         else if (kbhook->vkCode == 0x54) {
-             gameStart.keyboardState.isT_Press = 0;
-         }
-    }
-
-    //////////////////////////
-    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isNum1Press) {
-        gameStart.AssembleScope(1);
-        SetMessage();
-    }
-    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isNum2Press) {
-        gameStart.AssembleScope(2);
-        SetMessage();
-    }
-    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isNum3Press) {
-        gameStart.AssembleScope(3);
-        SetMessage();
-    }
-    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isNum4Press) {
-        gameStart.AssembleScope(4);
-        SetMessage();
-    }
-    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isNum5Press) {
-        gameStart.AssembleScope(6);
-        SetMessage();
-    }
-    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isNum6Press) {
-        gameStart.AssembleScope(8);
-        SetMessage();
-    }
-    if (gameStart.keyboardState.isLeftAltPress && gameStart.keyboardState.isT_Press) {
-        
-    }
-
     return 0;
 }
 
@@ -1227,11 +810,6 @@ HANDLE StartProcessThread() {
     return HANDLE();
 }
 
-HANDLE MatchProcessThread()
-{
-    m_hMatchThread = (HANDLE)_beginthreadex(NULL, 0, &MatchThreadProc, NULL, 0, &m_ThreadId);
-    return HANDLE();
-}
 
 unsigned __stdcall ThreadProc(void* o) {
     //Mouse_State* state = (Mouse_State*)mouseState;
@@ -1244,40 +822,10 @@ unsigned __stdcall ThreadProc(void* o) {
     return 0;
 }
 
-unsigned __stdcall MatchThreadProc(void* o) {
-    gameStart.PickMatchImageWeapon();
-    _endthreadex(0);
-    return 0;
-}
 
-void KeyboardInput(UINT key, BOOL isKeyDown) {
-    UINT scanCode = MapVirtualKey(key, MAPVK_VK_TO_VSC_EX);
-    if (isKeyDown) {
-        keybd_event(key, scanCode, 0, 0);
-    }
-    else {
-        keybd_event(key, scanCode, KEYEVENTF_KEYUP, 0);
 
-    }
-}
 
-void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired) {
-    KeyboardInput(VK_RSHIFT, TRUE);
-}
 
-void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired) {
-    if (gameStart.allowMatch) {
-        gameStart.allowMatch = false;
-        CreateTimerQueueTimer(&m_timerHandle3, NULL, TimerProc3, NULL, 1000, 0, WT_EXECUTEINTIMERTHREAD);
-        //gameStart.PickMatchImageWeapon();
-        gameStart.CanDoMatchWeapon();
-    }
-    
-}
-
-void CALLBACK TimerProc3(void* key, BOOLEAN TimerOrWaitFired) {
-    gameStart.allowMatch = true;
-}
 
 
 
@@ -1312,6 +860,6 @@ void SetMessage() {
     SetWindowTextA(hMessageText8, lmessage);
     sprintf_s(lmessage, 1024, "%s", gameStart.CurrentWeapon->stock != NULL ? gameStart.CurrentWeapon->stock->name.c_str() : "");
     SetWindowTextA(hMessageText9, lmessage);
-    sprintf_s(lmessage, 1024, "%s", gameStart.adsOpened? "ADS" : "");
+    sprintf_s(lmessage, 1024, "%s-%s", gameStart.adsOpened? "ADS" : "",gameStart.packageOpened?"PKG":"");
     SetWindowTextA(hMessageText10, lmessage);
 }

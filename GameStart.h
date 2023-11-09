@@ -73,6 +73,10 @@ public:
 	ThisAndIndex tiTabOpen;
 	ThisAndIndex tiStance;
 	ThisAndIndex tiAds;
+	ThisAndIndex tiMuzzle1,tiMuzzle2;
+	ThisAndIndex tiGrip1, tiGrip2;
+	ThisAndIndex tiStock1, tiStock2;
+	ThisAndIndex tiScope1, tiScope2;
 
 	Rect weaponRect1, weaponRect2, weaponNaceRect, muzzleRect, gripRect, stockRect, scopeRect,tabOpenRect,stanceRect,tabOpenBGRect,stanceBGRect,adsRect,adsBGRect;
 
@@ -89,6 +93,9 @@ public:
 	//两个图像识别计时器句柄
 	HANDLE m_timerHandle = NULL;
 	HANDLE m_timerHandle2 = NULL;
+	HANDLE m_timerHandle3 = NULL;
+	HANDLE m_timerHandle4 = NULL;
+	HANDLE m_timerHandle5 = NULL;
 	//调试模式开关
 	bool debug = false;
 
@@ -111,6 +118,7 @@ public:
 	bool isFocus = false;
 	unsigned short holdBreathKey = VK_LMENU;
 	bool isHoldBreath = false;
+	unsigned short takeBackGunKey = 0x58; //x
 	//控制是否需要识别枪    
 	bool allowMatch = true;
 	//分辨率
@@ -211,7 +219,7 @@ public:
 
 	void DoKeyBoardEvent(unsigned short key,int keyDownOrUp);
 
-	void DoMouseEvent(unsigned short key);
+	void DoMouseEvent(unsigned short key, unsigned int data);
 
 	void LoadKeys();
 	void SetCrouchKey(unsigned short key);
@@ -228,12 +236,19 @@ public:
 	void SetSwitcProne(int sp);
 	void LoadSwitchADS();
 	void SetSwitcADS(int sa);
-
+	//模拟键盘
+	void KeyboardInput(UINT key, BOOL isKeyDown);
 
 
 	static void CALLBACK TimerProc(void* key, BOOLEAN TimerOrWaitFired);
 
 	static void CALLBACK TimerProc2(void* key, BOOLEAN TimerOrWaitFired);
+
+	static void CALLBACK TimerProc3(void* key, BOOLEAN TimerOrWaitFired);
+
+	static void CALLBACK TimerProc4(void* key, BOOLEAN TimerOrWaitFired);
+
+	static void CALLBACK TimerProc5(void* key, BOOLEAN TimerOrWaitFired);
 
 	static void CALLBACK WeaponMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance,_Inout_opt_ PVOID Context);
 
@@ -242,6 +257,14 @@ public:
 	static void CALLBACK StanceMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context);
 
 	static void CALLBACK AdsMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context);
+
+	static void CALLBACK MuzzleMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context);
+
+	static void CALLBACK GripMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context);
+
+	static void CALLBACK StockMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context);
+
+	static void CALLBACK ScopeMatchThreadProc(_Inout_ PTP_CALLBACK_INSTANCE Instance, _Inout_opt_ PVOID Context);
 	
 };
 

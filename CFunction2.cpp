@@ -7,9 +7,9 @@ extern HWND hWnd;
 
 
 
-void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress, int scrollLock)
+void CFunction2::Move(GameStart* gameStart, int isLeftAltPress, int scrollLock)
 {
-
+    CWeapon* CurrentWeapon = gameStart->CurrentWeapon;
     double scope_scale = 1;
     if (CurrentWeapon->scope == nullptr) {
         scope_scale = 1;
@@ -28,13 +28,16 @@ void CFunction2::Move(CWeapon* CurrentWeapon, int isLeftAltPress, int scrollLock
     for (int i = 0; i < count; i++)
     {
         int offset = 0;
-        if (i % 2 == 0) {
+        if (gameStart->debug) {
+            offset = 70;
+        }
+        /*if (i % 2 == 0) {
             offset = 1;
         }
         else {
             offset = -1;
-        }
-        mouse_event(MOUSEEVENTF_MOVE, 0, round(shot_recoil / 4), 0, 0);
+        }*/
+        mouse_event(MOUSEEVENTF_MOVE, offset, round(shot_recoil / 4), 0, 0);
         Delay(round(CurrentWeapon->shotInterval / 4));
     }
 
